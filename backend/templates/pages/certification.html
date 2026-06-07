@@ -1,0 +1,70 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}认证信息 · 燃冰{% endblock %}
+
+{% block content %}
+
+<!-- Page Title -->
+<div style="margin-bottom:16px;">
+  <div style="font-size:18px; font-weight:700; color:#1a1a1a;">📜 认证信息</div>
+  <div style="font-size:12px; color:#888; margin-top:4px;">展示您的专业资质认证</div>
+</div>
+
+{% if certifications %}
+{% for cert in certifications %}
+<div class="card" style="margin-bottom:10px;">
+  <div style="display:flex; gap:12px; align-items:flex-start;">
+    <div style="width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,#e86a3a,#f0a06a); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">
+      🏅
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:4px;">
+        {{ cert.name }}
+      </div>
+      {% if cert.issuer %}
+      <div style="font-size:12px; color:#888; margin-bottom:4px;">
+        颁发机构：{{ cert.issuer }}
+      </div>
+      {% endif %}
+      {% if cert.issue_date %}
+      <div style="font-size:11px; color:#aaa;">
+        颁发日期：{{ cert.issue_date|date:"Y-m-d" }}
+      </div>
+      {% endif %}
+      {% if cert.description %}
+      <div style="font-size:12px; color:#666; margin-top:6px; line-height:1.5;">
+        {{ cert.description }}
+      </div>
+      {% endif %}
+    </div>
+    {% if cert.verification_status == 1 %}
+    <div>
+      <span class="badge-gold">已认证</span>
+    </div>
+    {% elif cert.verification_status == 2 %}
+    <div>
+      <span class="badge">审核中</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card" style="text-align:center; padding:40px 20px;">
+  <div style="font-size:40px; margin-bottom:12px;">📜</div>
+  <div style="font-size:14px; color:#888;">暂无认证信息</div>
+  <div style="font-size:12px; color:#aaa; margin-top:6px;">添加您的专业资质认证，让他人更了解您</div>
+</div>
+{% endif %}
+
+<!-- Add Button -->
+{% if is_mine %}
+<div style="margin-top:20px; margin-bottom:60px;">
+  <button style="width:100%; background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:24px; padding:12px; font-size:14px; font-weight:600; cursor:pointer;">
+    + 添加认证
+  </button>
+</div>
+{% endif %}
+
+{% endblock %}

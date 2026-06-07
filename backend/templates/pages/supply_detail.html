@@ -1,0 +1,148 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}{{ supply.title }} · 燃冰{% endblock %}
+
+{% block og_meta %}
+{{ block.super }}
+<meta property="og:title" content="{{ supply.title }} · 燃冰">
+<meta property="og:description" content="{{ supply.content|truncatechars:50|default:'发现精准供需机会' }}">
+<meta property="og:image" content="https://asiamlhk.com/static/img/og-cover.png">
+<meta property="og:url" content="https://asiamlhk.com/pages/supply/{{ supply.uuid }}/">
+{% endblock %}
+
+{% block content %}
+
+<!-- Back -->
+<div style="margin-bottom:10px;">
+  <a href="{% url 'supply_demand' %}" style="display:inline-flex; align-items:center; gap:4px; font-size:13px; color:#666; text-decoration:none;">
+    ‹ 返回供需广场
+  </a>
+</div>
+
+{% if not supply %}
+<div class="card" style="text-align:center; padding:60px 20px; color:#999;">
+  <div style="font-size:48px; margin-bottom:12px;">🔍</div>
+  <div style="font-size:16px; margin-bottom:8px;">供需不存在或已下架</div>
+  <a href="{% url 'supply_demand' %}" style="color:#e86a3a;">返回供需广场 ›</a>
+</div>
+{% else %}
+
+<!-- Supply Header Card -->
+<div class="card" style="margin-bottom:10px;">
+  <!-- Type Banner -->
+  <div style="width:100%; height:120px; border-radius:10px; background:linear-gradient(135deg,{% if supply.supply_type == 1 %}#e86a3a,#f0a06a{% else %}#059669,#34d399{% endif %}); display:flex; align-items:center; justify-content:center; font-size:48px; position:relative; overflow:hidden; margin-bottom:14px;">
+    <span style="position:absolute; top:10px; left:10px; background:rgba(255,255,255,0.9); color:{% if supply.supply_type == 1 %}#e86a3a{% else %}#059669{% endif %}; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600;">
+      {% if supply.supply_type == 1 %}📤 供给{% else %}📥 需求{% endif %}
+    </span>
+    <span style="font-size:64px;">{% if supply.supply_type == 1 %}📤{% else %}📥{% endif %}</span>
+  </div>
+
+  <!-- Title & Quality Score -->
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:18px; font-weight:700; color:#1a1a1a; line-height:1.4; margin-bottom:6px;">
+        {{ supply.title }}
+      </div>
+      {% if supply.quality_score %}
+      <span style="background:#fff8e6; color:#e86a3a; font-size:11px; padding:2px 8px; border-radius:8px;">
+        ✨ AI质量 {{ supply.quality_score }}
+      </span>
+      {% endif %}
+    </div>
+    <div style="font-size:12px; color:#888; white-space:nowrap; margin-left:10px;">
+      {{ supply.view_count }} 浏览
+    </div>
+  </div>
+
+  <!-- Tag List -->
+  {% if tag_names %}
+  <div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;">
+    {% for tname in tag_names %}
+    <span class="tag {% if supply.supply_type == 1 %}tag-blue{% else %}tag-green{% endif %}">{{ tname }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Meta Info -->
+  <div style="display:flex; align-items:flex-start; gap:8px; font-size:13px; color:#666; margin-bottom:8px;">
+    <span>👤</span>
+    <span>
+      {% if supply.is_anonymous %}
+      <span style="color:#999;">👤 匿名发布</span>
+      {% else %}
+      {{ supply.profile.real_name|default:'匿名'|default:supply.profile.user.nickname|default:'用户' }}
+      ·
+      {{ supply.profile.company|default:'' }}
+      {% endif %}
+    </span>
+  </div>
+  <div style="font-size:12px; color:#aaa;">
+    发布于 {{ supply.created_at|date:"Y-m-d H:i" }}
+    {% if supply.expires_at %}· 有效期至 {{ supply.expires_at|date:"Y-m-d" }}{% endif %}
+    {% if supply.status == 2 %}· 已下架{% elif supply.status == 3 %}· 已成交{% endif %}
+  </div>
+</div>
+
+<!-- Content -->
+<div class="card" style="margin-bottom:10px;">
+  <div style="font-size:13px; font-weight:600; color:#888; margin-bottom:8px;">📝 详细内容</div>
+  <div style="font-size:14px; color:#333; line-height:1.7; white-space:pre-wrap;">{{ supply.content|default:'暂无详细信息' }}</div>
+</div>
+
+<!-- Contact / Message (only if not anonymous and not self) -->
+{% if can_send_message %}
+<div class="card" style="margin-bottom:10px; padding:16px;">
+  <div style="font-size:13px; font-weight:600; color:#888; margin-bottom:10px;">💬 联系发布者</div>
+  <form id="msg-form" onsubmit="return sendMsg(event)">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <textarea name="content" rows="3" placeholder="输入您想说的话..." style="width:100%; border:1px solid #e5e5e5; border-radius:10px; padding:10px; font-size:13px; resize:none; box-sizing:border-box; margin-bottom:8px;"></textarea>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span id="msg-tip" style="font-size:12px; color:#999;"></span>
+      <button type="submit" style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:10px; padding:8px 20px; font-size:13px; font-weight:600; cursor:pointer;">发送私信</button>
+    </div>
+  </form>
+</div>
+{% elif not supply.is_anonymous and supply.profile.user == request.user %}
+<div class="card" style="margin-bottom:10px; text-align:center; padding:16px; color:#999; font-size:13px;">
+  这是您发布的内容 · <a href="{% url 'publish_supply' %}" style="color:#e86a3a;">编辑</a>
+</div>
+{% endif %}
+
+{% if not can_send_message and supply.is_anonymous %}
+<div class="card" style="margin-bottom:10px; text-align:center; padding:16px; color:#999; font-size:13px;">
+  此条供需为匿名发布，无法直接私信
+</div>
+{% endif %}
+
+{% endif %}
+
+<script>
+function sendMsg(e) {
+  e.preventDefault();
+  var form = document.getElementById('msg-form');
+  var fd = new FormData(form);
+  var tip = document.getElementById('msg-tip');
+  fetch("{% url 'supply_message' supply.uuid %}", {
+    method: 'POST',
+    headers: {'X-CSRFToken': fd.get('csrfmiddlewaretoken')},
+    body: fd,
+  }).then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.code == 0) {
+      tip.textContent = '✓ 发送成功';
+      tip.style.color = '#059669';
+      form.reset();
+    } else {
+      tip.textContent = data.message || '发送失败';
+      tip.style.color = '#d00';
+    }
+  }).catch(function() {
+    tip.textContent = '网络错误';
+    tip.style.color = '#d00';
+  });
+  return false;
+}
+</script>
+
+{% endblock %}

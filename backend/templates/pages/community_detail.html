@@ -1,0 +1,162 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}{{ community.name }} · 社群 · 燃冰{% endblock %}
+
+{% block content %}
+
+{% if community %}
+
+<!-- Community Header -->
+<div class="card" style="margin-bottom:10px;">
+  <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+    <div style="width:56px; height:56px; border-radius:14px; background:{{ community.name|avatar_color }}; display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0;">
+      🤝
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:4px;">{{ community.name }}</div>
+      <div style="font-size:12px; color:#888;">
+        👥 {{ community.member_count }} 位成员 · {{ community.get_community_type_display }}
+        {% if community.school %} · {{ community.school }}{% endif %}
+      </div>
+    </div>
+    {% if my_membership and my_membership.role != 3 %}
+    <button onclick="leaveCommunity({{ community.id }})"
+            id="leave-btn"
+            style="background:#fff; color:#e86a3a; border:1.5px solid #e86a3a; border-radius:16px; padding:4px 12px; font-size:12px; font-weight:600; cursor:pointer; flex-shrink:0;">
+      退出社群
+    </button>
+    {% elif my_membership and my_membership.role == 3 %}
+    <span style="background:#e8fdf5; color:#059669; font-size:12px; padding:4px 12px; border-radius:12px; font-weight:600;">群主</span>
+    {% else %}
+    <button onclick="joinCommunity({{ community.id }})"
+            id="community-join-btn"
+            style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:16px; padding:6px 16px; font-size:13px; font-weight:600; cursor:pointer; flex-shrink:0;">
+      加入社群
+    </button>
+    {% endif %}
+  </div>
+
+  {% if community.description %}
+  <div style="font-size:13px; color:#555; line-height:1.6;">{{ community.description }}</div>
+  {% endif %}
+</div>
+
+<!-- Members Preview -->
+{% if members %}
+<div class="card" style="margin-bottom:10px;">
+  <div class="section-header mb10">
+    <span class="section-title">👥 成员</span>
+    <span class="section-more">{{ members|length }} 人</span>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    {% for m in members %}
+    <a href="/pages/profile/{{ m.profile.uuid }}/" title="{{ m.profile.real_name }}">
+      <div style="width:38px; height:38px; border-radius:50%; background:{{ m.profile.real_name|avatar_color }}; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:#fff;" title="{{ m.profile.real_name }}">
+        {{ m.profile.real_name|initials }}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Message Stream -->
+<div class="section-header mb10 mt12">
+  <span class="section-title">💬 社群消息</span>
+</div>
+
+<div>
+  {% if my_membership %}
+    {% for msg in messages %}
+    <div style="margin-bottom:12px;">
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <a href="/pages/profile/{{ msg.profile.uuid }}/">
+          <div style="width:32px; height:32px; border-radius:50%; background:{{ msg.profile.real_name|avatar_color }}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:#fff; flex-shrink:0;">
+            {{ msg.profile.real_name|initials }}
+          </div>
+        </a>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; gap:6px; align-items:baseline; margin-bottom:3px;">
+            <span style="font-size:13px; font-weight:600; color:#1a1a1a;">{{ msg.profile.real_name }}</span>
+            <span style="font-size:11px; color:#aaa;">{{ msg.created_at|date:"m-d H:i" }}</span>
+          </div>
+          <div style="font-size:13px; color:#444; line-height:1.5;">{{ msg.content }}</div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div style="text-align:center; padding:30px 20px; color:#999; font-size:13px;">
+      暂无消息，快来发起第一个话题吧
+    </div>
+    {% endfor %}
+
+    <!-- Post Message -->
+    <div style="margin-top:16px; margin-bottom:30px;">
+      <form method="post" action="/pages/community/{{ community.id }}/">
+        {% csrf_token %}
+        <textarea name="content" placeholder="说点什么…" rows="3"
+          style="width:100%; padding:10px; border:1px solid #e0e0e0; border-radius:12px; font-size:13px; resize:none; outline:none; box-sizing:border-box; margin-bottom:8px;"></textarea>
+        <button type="submit" style="float:right; background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:16px; padding:7px 18px; font-size:13px; font-weight:600; cursor:pointer;">
+          发布
+        </button>
+        <div style="clear:both;"></div>
+      </form>
+    </div>
+  {% else %}
+    <div style="text-align:center; padding:30px 20px; color:#999; font-size:13px; background:#fff; border-radius:12px;">
+      加入社群后可参与讨论
+    </div>
+  {% endif %}
+</div>
+
+{% else %}
+<div style="text-align:center; padding:60px 20px; color:#999;">
+  <div style="font-size:40px; margin-bottom:12px;">❓</div>
+  <div style="font-size:14px;">社群不存在</div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if community and not my_membership %}
+<script>
+function joinCommunity(id) {
+  var btn = document.getElementById('community-join-btn');
+  btn.disabled = true;
+  btn.textContent = '加入中…';
+  fetch('/pages/community/' + id + '/join/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/) ? document.cookie.match(/csrftoken=([^;]+)/)[1] : '', 'Content-Type': 'application/json'}
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.code === 0) location.reload();
+    else { alert(data.message || '加入失败'); btn.disabled = false; btn.textContent = '加入社群'; }
+  })
+  .catch(function() { alert('加入失败'); btn.disabled = false; btn.textContent = '加入社群'; });
+}
+</script>
+{% endif %}
+{% if community and my_membership %}
+<script>
+function leaveCommunity(id) {
+  if (!confirm('确定要退出这个社群吗？')) return;
+  var btn = document.getElementById('leave-btn');
+  btn.disabled = true;
+  btn.textContent = '退出中…';
+  fetch('/pages/community/' + id + '/leave/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/) ? document.cookie.match(/csrftoken=([^;]+)/)[1] : '', 'Content-Type': 'application/json'}
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.code === 0) location.reload();
+    else { alert(data.message || '退出失败'); btn.disabled = false; btn.textContent = '退出社群'; }
+  })
+  .catch(function() { alert('退出失败'); btn.disabled = false; btn.textContent = '退出社群'; });
+}
+</script>
+{% endif %}
+{% endblock %}

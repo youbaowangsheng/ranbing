@@ -1,0 +1,209 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}{% if form.instance.id %}编辑活动{% else %}发布活动{% endif %} · 燃冰{% endblock %}
+
+{% block content %}
+
+<form id="activityForm" method="POST" action=".">
+  {% csrf_token %}
+
+  <!-- Activity Type -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">🏷️ 活动类型 <span style="color:#d00;">*</span></div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+      {% for value, label in form.activity_type.field.choices %}
+      <label class="type-option" style="cursor:pointer;">
+        <input type="radio" name="activity_type" value="{{ value }}" {% if form.activity_type.value == value %}checked{% endif %} style="display:none;">
+        <span class="tag {% if form.activity_type.value == value %}tag-orange{% else %}tag-gray{% endif %}" style="padding:5px 12px; font-size:12px;">{{ label }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    {% if form.activity_type.errors %}
+    <div style="color:#d00; font-size:11px; margin-top:4px;">{{ form.activity_type.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Title -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">📌 活动标题 <span style="color:#d00;">*</span></div>
+    <input type="text" name="title" value="{{ form.title.value|default:'' }}" placeholder="请输入活动标题（必填）" maxlength="256" required style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+    {% if form.title.errors %}
+    <div style="color:#d00; font-size:11px; margin-top:4px;">{{ form.title.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Time -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">📅 活动时间 <span style="color:#d00;">*</span></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div>
+        <label style="font-size:11px; color:#888; display:block; margin-bottom:4px;">开始时间</label>
+        <input type="datetime-local" name="start_time" value="{{ form.start_time.value|default:'' }}" required style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:11px; color:#888; display:block; margin-bottom:4px;">结束时间</label>
+        <input type="datetime-local" name="end_time" value="{{ form.end_time.value|default:'' }}" style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+      </div>
+    </div>
+    {% if form.start_time.errors %}
+    <div style="color:#d00; font-size:11px; margin-top:4px;">{{ form.start_time.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Location -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">📍 活动地点</div>
+    <input type="text" name="location" value="{{ form.location.value|default:'' }}" placeholder="请输入活动地点" maxlength="256" style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+    {% if form.location.errors %}
+    <div style="color:#d00; font-size:11px; margin-top:4px;">{{ form.location.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Cover URL -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">🖼️ 封面图片</div>
+    <input type="url" name="cover_url" value="{{ form.cover_url.value|default:'' }}" placeholder="请输入封面图片URL（可选）" maxlength="512" style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+    {% if form.cover_url.errors %}
+    <div style="color:#d00; font-size:11px; margin-top:4px;">{{ form.cover_url.errors.0 }}</div>
+    {% endif %}
+    {% if form.cover_url.value %}
+    <div style="margin-top:8px; border-radius:8px; overflow:hidden; height:120px;">
+      <img src="{{ form.cover_url.value }}" style="width:100%; height:100%; object-fit:cover;">
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Description -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">📝 活动详情</div>
+    <textarea name="description" placeholder="请输入活动详细描述（可选）" rows="5" style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box; resize:vertical; line-height:1.6;">{{ form.description.value|default:'' }}</textarea>
+    {% if form.description.errors %}
+    <div style="color:#d00; font-size:11px; margin-top:4px;">{{ form.description.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Capacity -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">👥 参与人数</div>
+    <input type="number" name="max_attendees" value="{{ form.max_attendees.value|default:'' }}" placeholder="不填则不限人数" min="1" style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+    {% if form.max_attendees.errors %}
+    <div style="color:#d00; font-size:11px; margin-top:4px;">{{ form.max_attendees.errors.0 }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Enrollment Mode -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">💰 报名方式</div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+      {% for value, label in form.enrollment_mode.field.choices %}
+      <label class="enroll-option" style="cursor:pointer;">
+        <input type="radio" name="enrollment_mode" value="{{ value }}" {% if form.enrollment_mode.value == value %}checked{% endif %} style="display:none;">
+        <span class="tag {% if form.enrollment_mode.value == value %}tag-orange{% else %}tag-gray{% endif %}" style="padding:5px 12px; font-size:12px;">{{ label }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Fee (shown when付费 is selected) -->
+  <div class="card {% if form.enrollment_mode.value != 2 %}hidden{% endif %}" id="feeSection" style="margin-bottom:10px;">
+    <div class="section-title mb10">💵 活动费用（元）</div>
+    <input type="number" name="fee" value="{{ form.fee.value|default:'' }}" placeholder="请输入费用金额" min="0" step="0.01" style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+  </div>
+
+  <!-- Tags -->
+  <div class="card" style="margin-bottom:10px;">
+    <div class="section-title mb10">🏷️ 标签</div>
+    <input type="text" name="tags_input" value="{{ tags_input|default:'' }}" placeholder="多个标签用逗号分隔，如：创业,投资,互联网" style="width:100%; border:1px solid #e0e0e0; border-radius:8px; padding:10px 12px; font-size:13px; outline:none; box-sizing:border-box;">
+    <div style="margin-top:8px; font-size:11px; color:#888;">可选标签：{% for t in available_tags %}<span class="tag tag-gray" style="cursor:pointer;" onclick="addTag('{{ t }}')">{{ t }}</span>{% endfor %}</div>
+  </div>
+
+  <!-- AI Match -->
+  <div class="card" style="margin-bottom:10px;">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div class="section-title">🤖 AI智能匹配</div>
+        <div style="font-size:11px; color:#888; margin-top:2px;">开启后，系统将根据参与者兴趣智能推荐活动</div>
+      </div>
+      <label style="cursor:pointer; position:relative;">
+        <input type="checkbox" name="ai_match_enabled" {% if form.ai_match_enabled.value %}checked{% endif %} style="display:none;">
+        <span id="aiToggle" style="display:inline-block; width:44px; height:24px; border-radius:12px; background:{% if form.ai_match_enabled.value %}#059669{% else %}#ccc{% endif %}; position:relative; transition:background 0.2s;">
+          <span style="display:inline-block; width:20px; height:20px; border-radius:50%; background:#fff; position:absolute; top:2px; left:{% if form.ai_match_enabled.value %}22px{% else %}2px{% endif %}; transition:left 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2);"></span>
+        </span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div style="margin:16px 0 30px;">
+    <button type="submit" style="width:100%; background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:24px; padding:14px; font-size:15px; font-weight:600; cursor:pointer;">
+      {% if form.instance.id %}保存修改{% else %}发布活动{% endif %}
+    </button>
+    {% if form.instance.id %}
+    <a href="{% url 'activity_detail' form.instance.id %}" style="display:block; margin-top:10px; text-align:center; color:#888; font-size:13px;">取消编辑</a>
+    {% endif %}
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle tag selection
+document.querySelectorAll('.type-option').forEach(function(label) {
+  label.addEventListener('click', function() {
+    document.querySelectorAll('.type-option input').forEach(function(r) { r.checked = false; });
+    document.querySelectorAll('.type-option .tag').forEach(function(s) { s.className = 'tag tag-gray'; });
+    var input = this.querySelector('input');
+    input.checked = true;
+    this.querySelector('.tag').className = 'tag tag-orange';
+  });
+});
+
+document.querySelectorAll('.enroll-option').forEach(function(label) {
+  label.addEventListener('click', function() {
+    document.querySelectorAll('.enroll-option input').forEach(function(r) { r.checked = false; });
+    document.querySelectorAll('.enroll-option .tag').forEach(function(s) { s.className = 'tag tag-gray'; });
+    var input = this.querySelector('input');
+    input.checked = true;
+    this.querySelector('.tag').className = 'tag tag-orange';
+
+    // Show/hide fee field
+    var feeSection = document.getElementById('feeSection');
+    if (input.value === '2') {
+      feeSection.classList.remove('hidden');
+    } else {
+      feeSection.classList.add('hidden');
+    }
+  });
+});
+
+// AI Toggle
+document.querySelector('input[name="ai_match_enabled"]').addEventListener('change', function() {
+  var toggle = document.getElementById('aiToggle');
+  var dot = toggle.querySelector('span');
+  if (this.checked) {
+    toggle.style.background = '#059669';
+    dot.style.left = '22px';
+  } else {
+    toggle.style.background = '#ccc';
+    dot.style.left = '2px';
+  }
+});
+
+// Quick tag insert
+function addTag(tag) {
+  var input = document.querySelector('input[name="tags_input"]');
+  var current = input.value.trim();
+  if (current) {
+    var tags = current.split(',').map(function(t) { return t.trim(); });
+    if (!tags.includes(tag)) {
+      tags.push(tag);
+      input.value = tags.join(', ');
+    }
+  } else {
+    input.value = tag;
+  }
+}
+</script>
+{% endblock %}

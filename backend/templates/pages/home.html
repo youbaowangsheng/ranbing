@@ -1,0 +1,252 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}首页 · 燃冰{% endblock %}
+
+{% block header_content %}
+{% endblock %}
+
+{% block content %}
+
+<!-- AI Bar -->
+<a href="{% url 'ai_assistant' %}">
+  <div class="ai-bar">
+    <span class="ai-bar-icon">✨</span>
+    <span class="ai-bar-text">AI助手：智能匹配供需、人脉推荐</span>
+    <span class="ai-bar-arrow">›</span>
+  </div>
+</a>
+
+<!-- User Greeting -->
+<div class="card" style="margin-bottom:12px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="flex:1;">
+      <div style="font-size:17px; font-weight:600;">
+        你好，{{ my_profile.real_name|default:user.nickname }}
+      </div>
+      <div style="font-size:12px; color:#888; margin-top:3px;">
+        {{ my_profile.company|default:'未填写公司' }} · {{ my_profile.position|default:'未填写职位' }}
+      </div>
+    </div>
+    <a href="{% url 'publish_supply' %}">
+      <button style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:20px; padding:6px 16px; font-size:12px; font-weight:600; cursor:pointer;">
+        + 发布
+      </button>
+    </a>
+  </div>
+</div>
+
+<!-- 好友请求通知 -->
+{% if friend_request_count > 0 %}
+<a href="#" onclick="showFriendRequests(); return false;" class="fr-banner-link">
+  <div style="background:#fff3e0; border-radius:12px; padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:10px; border-left:4px solid #e86a3a; text-decoration:none;">
+    <span style="font-size:20px;">🤝</span>
+    <div style="flex:1;">
+      <div style="font-size:13px; font-weight:600; color:#e86a3a;" class="fr-banner-count">{{ friend_request_count }} 个好友请求待处理</div>
+      <div style="font-size:11px; color:#888; margin-top:2px;">点击查看并处理</div>
+    </div>
+    <span style="font-size:16px; color:#e86a3a;">›</span>
+  </div>
+</a>
+{% endif %}
+
+<!-- 人脉推荐 -->
+<div class="section-header mt12">
+  <span class="section-title">👥 你可能想认识</span>
+  <a href="#" class="section-more">查看全部 ›</a>
+</div>
+<div class="scroll-x" style="margin:0 -16px; padding:0 16px;">
+  <div style="display:flex; gap:10px; padding-bottom:4px;">
+    {% for p in recommended_profiles %}
+    <a href="{% url 'profile_view' p.uuid %}" style="text-decoration:none; flex-shrink:0;">
+      <div style="background:#fff; border-radius:12px; padding:12px; width:110px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        <div style="width:48px; height:48px; border-radius:50%; background:{{ p.real_name|avatar_color }}; display:flex; align-items:center; justify-content:center; margin:0 auto 6px; font-size:18px; font-weight:600; color:#fff;">
+          {{ p.real_name|initials }}
+        </div>
+        <div style="font-size:12px; font-weight:600; color:#1a1a1a;">{{ p.real_name }}</div>
+        <div style="font-size:10px; color:#888; margin-top:2px;">{{ p.position|default:''|slice:":6" }}</div>
+        <div style="font-size:10px; color:#888;">{{ p.company|default:''|slice:":8" }}</div>
+      </div>
+    </a>
+    {% empty %}
+    <div style="color:#999; font-size:12px; padding:12px;">暂无推荐</div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 供需推荐 -->
+<div class="section-header mt12">
+  <span class="section-title">💼 供需广场</span>
+  <a href="{% url 'supply_demand' %}" class="section-more">更多 ›</a>
+</div>
+<div>
+  {% for s in supply_list %}
+  <a href="{% url 'supply_demand' %}?type={{ s.supply_type }}" style="text-decoration:none;">
+    <div class="card" style="display:flex; gap:10px; align-items:flex-start;">
+      <div style="width:38px; height:38px; border-radius:10px; background:{% if s.supply_type == 1 %}linear-gradient(135deg,#e86a3a,#f0a06a){% else %}linear-gradient(135deg,#059669,#34d399){% endif %}; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;">
+        {% if s.supply_type == 1 %}📤{% else %}📥{% endif %}
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:13px; font-weight:600; color:#1a1a1a; margin-bottom:3px;">{{ s.title|slice:":30" }}</div>
+        <div style="font-size:11px; color:#888;">{{ s.profile.real_name|default:'' }} · {{ s.profile.company|default:'' }}</div>
+        <div style="margin-top:5px; display:flex; flex-wrap:wrap; gap:3px;">
+          {% for tname in s.tag_names|slice:":3" %}
+            <span class="tag tag-blue" style="font-size:10px; padding:1px 5px;">{{ tname }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div style="font-size:11px; color:#e86a3a; white-space:nowrap; padding-top:2px;">{{ s.get_supply_type_display }}</div>
+    </div>
+  </a>
+  {% empty %}
+  <div class="card" style="text-align:center; color:#999; font-size:13px; padding:20px;">暂无供需数据</div>
+  {% endfor %}
+</div>
+
+<!-- 活动推荐 -->
+<div class="section-header mt12">
+  <span class="section-title">📅 活动</span>
+  <a href="{% url 'activity_list' %}" class="section-more">全部活动 ›</a>
+</div>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+  {% for a in activities %}
+  <a href="{% url 'activity_list' %}" style="text-decoration:none;">
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a); border-radius:12px; padding:12px; color:#fff; position:relative; overflow:hidden;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:6px; line-height:1.3;">{{ a.title|slice:":18" }}</div>
+      <div style="font-size:11px; opacity:0.75;">📅 {{ a.start_time|date:"m/d H:i" }}</div>
+      <div style="font-size:11px; opacity:0.75;">📍 {{ a.location|default:'待定'|slice:":10" }}</div>
+      <div style="margin-top:6px; display:flex; gap:3px; flex-wrap:wrap;">
+        {% for tname in a.tag_names|slice:":2" %}
+          <span style="background:rgba(255,255,255,0.15); font-size:10px; padding:1px 5px; border-radius:4px;">{{ tname }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </a>
+  {% empty %}
+  <div style="grid-column:1/-1; text-align:center; color:#999; font-size:13px; padding:20px;">暂无活动</div>
+  {% endfor %}
+</div>
+
+<!-- Tag Cloud -->
+<div class="section-header mt12">
+  <span class="section-title">🏷️ 发现</span>
+</div>
+<div style="display:flex; flex-wrap:wrap; gap:6px; padding-bottom:20px;">
+  {% for tag in tags %}
+  <a href="{% url 'supply_demand' %}?tag={{ tag.id }}" style="text-decoration:none;">
+    <span class="tag tag-blue">{{ tag.name }}</span>
+  </a>
+  {% endfor %}
+</div>
+
+{% block extra_js %}
+<script>
+// ── 好友请求弹窗 ──
+let _friendRequests = [];
+
+async function showFriendRequests() {
+  const popup = document.getElementById('frListPopup');
+  if (!popup) return;
+  popup.style.display = 'flex';
+
+  const list = document.getElementById('frList');
+  list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">加载中…</div>';
+
+  try {
+    const res = await fetch('/api/v1/profiles/friend_requests/', {
+      headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    });
+    const data = await res.json();
+    if (!data.data || data.data.length === 0) {
+      list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">暂无好友请求</div>';
+      return;
+    }
+    _friendRequests = data.data;
+    list.innerHTML = data.data.map(fr => `
+      <div style="display:flex; gap:10px; padding:12px 0; border-bottom:1px solid #f0f0f0; align-items:center;">
+        <div style="width:40px; height:40px; border-radius:50%; background:#1a3a5c; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:600; flex-shrink:0;">
+          ${fr.from_profile.real_name.charAt(0)}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:13px; font-weight:600; color:#1a1a1a;">${fr.from_profile.real_name}</div>
+          <div style="font-size:11px; color:#888; margin-top:2px;">${fr.from_profile.company || ''} · ${fr.from_profile.position || ''}</div>
+          ${fr.message ? `<div style="font-size:11px; color:#666; margin-top:4px; background:#f9f9f9; padding:4px 8px; border-radius:4px;">"${fr.message}"</div>` : ''}
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button onclick="handleFR('${fr.uuid}', 'accept')" style="background:#e86a3a; color:#fff; border:none; border-radius:16px; padding:5px 12px; font-size:11px; font-weight:600; cursor:pointer;">接受</button>
+          <button onclick="handleFR('${fr.uuid}', 'reject')" style="background:#f5f5f5; color:#666; border:1px solid #ddd; border-radius:16px; padding:5px 12px; font-size:11px; cursor:pointer;">拒绝</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center; padding:20px; color:#e86a3a;">加载失败</div>';
+  }
+}
+
+function closeFRPopup() {
+  document.getElementById('frListPopup').style.display = 'none';
+}
+
+async function handleFR(uuid, action) {
+  const url = action === 'accept'
+    ? '/api/v1/profiles/accept_friend_request/'
+    : '/api/v1/profiles/reject_friend_request/';
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ uuid })
+    });
+    _friendRequests = _friendRequests.filter(fr => fr.uuid !== uuid);
+    const list = document.getElementById('frList');
+    if (_friendRequests.length === 0) {
+      list.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">暂无好友请求</div>';
+    } else {
+      list.innerHTML = _friendRequests.map(fr => `
+        <div style="display:flex; gap:10px; padding:12px 0; border-bottom:1px solid #f0f0f0; align-items:center;">
+          <div style="width:40px; height:40px; border-radius:50%; background:#1a3a5c; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:600; flex-shrink:0;">
+            ${fr.from_profile.real_name.charAt(0)}
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:13px; font-weight:600; color:#1a1a1a;">${fr.from_profile.real_name}</div>
+            <div style="font-size:11px; color:#888; margin-top:2px;">${fr.from_profile.company || ''} · ${fr.from_profile.position || ''}</div>
+            ${fr.message ? `<div style="font-size:11px; color:#666; margin-top:4px; background:#f9f9f9; padding:4px 8px; border-radius:4px;">"${fr.message}"</div>` : ''}
+          </div>
+          <div style="display:flex; gap:6px; flex-shrink:0;">
+            <button onclick="handleFR('${fr.uuid}', 'accept')" style="background:#e86a3a; color:#fff; border:none; border-radius:16px; padding:5px 12px; font-size:11px; font-weight:600; cursor:pointer;">接受</button>
+            <button onclick="handleFR('${fr.uuid}', 'reject')" style="background:#f5f5f5; color:#666; border:1px solid #ddd; border-radius:16px; padding:5px 12px; font-size:11px; cursor:pointer;">拒绝</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    // Update count in the banner
+    const count = _friendRequests.length;
+    const banner = document.querySelector('.fr-banner-count');
+    if (banner) banner.textContent = count + ' 个好友请求待处理';
+    if (count === 0) {
+      document.querySelector('.fr-banner-link')?.parentElement?.remove();
+    }
+  } catch(e) {
+    alert('操作失败，请重试');
+  }
+}
+
+function getCookie(name) {
+  let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
+</script>
+{% endblock %}
+
+<!-- 好友请求列表弹窗 -->
+<div id="frListPopup" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:16px; padding:20px; width:90%; max-width:380px; max-height:70vh; display:flex; flex-direction:column; box-sizing:border-box;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="font-size:16px; font-weight:700; color:#1a3a5c;">好友请求</div>
+      <button onclick="closeFRPopup()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#999;">×</button>
+    </div>
+    <div id="frList" style="flex:1; overflow-y:auto;"></div>
+  </div>
+</div>
+
+{% endblock %}

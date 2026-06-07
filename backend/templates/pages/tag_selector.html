@@ -1,0 +1,154 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}标签选择 · 燃冰{% endblock %}
+
+{% block header_content %}
+<div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+  <button onclick="history.back()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:4px;">←</button>
+  <span style="flex:1; font-size:14px; font-weight:600;">选择标签</span>
+  <button id="doneBtn" style="background:none; border:none; color:#fff; font-size:13px; cursor:pointer; padding:4px 8px; opacity:0.6;">完成</button>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Search Bar -->
+<div style="background:#fff; border-radius:10px; padding:8px 12px; display:flex; align-items:center; gap:8px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+  <span style="color:#888; font-size:14px;">🔍</span>
+  <input type="text" id="searchInput" placeholder="搜索标签..." style="flex:1; border:none; outline:none; font-size:13px; background:transparent;">
+</div>
+
+<!-- Selected Tags -->
+<div id="selectedSection" class="hidden" style="margin-bottom:12px;">
+  <div class="section-header">
+    <span class="section-title">已选标签</span>
+    <span id="selectedCount" style="font-size:12px; color:#888;"></span>
+  </div>
+  <div id="selectedTags" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+</div>
+
+<!-- Tag Categories -->
+<div class="section-header">
+  <span class="section-title">🏷️ 标签分类</span>
+</div>
+
+<div id="tagList">
+  {% for category, tags in tag_categories.items %}
+  <div class="card" style="margin-bottom:8px;">
+    <div style="font-size:13px; font-weight:600; color:#1a3a5c; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid #eee;">
+      {{ category }}
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+      {% for tag in tags %}
+      <button 
+        class="tag-btn tag tag-gray {% if tag.id in selected_ids %}tag-orange active{% endif %}"
+        data-id="{{ tag.id }}"
+        data-name="{{ tag.name }}"
+        onclick="toggleTag(this)"
+        style="border:none; cursor:pointer; transition:all 0.2s;">
+        {{ tag.name }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="card" style="text-align:center; color:#999; font-size:13px; padding:30px;">
+    暂无标签
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Popular Tags -->
+<div class="section-header mt12">
+  <span class="section-title">🔥 热门标签</span>
+</div>
+<div style="display:flex; flex-wrap:wrap; gap:6px; padding-bottom:20px;">
+  {% for tag in popular_tags %}
+  <button 
+    class="tag-btn tag tag-orange"
+    data-id="{{ tag.id }}"
+    data-name="{{ tag.name }}"
+    onclick="toggleTag(this)"
+    style="border:none; cursor:pointer;">
+    {{ tag.name }}
+  </button>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const selectedTags = new Set();
+{% if selected_ids %}
+{% for id in selected_ids %}
+selectedTags.add({id: {{ id }}, name: '{{ tag_names|default:'' }}'});
+{% endfor %}
+{% endif %}
+
+function toggleTag(btn) {
+  const id = btn.dataset.id;
+  const name = btn.dataset.name;
+  
+  if (selectedTags.has(id)) {
+    selectedTags.delete(id);
+    btn.classList.remove('tag-orange', 'active');
+    btn.classList.add('tag-gray');
+  } else {
+    selectedTags.add({id: id, name: name});
+    btn.classList.remove('tag-gray');
+    btn.classList.add('tag-orange', 'active');
+  }
+  updateSelectedDisplay();
+}
+
+function updateSelectedDisplay() {
+  const section = document.getElementById('selectedSection');
+  const container = document.getElementById('selectedTags');
+  const count = document.getElementById('selectedCount');
+  
+  if (selectedTags.size > 0) {
+    section.classList.remove('hidden');
+    count.textContent = selectedTags.size + '个';
+    
+    let html = '';
+    selectedTags.forEach(tag => {
+      html += `<span class="tag tag-orange" onclick="removeTag('${tag.id}', this)" style="cursor:pointer;">${tag.name} ×</span>`;
+    });
+    container.innerHTML = html;
+  } else {
+    section.classList.add('hidden');
+  }
+}
+
+function removeTag(id, el) {
+  selectedTags.delete(id);
+  el.remove();
+  
+  const btn = document.querySelector(`.tag-btn[data-id="${id}"]`);
+  if (btn) {
+    btn.classList.remove('tag-orange', 'active');
+    btn.classList.add('tag-gray');
+  }
+  updateSelectedDisplay();
+}
+
+document.getElementById('doneBtn').addEventListener('click', function() {
+  const ids = Array.from(selectedTags).map(t => t.id).join(',');
+  const url = new URL(window.location.href);
+  url.searchParams.set('tags', ids);
+  window.location.href = url.toString();
+});
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  const query = e.target.value.toLowerCase();
+  document.querySelectorAll('.tag-btn').forEach(btn => {
+    const name = btn.dataset.name.toLowerCase();
+    btn.style.display = name.includes(query) ? '' : 'none';
+  });
+});
+
+updateSelectedDisplay();
+</script>
+{% endblock %}

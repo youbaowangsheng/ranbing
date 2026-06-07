@@ -1,0 +1,221 @@
+{% extends "pages/base.html" %}
+{% load static %}
+
+{% block title %}登录 · 燃冰{% endblock %}
+
+{% block extra_css %}
+<style>
+  body {
+    background: linear-gradient(135deg, #1a3a5c 0%, #2d5a8a 50%, #e86a3a 100%);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .top-header, .bottom-nav { display: none; }
+  .login-wrap { width: 312px; max-width: 312px; }
+  .logo-area { text-align: center; margin-bottom: 32px; }
+  .logo-icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #e86a3a, #f0a06a);
+    border-radius: 15px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px; font-size: 30px;
+  }
+  .logo-title { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 2px; }
+  .logo-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 3px; }
+  .login-card {
+    background: #fff; border-radius: 18px;
+    padding: 28px 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    width: 100%; box-sizing: border-box;
+  }
+  .tab-nav { display: flex; border-bottom: 2px solid #f0f0f0; margin-bottom: 22px; }
+  .tab-btn {
+    flex: 1; padding: 10px 0; background: none; border: none;
+    font-size: 14px; font-weight: 600; color: #999; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+  }
+  .tab-btn.active { color: #e86a3a; border-bottom-color: #e86a3a; }
+  .error-box {
+    background: #fff2f0; border: 1px solid #ffccc7; color: #cf1322;
+    font-size: 12px; padding: 8px 12px; border-radius: 8px;
+    margin-bottom: 14px; display: none;
+  }
+  .error-box.show { display: block; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: #666; margin-bottom: 5px; display: block; }
+  .form-input {
+    width: 100%; height: 44px; border: 1.5px solid #e0e0e0;
+    border-radius: 10px; padding: 0 12px; font-size: 14px;
+    outline: none; transition: border-color 0.2s; background: #fafafa;
+    box-sizing: border-box;
+  }
+  .form-input:focus { border-color: #e86a3a; background: #fff; }
+  .form-row { display: flex; gap: 8px; }
+  .form-row .form-input { flex: 1; }
+  .btn-send {
+    height: 44px; padding: 0 14px;
+    background: linear-gradient(135deg,#1a3a5c,#2d5a8a);
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+  .captcha-row { display: flex; gap: 8px; align-items: center; }
+  .captcha-row .form-input { flex: 1; }
+  .captcha-img {
+    height: 44px; border-radius: 10px; cursor: pointer;
+    background: #f0f7ff; border: 1.5px solid #d0e0f0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 8px; font-size: 11px; color: #5a8ab5;
+    user-select: none; min-width: 80px;
+  }
+  .captcha-img:hover { border-color: #e86a3a; }
+  .btn-login {
+    width: 100%; height: 46px; margin-top: 8px;
+    background: linear-gradient(135deg,#e86a3a,#f0a06a);
+    color: #fff; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .btn-login:active { transform: scale(0.98); }
+  .reg-hint { text-align: center; margin-top: 16px; font-size: 13px; color: #888; }
+  .reg-hint a { color: #e86a3a; text-decoration: none; font-weight: 600; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .send-ok { font-size: 12px; color: #52c41a; padding: 4px 0; display: none; }
+  .send-ok.show { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="logo-area">
+    <div class="logo-icon">❄️</div>
+    <div class="logo-title">燃冰</div>
+    <div class="logo-sub">AI 商务社交平台</div>
+  </div>
+
+  <div class="login-card">
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="password">密码登录</button>
+      <button class="tab-btn" data-tab="sms">验证码登录</button>
+      <button class="tab-btn" data-tab="wx">微信登录</button>
+    </div>
+
+    <div class="error-box {% if error %}show{% endif %}" id="errorBox">{% if error %}{{ error }}{% endif %}</div>
+
+    <div class="tab-content active" id="tab-password">
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="hidden" name="login_type" value="password">
+        <input type="hidden" name="next" value="{{ next|default:'' }}">
+        <div class="form-group">
+          <label class="form-label">手机号</label>
+          <input type="tel" name="phone" class="form-input" placeholder="请输入手机号" maxlength="11" required autocomplete="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">密码</label>
+          <input type="password" name="password" class="form-input" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="btn-login">登录</button>
+      </form>
+    </div>
+
+    <div class="tab-content" id="tab-sms">
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="hidden" name="login_type" value="sms">
+        <div class="form-group">
+          <label class="form-label">手机号</label>
+          <input type="tel" name="phone" class="form-input phone-input" placeholder="请输入手机号" maxlength="11" required autocomplete="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">验证码</label>
+          <div class="form-row">
+            <input type="text" name="code" class="form-input" placeholder="请输入验证码" maxlength="6" required>
+            <button type="button" class="btn-send" id="btn-send-code" onclick="sendSmsCode('login', this)">发送验证码</button>
+          </div>
+          <div class="send-ok" id="sendOk">验证码已发送</div>
+        </div>
+        <div class="form-group" id="captchaGroup" style="display:none;">
+          <label class="form-label">图片验证码</label>
+          <div class="captcha-row">
+            <input type="text" name="captcha_code" class="form-input" placeholder="输入图片验证码" maxlength="4">
+            <img src="/users/captcha/" class="captcha-img" id="captchaImg" onclick="this.src='/users/captcha/?'+Math.random()" title="点击刷新">
+          </div>
+        </div>
+        <button type="submit" class="btn-login">登录</button>
+      </form>
+    </div>
+
+    <div class="tab-content" id="tab-wx">
+      <div style="text-align:center; padding:20px 0; color:#888; font-size:13px;">
+        <div style="font-size:40px; margin-bottom:10px;">🐧</div>
+        微信登录功能稍晚上线<br>请使用手机号+密码或验证码登录
+      </div>
+    </div>
+  </div>
+
+  <div class="reg-hint">还没有账号？<a href="{% url 'register' %}">立即注册 ›</a></div>
+</div>
+
+<script>
+function showError(msg) {
+  var el = document.getElementById('errorBox');
+  el.textContent = msg;
+  el.className = 'error-box show';
+}
+function clearError() {
+  document.getElementById('errorBox').className = 'error-box';
+}
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    clearError();
+  });
+});
+var sendLocked = false;
+function sendSmsCode(purpose, btn) {
+  var phone = document.querySelector('#tab-sms .phone-input').value.trim();
+  if (!phone || phone.length !== 11) { showError('请输入正确的11位手机号'); return; }
+  if (sendLocked) return;
+  sendLocked = true; btn.disabled = true; btn.textContent = '发送中...';
+  var params = '?phone=' + phone + '&purpose=' + purpose;
+  var captchaGroup = document.getElementById('captchaGroup');
+  if (captchaGroup && captchaGroup.style.display !== 'none') {
+    var cc = document.querySelector('[name=captcha_code]').value.trim();
+    if (cc) params += '&captcha_code=' + encodeURIComponent(cc);
+  }
+  fetch('/pages/send-code/' + params)
+    .then(function(r){return r.json();})
+    .then(function(data) {
+      sendLocked = false; btn.disabled = false;
+      if (data.code === 0) {
+        btn.textContent = '已发送';
+        document.getElementById('sendOk').classList.add('show');
+        var countdown = 60;
+        var timer = setInterval(function() {
+          btn.textContent = countdown + 's';
+          countdown--;
+          if (countdown <= 0) {
+            clearInterval(timer); btn.textContent = '重新发送';
+            document.getElementById('sendOk').classList.remove('show');
+          }
+        }, 1000);
+      } else if (data.code === 2 || data.need_captcha) {
+        captchaGroup.style.display = 'block';
+        document.getElementById('captchaImg').src = '/users/captcha/?'+Math.random();
+        btn.textContent = '发送验证码';
+        showError(data.message);
+      } else {
+        btn.textContent = '发送验证码';
+        showError(data.message);
+      }
+    })
+    .catch(function() {
+      sendLocked = false; btn.disabled = false; btn.textContent = '发送验证码';
+    });
+}
+</script>
+{% endblock %}

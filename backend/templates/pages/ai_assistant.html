@@ -1,0 +1,355 @@
+{% extends "pages/base.html" %}
+
+{% block title %}AI助手 · 燃冰{% endblock %}
+
+{% block content %}
+
+<style>
+.ai-msg-user {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+.ai-msg-user .bubble {
+  background: linear-gradient(135deg, #e86a3a, #f0a06a);
+  color: #fff;
+  border-radius: 16px 16px 4px 16px;
+  padding: 10px 14px;
+  max-width: 75%;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.ai-msg-ai {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+.ai-msg-ai .bubble {
+  background: #f4f4f4;
+  color: #333;
+  border-radius: 16px 16px 16px 4px;
+  padding: 10px 14px;
+  max-width: 75%;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.channel-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.channel-direct { background: #e8f5e9; color: #2e7d32; }
+.channel-single { background: #e3f2fd; color: #1565c0; }
+.channel-multi { background: #fce4ec; color: #c62828; }
+.channel-fipai { background: #fff3e0; color: #e65100; }
+.tool-result {
+  background: #fffde7;
+  border: 1px solid #fff59d;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.tool-result-title {
+  font-weight: 600;
+  color: #f57f17;
+  margin-bottom: 4px;
+}
+.tool-item {
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.tool-item:last-child { border-bottom: none; }
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.suggestion-chip {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.suggestion-chip:hover {
+  background: #fff3e0;
+  border-color: #ffab40;
+  color: #e65100;
+}
+.welcome-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.welcome-card {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.welcome-card:hover {
+  background: #fff3e0;
+  border-color: #ffab40;
+}
+.welcome-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+.welcome-card-desc {
+  font-size: 11px;
+  color: #888;
+}
+</style>
+
+<!-- 顶部提示：当前通道 -->
+<div id="channel-indicator" style="text-align:center; padding:6px 0 2px; font-size:11px; color:#aaa;">
+  <span id="current-channel"></span>
+</div>
+
+<!-- 对话历史区域 -->
+<div id="chat-history" class="card" style="min-height:360px; max-height:580px; overflow-y:auto; padding:16px;">
+
+  <!-- 欢迎页（未发过消息时显示） -->
+  <div id="welcome-view">
+    <div style="font-size:15px; font-weight:600; margin-bottom:12px;">✨ AI智能助手</div>
+    <div style="color:#888; font-size:13px; line-height:1.8; margin-bottom:14px;">
+      我可以帮你：
+      <ul style="margin:6px 0 8px 20px;">
+        <li>🔍 <strong>智能匹配</strong> — 根据你的供需标签推荐最相关的机会</li>
+        <li>👥 <strong>人脉推荐</strong> — 发现你可能想认识的商务伙伴</li>
+        <li>📅 <strong>活动推荐</strong> — 找到最适合你的活动</li>
+        <li>💬 <strong>内容优化</strong> — 帮你优化供需发布内容</li>
+      </ul>
+    </div>
+    <div class="welcome-cards">
+      <div class="welcome-card" onclick="sendWithText('帮我找有品牌设计需求的校友')">
+        <div class="welcome-card-title">🔍 智能匹配</div>
+        <div class="welcome-card-desc">根据我的标签推荐供需</div>
+      </div>
+      <div class="welcome-card" onclick="sendWithText('推荐消费品牌的投资人脉')">
+        <div class="welcome-card-title">👥 人脉推荐</div>
+        <div class="welcome-card-desc">发现想认识的商务伙伴</div>
+      </div>
+      <div class="welcome-card" onclick="sendWithText('Q2有什么AI相关的活动')">
+        <div class="welcome-card-title">📅 活动推荐</div>
+        <div class="welcome-card-desc">找到最适合你的活动</div>
+      </div>
+      <div class="welcome-card" onclick="sendWithText('帮我优化供需发布内容')">
+        <div class="welcome-card-title">💬 内容优化</div>
+        <div class="welcome-card-desc">AI帮你优化文案</div>
+      </div>
+    </div>
+    <div style="font-size:12px; color:#bbb; text-align:center;">输入任意问题开始对话</div>
+  </div>
+
+  <!-- 消息列表（发过消息后显示） -->
+  <div id="messages-view" style="display:none;"></div>
+</div>
+
+<!-- 底部输入区 -->
+<div style="background:#fff; border-top:1px solid #eee; padding:12px 16px; position:sticky; bottom:0;">
+  <div style="display:flex; gap:8px; align-items:flex-end;">
+    <textarea id="ai_input" placeholder="输入你的需求..." rows="1"
+      style="flex:1; border:1.5px solid #e0e0e0; border-radius:24px; padding:10px 14px; font-size:13px; resize:none; outline:none; font-family:inherit; line-height:1.5; max-height:120px;"
+      onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendAI();}"
+      oninput="autoResize(this)"></textarea>
+    <button onclick="sendAI()" id="ai_btn"
+      style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:24px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">发送</button>
+  </div>
+  <div style="margin-top:6px; font-size:11px; color:#ccc; text-align:right;">
+    <span id="session-id-display" style="cursor:pointer; title:点击复制" onclick="copySessionId()"></span>
+  </div>
+</div>
+
+<div style="text-align:center; margin:8px 0 16px; color:#ddd; font-size:11px;">
+  AI能力由 FIPAI Gateway 驱动 · 支持 Direct LLM / Single Agent / Multi-Agent
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const API_BASE = '/api/v1';
+let sessionId = localStorage.getItem('ai_session_id') || '';
+let isLoading = false;
+
+function genSessionId() {
+  sessionId = 'sess_' + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem('ai_session_id', sessionId);
+  return sessionId;
+}
+
+if (!sessionId) genSessionId();
+document.getElementById('session-id-display').textContent = '会话: ' + sessionId;
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function copySessionId() {
+  navigator.clipboard.writeText(sessionId).then(() => {
+    var d = document.getElementById('session-id-display');
+    d.textContent = '已复制 ✓';
+    setTimeout(() => { d.textContent = '会话: ' + sessionId; }, 1500);
+  });
+}
+
+function getUserProfileUuid() {
+  // 从页面DOM读取当前用户profile_uuid（在后端注入了 profile_uuid）
+  return window.currentUserProfileUuid || '';
+}
+
+{% if profile_uuid %}
+window.currentUserProfileUuid = '{{ profile_uuid }}';
+{% endif %}
+
+function renderWelcome() {
+  document.getElementById('welcome-view').style.display = 'none';
+  document.getElementById('messages-view').style.display = 'block';
+}
+
+function appendMsg(role, content, channel, toolCalls, toolResults) {
+  renderWelcome();
+  var container = document.getElementById('messages-view');
+
+  // 通道徽章
+  var channelMap = {
+    'direct_llm': { text: 'Direct LLM', cls: 'channel-direct' },
+    'single_agent': { text: 'Single Agent', cls: 'channel-single' },
+    'multi_agent': { text: 'Multi-Agent', cls: 'channel-multi' },
+    'fipai': { text: 'FIPAI', cls: 'channel-fipai' },
+  };
+  var ch = channelMap[channel] || { text: channel || 'AI', cls: 'channel-fipai' };
+
+  if (role === 'user') {
+    container.innerHTML +=
+      '<div class="ai-msg-user">' +
+        '<div class="bubble">' + escHtml(content) + '</div>' +
+      '</div>';
+  } else {
+    var html =
+      '<div class="ai-msg-ai">' +
+        '<div class="bubble">' +
+          escHtml(content) +
+          ' <span class="channel-badge ' + escHtml(ch.cls) + '">' + escHtml(ch.text) + '</span>';
+
+    // 工具调用结果
+    if (toolCalls && toolCalls.length > 0 && toolResults) {
+      html += '<div class="tool-result">';
+      for (var i = 0; i < toolCalls.length; i++) {
+        var tc = toolCalls[i];
+        var tr = toolResults[i] && toolResults[i].result ? toolResults[i].result : {};
+        var items = tr.items || [];
+        html += '<div class="tool-result-title">🔧 工具: ' + escHtml(tc.name) + ' (找到 ' + items.length + ' 条结果)</div>';
+        if (items.length > 0) {
+          html += '<div style="max-height:150px; overflow-y:auto;">';
+          for (var j = 0; j < Math.min(items.length, 5); j++) {
+            var it = items[j];
+            html += '<div class="tool-item">';
+            if (it.title) html += '<div style="font-weight:600;">' + escHtml(it.title) + '</div>';
+            else if (it.real_name) html += '<div style="font-weight:600;">' + escHtml(it.real_name) + '</div>';
+            else if (it.name) html += '<div style="font-weight:600;">' + escHtml(it.name) + '</div>';
+            if (it.content) html += '<div style="color:#666; font-size:11px;">' + escHtml(it.content.slice(0,80)) + '...</div>';
+            else if (it.description) html += '<div style="color:#666; font-size:11px;">' + escHtml(it.description.slice(0,80)) + '...</div>';
+            html += '</div>';
+          }
+          if (items.length > 5) html += '<div style="color:#999; font-size:11px; padding-top:4px;">还有 ' + (items.length - 5) + ' 条...</div>';
+          html += '</div>';
+        }
+      }
+      html += '</div>';
+    }
+
+    html += '</div></div>';
+    container.innerHTML += html;
+  }
+
+  // 滚动到底
+  var chatHistory = document.getElementById('chat-history');
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+
+  // 更新通道指示器
+  if (channel) {
+    document.getElementById('current-channel').textContent = '当前通道: ' + (ch.text);
+  }
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function sendWithText(text) {
+  document.getElementById('ai_input').value = text;
+  sendAI();
+}
+
+async function sendAI() {
+  if (isLoading) return;
+  var input = document.getElementById('ai_input');
+  var btn = document.getElementById('ai_btn');
+  var msg = input.value.trim();
+  if (!msg) return;
+
+  isLoading = true;
+  btn.disabled = true;
+  btn.textContent = '思考中...';
+
+  appendMsg('user', msg, null, null, null);
+  input.value = '';
+  input.style.height = 'auto';
+
+  try {
+    var payload = {
+      message: msg,
+      session_id: sessionId,
+      channel_hint: 'auto'
+    };
+    var profileUuid = getUserProfileUuid();
+    if (profileUuid) payload.user_profile_uuid = profileUuid;
+
+    var res = await fetch(API_BASE + '/ai/chat-v2/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+
+    if (data.code !== 0) {
+      appendMsg('assistant', '❌ ' + (data.message || '请求失败'), null, null, null);
+    } else {
+      var d = data.data;
+      appendMsg('assistant', d.content || '暂无回复', d.channel, d.tool_calls || [], d.tool_results || []);
+    }
+  } catch(e) {
+    appendMsg('assistant', '网络错误，请确认燃冰后端服务已启动', null, null, null);
+  }
+
+  isLoading = false;
+  btn.disabled = false;
+  btn.textContent = '发送';
+}
+</script>
+{% endblock %}

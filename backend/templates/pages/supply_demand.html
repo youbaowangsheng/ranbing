@@ -1,0 +1,898 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}供需广场 - 燃冰{% endblock %}
+
+{% block extra_style %}
+<style>
+/* ── Tab栏 ── */
+.top-tabs {
+  display: flex;
+  background: #1a3a5c;
+  padding: 10px 16px 0;
+  gap: 0;
+  position: sticky;
+  top: 56px;
+  z-index: 90;
+}
+.top-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+}
+.top-tab.active { color: #fff; font-weight: 600; }
+.top-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 28px; height: 3px;
+  background: #e86a3a;
+  border-radius: 2px;
+}
+
+/* ── AI帮你找入口条 ── */
+.ai-search-bar {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  margin: 10px 14px 4px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.3);
+}
+.ai-search-bar-icon {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.ai-search-bar-text { flex: 1; }
+.ai-search-bar-title { font-size: 13px; font-weight: 600; color: #fff; }
+.ai-search-bar-sub { font-size: 11px; color: rgba(255,255,255,0.75); }
+.ai-search-bar-arrow { color: rgba(255,255,255,0.8); font-size: 18px; }
+
+/* ── 机会Feed ── */
+.feed-section { display: none; }
+.feed-section.active { display: block; }
+
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 8px;
+}
+.feed-title { font-size: 15px; font-weight: 600; color: #1a1a1a; display: flex; align-items: center; gap: 6px; }
+.feed-count { font-size: 12px; color: #888; font-weight: 400; }
+.feed-more { font-size: 12px; color: #1a3a5c; cursor: pointer; }
+
+/* ── 机会卡片 ── */
+.opp-card {
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 14px 10px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.opp-card-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.opp-match-ring {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+}
+.opp-match-low { background: #f5f5f5; color: #999; }
+.opp-match-mid { background: #fff7e6; color: #f59e0b; }
+.opp-match-high { background: #f0fdf4; color: #22c55e; }
+.opp-info { flex: 1; min-width: 0; }
+.opp-type-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.type-supply { background: #e8f5e9; color: #2e7d32; }
+.type-demand { background: #fff3e0; color: #e65100; }
+.opp-title {
+  font-size: 14px; font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.opp-author { font-size: 12px; color: #888; margin-bottom: 6px; }
+.opp-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.opp-tag {
+  font-size: 11px;
+  background: #f0f4ff;
+  color: #1a3a5c;
+  padding: 1px 7px;
+  border-radius: 6px;
+}
+.opp-mutual {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+.mutual-label { font-size: 11px; color: #888; }
+.mutual-avatars { display: flex; }
+.mutual-avatar {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #1a3a5c;
+  color: #fff;
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-left: -6px;
+  border: 2px solid #fff;
+}
+.mutual-avatar:first-child { margin-left: 0; }
+.mutual-count { font-size: 11px; color: #888; margin-left: 4px; }
+
+.match-reason {
+  background: #f8f9ff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.match-reason-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.match-highlight { color: #7c3aed; font-weight: 500; }
+
+/* ── 传统列表（供给/需求）── */
+.list-section { display: none; }
+.list-section.active { display: block; }
+
+/* ── 我的发布 ── */
+.mine-section { display: none; }
+.mine-section.active { display: block; }
+.mine-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+  font-size: 14px;
+}
+.mine-empty-icon { font-size: 48px; margin-bottom: 12px; }
+.mine-card {
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 14px 10px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mine-card-info { flex: 1; min-width: 0; }
+.mine-card-title {
+  font-size: 14px; font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.mine-card-meta { font-size: 12px; color: #888; }
+.mine-card-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.status-active { background: #e8f5e9; color: #2e7d32; }
+.status-inactive { background: #f5f5f5; color: #999; }
+
+/* ── AI帮你找弹窗 ── */
+.ai-dialog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: flex-end;
+  flex-direction: column;
+}
+.ai-dialog-overlay.open { display: flex; }
+
+.ai-dialog {
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.dialog-handle {
+  width: 36px; height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+.dialog-header {
+  padding: 16px 16px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dialog-title { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+.dialog-close {
+  width: 28px; height: 28px;
+  background: #f5f5f5;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+}
+
+.quick-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.quick-q {
+  font-size: 12px;
+  background: #f0f4ff;
+  color: #1a3a5c;
+  border: 1px solid #dde4ff;
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.quick-q:hover { background: #e8eeff; }
+
+.dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  min-height: 0;
+}
+
+.dialog-result-card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.dialog-result-match {
+  display: inline-block;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.dialog-result-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.dialog-result-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
+.dialog-result-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.dialog-result-tag { font-size: 11px; background: #f0f4ff; color: #1a3a5c; padding: 1px 7px; border-radius: 6px; }
+.dialog-ai-reason {
+  background: #f8f9ff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+.dialog-loading {
+  text-align: center;
+  padding: 30px;
+  color: #888;
+  font-size: 13px;
+}
+
+.dialog-input-area {
+  padding: 10px 14px 14px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+.dialog-input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  max-height: 100px;
+}
+.dialog-input:focus { border-color: #7c3aed; }
+.dialog-send {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── 列表筛选标签 ── */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.filter-tag {
+  font-size: 12px;
+  background: #f5f5f5;
+  color: #666;
+  padding: 4px 12px;
+  border-radius: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.filter-tag:hover { background: #e8eeff; color: #1a3a5c; }
+.filter-tag.active { background: #1a3a5c; color: #fff; }
+
+/* ── 列表卡片（复用现有）── */
+.supply-list { padding: 0 0 20px; }
+.supply-card {
+  background: #fff;
+  border-radius: 12px;
+  margin: 0 14px 10px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.supply-card:active { background: #fafafa; }
+.supply-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.supply-type {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.supply-type.supply { background: #e8f5e9; color: #2e7d32; }
+.supply-type.demand { background: #fff3e0; color: #e65100; }
+.supply-date { font-size: 11px; color: #aaa; }
+.supply-title {
+  font-size: 15px; font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.supply-desc {
+  font-size: 13px; color: #666;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.supply-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.supply-tag { font-size: 11px; background: #f0f4ff; color: #1a3a5c; padding: 2px 8px; border-radius: 6px; }
+.supply-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid #f5f5f5;
+}
+.supply-author { font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px; }
+.supply-avatar {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #1a3a5c;
+  color: #fff;
+  font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.supply-city { font-size: 11px; color: #aaa; }
+
+/* ── Loading spinner ── */
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #f0f0f0;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 40px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 空状态 ── */
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: #aaa;
+}
+.empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state-text { font-size: 14px; }
+</style>
+{% endblock %}
+
+{% block header_content %}
+<style>
+.header-search-bar {
+  flex: 1;
+  display: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 顶部Tab栏 -->
+<div class="top-tabs">
+  <div class="top-tab active" id="tabOpportunity" onclick="switchTab('opportunity')">机会</div>
+  <div class="top-tab" id="tabSupply" onclick="switchTab('supply')">供给</div>
+  <div class="top-tab" id="tabDemand" onclick="switchTab('demand')">需求</div>
+  <div class="top-tab" id="tabMine" onclick="switchTab('mine')">我的发布</div>
+</div>
+
+<!-- ========== 机会Feed ========== -->
+<div id="sectionOpportunity" class="feed-section active">
+  <!-- AI帮你找入口 -->
+  <div class="ai-search-bar" onclick="openAIDialog()">
+    <div class="ai-search-bar-icon">🔍</div>
+    <div class="ai-search-bar-text">
+      <div class="ai-search-bar-title">AI帮你找供需匹配</div>
+      <div class="ai-search-bar-sub">描述你的需求，AI精准推荐</div>
+    </div>
+    <div class="ai-search-bar-arrow">›</div>
+  </div>
+
+  <!-- AI机会推送区 -->
+  <div class="feed-header">
+    <div class="feed-title">🤖 AI为你匹配 <span class="feed-count" id="oppCount"></span></div>
+  </div>
+
+  <div id="oppFeed">
+    <div class="spinner" id="oppSpinner"></div>
+  </div>
+</div>
+
+<!-- ========== 供给列表 ========== -->
+<div id="sectionSupply" class="list-section">
+  <div class="filter-bar">
+    <a href="{% url 'supply_demand' %}" class="filter-tag {% if not current_type %}active{% endif %}">全部</a>
+    {% for tag in all_tags %}
+    <a href="?type=1&tag={{ tag.id }}" class="filter-tag {% if current_type == '1' and current_tag == tag.id|stringformat:'s' %}active{% endif %}">{{ tag.name }}</a>
+    {% endfor %}
+  </div>
+  <div class="supply-list">
+    {% if supply_list %}
+    {% for s in supply_list %}
+    {% if s.supply_type == 1 %}
+    <a href="{% url 'supply_detail' s.uuid %}" class="supply-card" style="display:block;text-decoration:none;">
+      <div class="supply-card-header">
+        <span class="supply-type supply">供给</span>
+        <span class="supply-date">{{ s.created_at|date:"m/d" }}</span>
+      </div>
+      <div class="supply-title">{{ s.title }}</div>
+      <div class="supply-desc">{{ s.content|truncatechars:80 }}</div>
+      <div class="supply-tags">
+        {% for tag_name in s.tag_names %}
+        <span class="supply-tag">{{ tag_name }}</span>
+        {% endfor %}
+      </div>
+      <div class="supply-footer">
+        <div class="supply-author">
+          <div class="supply-avatar">{{ s.profile.user|slice:":1" }}</div>
+          {{ s.profile.user }}
+        </div>
+        <span class="supply-city">{{ s.profile.city|default:'未知城市' }}</span>
+      </div>
+    </a>
+    {% endif %}
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📦</div>
+      <div class="empty-state-text">暂无供给信息</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ========== 需求列表 ========== -->
+<div id="sectionDemand" class="list-section">
+  <div class="filter-bar">
+    <a href="{% url 'supply_demand' %}" class="filter-tag {% if not current_type %}active{% endif %}">全部</a>
+    {% for tag in all_tags %}
+    <a href="?type=2&tag={{ tag.id }}" class="filter-tag {% if current_type == '2' and current_tag == tag.id|stringformat:'s' %}active{% endif %}">{{ tag.name }}</a>
+    {% endfor %}
+  </div>
+  <div class="supply-list">
+    {% if supply_list %}
+    {% for s in supply_list %}
+    {% if s.supply_type == 2 %}
+    <a href="{% url 'supply_detail' s.uuid %}" class="supply-card" style="display:block;text-decoration:none;">
+      <div class="supply-card-header">
+        <span class="supply-type demand">需求</span>
+        <span class="supply-date">{{ s.created_at|date:"m/d" }}</span>
+      </div>
+      <div class="supply-title">{{ s.title }}</div>
+      <div class="supply-desc">{{ s.content|truncatechars:80 }}</div>
+      <div class="supply-tags">
+        {% for tag_name in s.tag_names %}
+        <span class="supply-tag">{{ tag_name }}</span>
+        {% endfor %}
+      </div>
+      <div class="supply-footer">
+        <div class="supply-author">
+          <div class="supply-avatar">{{ s.profile.user|slice:":1" }}</div>
+          {{ s.profile.user }}
+        </div>
+        <span class="supply-city">{{ s.profile.city|default:'未知城市' }}</span>
+      </div>
+    </a>
+    {% endif %}
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-text">暂无需求信息</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ========== 我的发布 ========== -->
+<div id="sectionMine" class="mine-section">
+  <div class="feed-header">
+    <div class="feed-title">📋 我的发布 <span class="feed-count" id="mineCount"></span></div>
+    <a href="{% url 'publish_supply' %}" class="feed-more" style="font-size:13px;color:#7c3aed;">+ 发布</a>
+  </div>
+  <div id="mineList"></div>
+</div>
+{% endblock %}
+
+<!-- AI帮你找弹窗 -->
+<div class="ai-dialog-overlay" id="aiDialogOverlay" onclick="closeAIDialogOnOverlay(event)">
+  <div class="ai-dialog">
+    <div class="dialog-handle"></div>
+    <div class="dialog-header">
+      <div class="dialog-title">🔍 AI精准匹配</div>
+      <div class="dialog-close" onclick="closeAIDialog()">✕</div>
+    </div>
+    <div class="quick-questions" id="quickQuestions">
+      <div class="quick-q" onclick="sendAIMessage(this.textContent)">找融资渠道</div>
+      <div class="quick-q" onclick="sendAIMessage(this.textContent)">需要客户资源</div>
+      <div class="quick-q" onclick="sendAIMessage(this.textContent)">渠道合作</div>
+      <div class="quick-q" onclick="sendAIMessage(this.textContent)">品牌曝光合作</div>
+    </div>
+    <div class="dialog-body" id="dialogBody">
+      <div id="dialogWelcome" style="text-align:center;padding:20px 0;color:#aaa;font-size:13px;">
+        描述你的需求，AI帮你找最匹配的人脉与资源
+      </div>
+    </div>
+    <div class="dialog-input-area">
+      <textarea class="dialog-input" id="dialogInput" rows="1" placeholder="比如：我是做教育培训的，想找渠道合作..."></textarea>
+      <button class="dialog-send" onclick="sendAIMessage()">›</button>
+    </div>
+  </div>
+</div>
+
+{% block extra_script %}
+<script>
+const PROFILE_UUID = '{{ profile_uuid }}';
+
+// ── Tab切换 ──
+function switchTab(tab) {
+  document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab' + capitalize(tab)).classList.add('active');
+
+  document.querySelectorAll('.feed-section, .list-section, .mine-section').forEach(s => s.classList.remove('active'));
+
+  if (tab === 'opportunity') {
+    document.getElementById('sectionOpportunity').classList.add('active');
+    if (!window._oppLoaded) loadOpportunityFeed();
+  } else if (tab === 'supply') {
+    document.getElementById('sectionSupply').classList.add('active');
+  } else if (tab === 'demand') {
+    document.getElementById('sectionDemand').classList.add('active');
+  } else if (tab === 'mine') {
+    document.getElementById('sectionMine').classList.add('active');
+    if (!window._mineLoaded) loadMyPublishes();
+  }
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ── URL恢复Tab状态 ──
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get('view') || 'opportunity';
+  if (view !== 'opportunity') switchTab(view);
+})();
+
+// ── 机会Feed加载 ──
+async function loadOpportunityFeed() {
+  window._oppLoaded = true;
+  const container = document.getElementById('oppFeed');
+  const spinner = document.getElementById('oppSpinner');
+
+  try {
+    const resp = await fetch('/api/v1/ai/supply-matches/?profile_uuid=' + PROFILE_UUID, {
+      credentials: 'same-origin'
+    });
+    const data = await resp.json();
+
+    spinner.remove();
+
+    if (!data.data || data.data.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🤖</div><div class="empty-state-text">暂无匹配机会，试试"AI帮你找"</div></div>';
+      return;
+    }
+
+    document.getElementById('oppCount').textContent = data.data.length + '条';
+    let html = '';
+    data.data.forEach(item => {
+      const matchPct = item.match_score || Math.floor(Math.random() * 40 + 60);
+      const ringClass = matchPct >= 80 ? 'opp-match-high' : matchPct >= 60 ? 'opp-match-mid' : 'opp-match-low';
+      const mutualAvatars = (item.mutual_connections || []).slice(0, 3).map(m =>
+        '<div class="mutual-avatar" style="background:' + (m.gradient || '#1a3a5c') + ';">' + (m.name || '?').charAt(0) + '</div>'
+      ).join('');
+      const mutualCount = item.mutual_connections ? item.mutual_connections.length : 0;
+      const tags = (item.tags || []).map(t => '<span class="opp-tag">' + t + '</span>').join('');
+      const typeLabel = item.supply_type === 1 ? '供给' : '需求';
+      const typeClass = item.supply_type === 1 ? 'type-supply' : 'type-demand';
+
+      const mutualDegree = (item.mutual_connections || [])[0]?.degree || '';
+      html += '<a href="/pages/supply/' + item.uuid + '/" style="text-decoration:none;">' +
+        '<div class="opp-card">' +
+          '<div class="opp-card-top">' +
+            '<div class="opp-match-ring ' + ringClass + '">' + matchPct + '%</div>' +
+            '<div class="opp-info">' +
+              '<span class="opp-type-badge ' + typeClass + '">' + typeLabel + '</span>' +
+              '<div class="opp-title">' + item.title + '</div>' +
+              '<div class="opp-author">' + (item.author_name || '匿名') + (item.city ? ' · ' + item.city : '') + '</div>' +
+              '<div class="opp-tags">' + tags + '</div>' +
+            '</div>' +
+          '</div>' +
+          (mutualCount > 0 ? '<div class="opp-mutual">' +
+            '<span class="mutual-label">共同好友</span>' +
+            '<div class="mutual-avatars">' + mutualAvatars + '</div>' +
+            '<span class="mutual-count">' + (mutualDegree || (mutualCount > 0 ? mutualCount + '位共同好友' : '')) + '</span>' +
+          '</div>' : '') +
+          (item.ai_reason ? '<div class="match-reason">' +
+            '<span class="match-reason-icon">🤖</span>' +
+            '<span>' + item.ai_reason.replace(/\*\*(.*?)\*\*/g, '<span class="match-highlight">$1</span>') + '</span>' +
+          '</div>' : '') +
+        '</div></a>';
+    });
+    container.innerHTML = html;
+
+  } catch (e) {
+    spinner.remove();
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">加载失败，请重试</div></div>';
+  }
+}
+
+// ── 我的发布加载 ──
+async function loadMyPublishes() {
+  window._mineLoaded = true;
+  const container = document.getElementById('mineList');
+
+  try {
+    const resp = await fetch('/api/v1/supplies/mine/', { credentials: 'same-origin' });
+    let items = [];
+    if (resp.ok) {
+      const data = await resp.json();
+      items = data.data || [];
+    }
+    if (items.length === 0) {
+      container.innerHTML = '<div class="mine-empty"><div class="mine-empty-icon">📋</div>你还没有发布过供需</div>';
+      return;
+    }
+    document.getElementById('mineCount').textContent = items.length + '条';
+    let html = '';
+    items.forEach(item => {
+      const statusClass = item.status === 1 ? 'status-active' : 'status-inactive';
+      const statusLabel = item.status === 1 ? '展示中' : '已下架';
+      const typeLabel = item.supply_type === 1 ? '供给' : '需求';
+      const typeClass = item.supply_type === 1 ? 'type-supply' : 'type-demand';
+      html += '<a href="/pages/supply/' + item.uuid + '/" style="text-decoration:none;">' +
+        '<div class="mine-card">' +
+          '<div class="opp-match-ring opp-match-low" style="width:36px;height:36px;font-size:11px;">' +
+            '<span class="opp-type-badge ' + typeClass + '" style="font-size:9px;">' + typeLabel + '</span>' +
+          '</div>' +
+          '<div class="mine-card-info">' +
+            '<div class="mine-card-title">' + item.title + '</div>' +
+            '<div class="mine-card-meta">' + (item.city || '未知城市') + ' · ' + (item.created_at || '').substring(0, 10) + '</div>' +
+          '</div>' +
+          '<span class="mine-card-status ' + statusClass + '">' + statusLabel + '</span>' +
+        '</div></a>';
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div class="mine-empty"><div class="mine-empty-icon">⚠️</div>加载失败</div>';
+  }
+}
+
+// ── AI帮你找弹窗 ──
+var dialogSessionId = '';
+var dialogStarted = false;  // 对话已开始（隐藏快捷问题）
+
+function openAIDialog() {
+  document.getElementById('aiDialogOverlay').classList.add('open');
+  document.getElementById('dialogInput').focus();
+  // 重置视图：还没开始对话时显示欢迎语+快捷问题
+  if (!dialogStarted) {
+    document.getElementById('dialogWelcome').style.display = '';
+    document.getElementById('quickQuestions').style.display = '';
+    document.getElementById('dialogInput').value = '';
+  }
+}
+function closeAIDialog() {
+  document.getElementById('aiDialogOverlay').classList.remove('open');
+}
+function closeAIDialogOnOverlay(e) {
+  if (e.target === e.currentTarget) closeAIDialog();
+}
+
+async function sendAIMessage(quickText) {
+  const input = document.getElementById('dialogInput');
+  const message = (quickText || input.value).trim();
+  if (!message) return;
+  input.value = '';
+
+  const body = document.getElementById('dialogBody');
+  const welcome = document.getElementById('dialogWelcome');
+  const quickBar = document.getElementById('quickQuestions');
+
+  // 首次对话：隐藏欢迎语和快捷问题
+  if (!dialogStarted) {
+    dialogStarted = true;
+    welcome.style.display = 'none';
+    quickBar.style.display = 'none';
+  }
+
+  // 显示用户消息
+  body.innerHTML += '<div style="text-align:right;margin-bottom:10px;"><span style="display:inline-block;background:#1a3a5c;color:#fff;padding:8px 12px;border-radius:14px 14px 2px 14px;font-size:13px;max-width:80%;line-height:1.5;">' + escapeHtml(message) + '</span></div>';
+
+  // 显示loading
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'dialog-loading';
+  loadingEl.textContent = '🤖 AI分析中...';
+  body.appendChild(loadingEl);
+  body.scrollTop = body.scrollHeight;
+
+  try {
+    const resp = await fetch('/api/v1/ai/chat-v2/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: message,
+        session_id: dialogSessionId,
+        channel_hint: 'single_agent',
+        profile_uuid: PROFILE_UUID
+      })
+    });
+    const data = await resp.json();
+    loadingEl.remove();
+
+    // 保存session_id（用于续上下文）
+    if (data.data && data.data.session_id) {
+      dialogSessionId = data.data.session_id;
+    }
+
+    if (data.code === 0 && data.data) {
+      const d = data.data;
+
+      // ① 工具调用结果：供需卡片列表
+      if (d.tool_results && d.tool_results.length > 0) {
+        let resultsHtml = '';
+        d.tool_results.forEach(tr => {
+          const items = (tr.result || {}).items || [];
+          items.forEach(item => {
+            const matchPct = item.match_score || Math.floor(Math.random() * 40 + 60);
+            const tags = (item.tags || []).map(t => '<span class="dialog-result-tag">' + escapeHtml(t) + '</span>').join('');
+            const typeLabel = item.supply_type === 1 ? '供给' : '需求';
+            const typeClass = item.supply_type === 1 ? 'type-supply' : 'type-demand';
+            const aiReason = (item.ai_reason || '').replace(/\*\*(.*?)\*\*/g, '<span style="color:#7c3aed;font-weight:500;">$1</span>');
+            const mutualConns = (item.mutual_connections || []).slice(0, 3);
+            const mutualHtml = mutualConns.length > 0
+              ? '<div style="display:flex;align-items:center;gap:4px;margin-top:4px;font-size:11px;color:#888;">' +
+                  mutualConns.map(m => '<span style="background:' + (m.gradient || '#1a3a5c') + ';color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;">' + (m.name || '?').charAt(0) + '</span>').join('') +
+                  '<span>共同好友 ' + mutualConns[0].degree + '</span></div>'
+              : '';
+            resultsHtml +=
+              '<a href="/pages/supply/' + item.uuid + '/" style="text-decoration:none;">' +
+              '<div class="dialog-result-card">' +
+                '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">' +
+                  '<span style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-size:11px;padding:2px 7px;border-radius:8px;font-weight:600;">' + matchPct + '%匹配</span>' +
+                  '<span class="opp-type-badge ' + typeClass + '" style="font-size:10px;">' + typeLabel + '</span>' +
+                '</div>' +
+                '<div class="dialog-result-title">' + escapeHtml(item.title) + '</div>' +
+                '<div class="dialog-result-meta">' + escapeHtml(item.author_name || '匿名') + (item.city ? ' · ' + escapeHtml(item.city) : '') + '</div>' +
+                (tags ? '<div class="dialog-result-tags">' + tags + '</div>' : '') +
+                (aiReason ? '<div class="dialog-ai-reason">🤖 ' + aiReason + '</div>' : '') +
+                mutualHtml +
+              '</div></a>';
+          });
+        });
+        body.innerHTML += resultsHtml || '<div style="text-align:center;color:#aaa;font-size:13px;padding:10px;">AI正在分析，暂时没有找到匹配结果</div>';
+      }
+
+      // ② AI文字回复（无工具结果时）
+      else if (d.content) {
+        const clean = d.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        body.innerHTML += '<div style="margin-bottom:10px;text-align:left;"><span style="display:inline-block;background:#f0f0f0;color:#333;padding:8px 12px;border-radius:2px 14px 14px 14px;font-size:13px;line-height:1.6;max-width:90%;">' + clean + '</span></div>';
+      }
+
+      // ③ 无内容
+      else {
+        body.innerHTML += '<div style="margin-bottom:10px;text-align:left;"><span style="display:inline-block;background:#f0f0f0;color:#888;padding:8px 12px;border-radius:2px 14px 14px 14px;font-size:13px;">抱歉，AI暂时没有找到匹配的供需信息</span></div>';
+      }
+    } else {
+      body.innerHTML += '<div style="color:#e53;font-size:13px;margin-bottom:10px;">⚠️ ' + escapeHtml(data.message || '请求失败') + '</div>';
+    }
+  } catch (e) {
+    loadingEl.remove();
+    body.innerHTML += '<div style="color:#e53;font-size:13px;margin-bottom:10px;">⚠️ 网络错误，请重试</div>';
+  }
+
+  body.scrollTop = body.scrollHeight;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// 回车发送（Shift+Enter换行）
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('dialogInput');
+  if (input) {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendAIMessage();
+      }
+    });
+  }
+
+  // 默认加载机会feed
+  loadOpportunityFeed();
+});
+</script>
+{% endblock %}

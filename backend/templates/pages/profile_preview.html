@@ -1,0 +1,118 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}个人资料预览 · 燃冰{% endblock %}
+
+{% block content %}
+
+<!-- Profile Preview Card -->
+<div class="card" style="margin-bottom:10px;">
+  <div style="display:flex; gap:14px; align-items:flex-start;">
+    <div style="width:60px; height:60px; border-radius:50%; background:{{ profile.real_name|avatar_color }}; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:#fff; flex-shrink:0;">
+      {{ profile.real_name|initials }}
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:18px; font-weight:700; color:#1a1a1a; margin-bottom:3px;">
+        {{ profile.real_name }}
+        {% if profile.cert_level == 3 %}
+          <span>🏅</span>
+        {% elif profile.cert_level >= 1 %}
+          <span style="color:#e86a3a;">✓</span>
+        {% endif %}
+      </div>
+      <div style="font-size:12px; color:#888; margin-bottom:6px;">
+        {% if profile.education_school %}{{ profile.education_school }}{% endif %}
+        {% if profile.education_year %}{{ profile.education_year }}届{% endif %}
+        {% if profile.company %} · {{ profile.company }}{% endif %}
+        {% if profile.position %} · {{ profile.position }}{% endif %}
+      </div>
+      <div style="font-size:11px; color:#aaa;">
+        {% if profile.city %}📍 {{ profile.city }}{% endif %}
+        {% if profile.industry %} · {{ profile.industry }}{% endif %}
+      </div>
+    </div>
+    {% if is_connection %}
+    <div>
+      <span style="background:#e8fdf5; color:#059669; font-size:11px; padding:3px 10px; border-radius:10px;">已连接</span>
+    </div>
+    {% elif is_pending %}
+    <div>
+      <span style="background:#fff3e8; color:#e86a3a; font-size:11px; padding:3px 10px; border-radius:10px;">待确认</span>
+    </div>
+    {% else %}
+    <div>
+      <button style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:20px; padding:6px 16px; font-size:12px; font-weight:600; cursor:pointer;">+ 连接</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Tags -->
+{% if profile_tags %}
+<div class="card" style="margin-bottom:10px;">
+  <div class="section-title mb10">🏷️ 标签</div>
+  <div style="display:flex; flex-wrap:wrap; gap:5px;">
+    {% for tag in profile_tags %}
+    <span class="tag tag-blue">{{ tag }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Brief Bio -->
+{% if profile.bio %}
+<div class="card" style="margin-bottom:10px;">
+  <div class="section-title mb10">💬 个人简介</div>
+  <div style="font-size:13px; color:#444; line-height:1.6;">{{ profile.bio|slice:":100" }}{% if profile.bio|length > 100 %}...{% endif %}</div>
+</div>
+{% endif %}
+
+<!-- Quick Stats -->
+<div class="card" style="margin-bottom:10px;">
+  <div class="section-title mb10">📊 动态数据</div>
+  <div style="display:flex; justify-content:space-around; text-align:center;">
+    <div>
+      <div style="font-size:20px; font-weight:700; color:#1a3a5c;">{{ activity_count|default:0 }}</div>
+      <div style="font-size:11px; color:#888;">活动</div>
+    </div>
+    <div style="width:1px; background:#eee;"></div>
+    <div>
+      <div style="font-size:20px; font-weight:700; color:#e86a3a;">{{ supply_count|default:0 }}</div>
+      <div style="font-size:11px; color:#888;">供需</div>
+    </div>
+    <div style="width:1px; background:#eee;"></div>
+    <div>
+      <div style="font-size:20px; font-weight:700; color:#059669;">{{ connection_count|default:0 }}</div>
+      <div style="font-size:11px; color:#888;">人脉</div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activities Preview -->
+{% if recent_activities %}
+<div class="section-header mb10">
+  <span class="section-title">🕐 最近动态</span>
+</div>
+<div>
+  {% for act in recent_activities %}
+  <div class="card" style="display:flex; gap:10px; align-items:center; margin-bottom:6px;">
+    <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; font-size:14px;">
+      📅
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:13px; font-weight:600; color:#1a1a1a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ act.title|slice:":25" }}</div>
+      <div style="font-size:11px; color:#aaa;">{{ act.created_at|date:"Y-m-d" }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- View Full Profile Button -->
+<div style="text-align:center; margin:20px 0 60px;">
+  <a href="{% url 'my_profile' %}">
+    <button style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a); color:#fff; border:none; border-radius:24px; padding:12px 40px; font-size:14px; font-weight:600; cursor:pointer;">查看完整资料</button>
+  </a>
+</div>
+
+{% endblock %}

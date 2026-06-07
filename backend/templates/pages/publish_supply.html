@@ -1,0 +1,600 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}发布供需 · 燃冰{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* AI引导发布样式 */
+  .ai-guide-overlay { display: none; }
+  .ai-guide-overlay.open { display: flex; }
+  .guide-step.active { color: #667eea !important; font-weight: 600; }
+
+  .form-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .form-label span {
+    color: #e86a3a;
+    margin-left: 2px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #fafafa;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: #e86a3a;
+    background: #fff;
+  }
+  .form-input::placeholder {
+    color: #bbb;
+  }
+  .form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #fafafa;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+  }
+  .form-textarea:focus {
+    outline: none;
+    border-color: #e86a3a;
+    background: #fff;
+  }
+  .type-selector {
+    display: flex;
+    gap: 8px;
+  }
+  .type-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: #666;
+  }
+  .type-btn.selected {
+    border-color: #e86a3a;
+    background: #fff3e8;
+    color: #e86a3a;
+  }
+  .type-btn.selected-demand {
+    border-color: #059669;
+    background: #e8fdf5;
+    color: #059669;
+  }
+  .tag-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag-option {
+    padding: 6px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    background: #fff;
+    color: #666;
+    transition: all 0.2s;
+  }
+  .tag-option:hover {
+    border-color: #e86a3a;
+    color: #e86a3a;
+  }
+  .tag-option.selected {
+    border-color: #e86a3a;
+    background: #e86a3a;
+    color: #fff;
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e86a3a, #f0a06a);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(232,106,58,0.3);
+    transition: transform 0.1s;
+  }
+  .submit-btn:active {
+    transform: scale(0.98);
+  }
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+  }
+  .form-hint {
+    font-size: 11px;
+    color: #888;
+    margin-top: 6px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom: 16px;">
+  <div style="font-size: 18px; font-weight: 700; color: #1a1a1a;">发布供需</div>
+  <div style="font-size: 12px; color: #888; margin-top: 2px;">分享资源/机会 or 寻求合作</div>
+</div>
+
+<!-- AI引导发布按钮 -->
+<button type="button" id="ai-guide-btn" onclick="openAIGuide()"
+  style="width:100%; padding:14px; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer; margin-bottom:16px;">
+  🤖 AI帮你写 · 智能引导发布
+</button>
+
+<form method="POST" action="{% url 'publish_supply' %}">
+  {% csrf_token %}
+
+  <!-- Type Selection -->
+  <div class="form-section">
+    <label class="form-label">供需类型<span>*</span></label>
+    <div class="type-selector">
+      <button type="button" class="type-btn selected" data-type="1" onclick="selectType(this, 1)">
+        📤 我要供给
+      </button>
+      <button type="button" class="type-btn" data-type="2" onclick="selectType(this, 2)">
+        📥 我要需求
+      </button>
+    </div>
+    <input type="hidden" name="supply_type" id="supply_type" value="1">
+  </div>
+
+  <!-- Title -->
+  <div class="form-section">
+    <label class="form-label" for="title">标题<span>*</span></label>
+    <input type="text" id="title" name="title" class="form-input" 
+           placeholder="简要描述你的供给/需求（不超过50字）" maxlength="50" required>
+    <div class="char-count"><span id="title-count">0</span>/50</div>
+  </div>
+
+  <!-- Description -->
+  <div class="form-section">
+    <label class="form-label" for="description">详细描述<span>*</span></label>
+    <textarea id="description" name="description" class="form-textarea" 
+              placeholder="详细说明供给/需求的具体内容、条件、期望等..." 
+              maxlength="500" required></textarea>
+    <div class="char-count"><span id="desc-count">0</span>/500</div>
+  </div>
+
+  <!-- Tags -->
+  <div class="form-section">
+    <label class="form-label">标签（可选，最多选3个）</label>
+    <div id="ai-tags-section">
+      <div class="tag-selector" id="manual-tags">
+      {% for tag in available_tags %}
+      <button type="button" class="tag-option" data-tag-id="{{ tag.id }}" data-tag-name="{{ tag.name }}" onclick="toggleTag(this)">
+        {{ tag.name }}
+      </button>
+      {% empty %}
+      <span style="color: #999; font-size: 12px;">暂无可用标签</span>
+      {% endfor %}
+      </div>
+      <input type="hidden" name="tags" id="selected-tags" value="">
+      <div class="form-hint" id="tag-hint">点击标签进行选择</div>
+    </div>
+    <!-- AI Tag Suggestion -->
+    <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+      <button type="button" id="ai-tags-btn" onclick="requestAiTags()" style="background:#e8f0fe; border:1px solid #c3d4f7; border-radius:16px; padding:5px 12px; font-size:11px; color:#1a3a5c; cursor:pointer;">
+        ✨ AI智能推荐标签
+      </button>
+      <span id="ai-tags-loading" style="display:none; font-size:11px; color:#888;">
+        AI分析中...
+      </span>
+      <span id="ai-tags-error" style="display:none; font-size:11px; color:#d00;">
+        AI暂时不可用
+      </span>
+    </div>
+    <!-- AI Suggested Tags (shown after AI returns) -->
+    <div id="ai-suggested-container" style="display:none; margin-top:10px; padding:10px; background:linear-gradient(135deg,#e8f5e9,#f0f7ff); border-radius:10px;">
+      <div style="font-size:11px; color:#059669; margin-bottom:6px;">✨ AI推荐标签（点击采纳）</div>
+      <div id="ai-suggested-tags" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+      <div style="margin-top:6px; font-size:11px; color:#888;">
+        <span id="ai-title-suggestion"></span>
+      </div>
+      <div id="ai-tips" style="font-size:11px; color:#888; margin-top:4px;"></div>
+      <button type="button" onclick="applyAiTags()" style="margin-top:8px; background:#059669; color:#fff; border:none; border-radius:12px; padding:6px 14px; font-size:11px; cursor:pointer;">
+        采纳推荐
+      </button>
+    </div>
+  </div>
+
+  <!-- Contact Info -->
+  <div class="form-section">
+    <label class="form-label" for="contact">联系方式（可选）</label>
+    <input type="text" id="contact" name="contact" class="form-input" 
+           placeholder="手机号、微信号或其他联系方式">
+    <div class="form-hint">仅供感兴趣的人联系你，不会公开显示</div>
+  </div>
+
+  <!-- Submit -->
+  <div style="margin-top: 20px; margin-bottom: 30px;">
+    <button type="submit" class="submit-btn">发布供需</button>
+  </div>
+</form>
+
+<script>
+let selectedTags = [];
+const MAX_TAGS = 3;
+
+function selectType(btn, type) {
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.classList.remove('selected', 'selected-demand');
+  });
+  if (type === 1) {
+    btn.classList.add('selected');
+  } else {
+    btn.classList.add('selected-demand');
+  }
+  document.getElementById('supply_type').value = type;
+}
+
+function toggleTag(btn) {
+  const tagId = btn.getAttribute('data-tag-id');
+  const idx = selectedTags.indexOf(tagId);
+  
+  if (idx > -1) {
+    selectedTags.splice(idx, 1);
+    btn.classList.remove('selected');
+  } else {
+    if (selectedTags.length >= MAX_TAGS) {
+      alert('最多只能选择' + MAX_TAGS + '个标签');
+      return;
+    }
+    selectedTags.push(tagId);
+    btn.classList.add('selected');
+  }
+  
+  document.getElementById('selected-tags').value = selectedTags.join(',');
+}
+
+// Character counters
+document.getElementById('title').addEventListener('input', function() {
+  document.getElementById('title-count').textContent = this.value.length;
+});
+
+document.getElementById('description').addEventListener('input', function() {
+  document.getElementById('desc-count').textContent = this.value.length;
+});
+
+// ── AI Tag Extraction ──
+let aiSuggestedTags = [];  // {id, name}
+let aiTitleSuggestion = '';
+let aiQualityTips = [];
+
+function requestAiTags() {
+  var title = document.getElementById('title').value.trim();
+  var desc = document.getElementById('description').value.trim();
+  if (!title && !desc) {
+    alert('请先填写标题或描述，AI需要内容来推荐标签');
+    return;
+  }
+  var combined = (title ? title + ' ' : '') + desc;
+  var supplyType = document.getElementById('supply_type').value;
+
+  var btn = document.getElementById('ai-tags-btn');
+  var loading = document.getElementById('ai-tags-loading');
+  var error = document.getElementById('ai-tags-error');
+  var container = document.getElementById('ai-suggested-container');
+
+  btn.disabled = true;
+  loading.style.display = 'inline';
+  error.style.display = 'none';
+  container.style.display = 'none';
+
+  var csrftoken = getCookie('csrftoken');
+  fetch('/api/v1/ai/extract-tags/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify({text: combined, supply_type: parseInt(supplyType)})
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    if (data.code === 0 && data.data) {
+      var tags = data.data.tags || [];
+      aiSuggestedTags = tags;
+      aiTitleSuggestion = data.data.title_suggestion || '';
+      aiQualityTips = data.data.quality_tips || [];
+      showAiTags(tags);
+    } else {
+      error.style.display = 'inline';
+    }
+  })
+  .catch(function(e) {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    error.style.display = 'inline';
+  });
+}
+
+function showAiTags(tags) {
+  var container = document.getElementById('ai-suggested-container');
+  var tagsDiv = document.getElementById('ai-suggested-tags');
+  var titleSpan = document.getElementById('ai-title-suggestion');
+  var tipsDiv = document.getElementById('ai-tips');
+
+  // Show tags (use id if available)
+  tagsDiv.innerHTML = tags.map(function(t) {
+    var id = t.id || t;
+    var name = t.name || t;
+    return '<button type="button" onclick="applySingleTag(\'' + id + '\',\'' + name + '\')" style="padding:4px 10px; border:1px solid #059669; border-radius:16px; font-size:11px; background:#fff; color:#059669; cursor:pointer;">' + name + '</button>';
+  }).join('');
+
+  if (aiTitleSuggestion) {
+    titleSpan.textContent = '📝 建议标题：' + aiTitleSuggestion;
+    titleSpan.style.display = 'inline';
+  } else {
+    titleSpan.style.display = 'none';
+  }
+
+  if (aiQualityTips.length > 0) {
+    tipsDiv.textContent = '💡 ' + aiQualityTips.slice(0,2).join('；');
+    tipsDiv.style.display = 'block';
+  } else {
+    tipsDiv.style.display = 'none';
+  }
+
+  container.style.display = 'block';
+  document.getElementById('tag-hint').textContent = '已选择 ' + selectedTags.length + ' 个标签（最多3个）';
+}
+
+function applySingleTag(tagId, tagName) {
+  // Add to selected if not full
+  if (!selectedTags.includes(tagId) && selectedTags.length < MAX_TAGS) {
+    selectedTags.push(tagId);
+    // Highlight in manual list
+    var btns = document.querySelectorAll('.tag-option');
+    btns.forEach(function(b) {
+      if (b.getAttribute('data-tag-id') === tagId) b.classList.add('selected');
+    });
+    document.getElementById('selected-tags').value = selectedTags.join(',');
+    document.getElementById('tag-hint').textContent = '已选择 ' + selectedTags.length + ' 个标签（最多3个）';
+  }
+}
+
+function applyAiTags() {
+  aiSuggestedTags.forEach(function(t) {
+    var id = t.id || t;
+    var name = t.name || t;
+    applySingleTag(String(id), name);
+  });
+  // Hide container after apply
+  document.getElementById('ai-suggested-container').style.display = 'none';
+}
+
+function getCookie(name) {
+  var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
+
+// ===== AI引导发布 =====
+// State
+let guideMessages = []; // [{role:'ai'|'user', content}]
+let guideStep = 0; // 0=type, 1=content, 2=confirm
+let guideCollected = { type: null, title_hints: '', desc_hints: '', tag_hints: [] };
+
+function openAIGuide() {
+  guideMessages = [];
+  guideStep = 0;
+  guideCollected = { type: null, title_hints: '', desc_hints: '', tag_hints: [] };
+  document.getElementById('aiGuideOverlay').classList.add('open');
+  document.getElementById('guideMessages').innerHTML = '';
+  document.getElementById('guideQuickReplies').innerHTML = '';
+  document.getElementById('guideInput').value = '';
+  updateGuideStep(0);
+  // Start with first question
+  aiGuideAsk(
+    '👋 你好！我是燃冰AI助手，可以帮你写一条高质量的供需发布。\n\n首先，告诉我你想发布的是：',
+    ['📤 我要供给（我有资源/服务可以分享）', '📥 我要需求（我在找资源/服务）']
+  );
+}
+
+function closeAIGuide() {
+  document.getElementById('aiGuideOverlay').classList.remove('open');
+}
+
+function closeAIGuideOnOverlay(e) {
+  if (e.target === document.getElementById('aiGuideOverlay')) closeAIGuide();
+}
+
+function updateGuideStep(s) {
+  guideStep = s;
+  ['guide-step-1','guide-step-2','guide-step-3'].forEach((id, i) => {
+    var el = document.getElementById(id);
+    el.className = 'guide-step' + (i <= s ? ' active' : '');
+    el.style.color = i <= s ? '#667eea' : '#ccc';
+    el.style.fontWeight = i <= s ? '600' : '400';
+  });
+}
+
+function aiGuideAsk(text, quickReplies) {
+  guideMessages.push({ role: 'ai', content: text });
+  renderGuideMessages();
+  if (quickReplies && quickReplies.length) {
+    document.getElementById('guideQuickReplies').innerHTML = quickReplies.map(r => 
+      `<button onclick="guideQuickReply(this)" style="padding:6px 12px; border:1px solid #667eea; border-radius:16px; background:#fff; color:#667eea; font-size:12px; cursor:pointer;">${r}</button>`
+    ).join('');
+  } else {
+    document.getElementById('guideQuickReplies').innerHTML = '';
+  }
+  document.getElementById('guideInput').focus();
+}
+
+function guideQuickReply(btn) {
+  var text = btn.textContent;
+  // Extract meaningful part (remove emoji prefix)
+  text = text.replace(/^[^\s]+\s*/, '');
+  document.getElementById('guideInput').value = text;
+  sendGuideMessage();
+}
+
+function renderGuideMessages() {
+  var container = document.getElementById('guideMessages');
+  container.innerHTML = guideMessages.map(m => `
+    <div style="margin-bottom:12px; display:flex; ${m.role === 'user' ? 'justify-content:flex-end' : ''}">
+      <div style="max-width:75%; padding:10px 14px; border-radius:16px; font-size:13px; line-height:1.5;
+                  ${m.role === 'ai' ? 'background:#f0f0f0; color:#1a1a1a;' : 'background:#667eea; color:#fff;'}">
+        ${m.content.replace(/\n/g, '<br>')}
+      </div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendGuideMessage() {
+  var input = document.getElementById('guideInput');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  guideMessages.push({ role: 'user', content: text });
+  renderGuideMessages();
+  document.getElementById('guideQuickReplies').innerHTML = '<span style="font-size:11px;color:#888;">AI思考中...</span>';
+  
+  try {
+    var resp = await fetch('/api/v1/ai/publish-guide/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+      body: JSON.stringify({ messages: guideMessages, collected: guideCollected })
+    });
+    var data = await resp.json();
+    if (data.code === 0) {
+      // Update collected state
+      if (data.data.collected) {
+        Object.assign(guideCollected, data.data.collected);
+      }
+      updateGuideStep(data.data.step || guideStep);
+      if (data.data.is_complete) {
+        // Apply to form and close
+        applyAIGuideResult(data.data.suggested);
+        aiGuideAsk('✅ 好的！表单已为你填好，确认信息后点击「发布供需」即可。', null);
+        setTimeout(closeAIGuide, 2000);
+      } else {
+        aiGuideAsk(data.data.next_question || '请继续回答', data.data.quick_replies || null);
+      }
+    } else {
+      aiGuideAsk('抱歉，AI暂时不可用。请继续手动填写表单。', null);
+    }
+  } catch(e) {
+    aiGuideAsk('网络有点问题，请重试。', null);
+  }
+}
+
+function applyAIGuideResult(suggested) {
+  if (!suggested) return;
+  if (suggested.type) {
+    guideCollected.type = suggested.type;
+    selectTypeForAI(suggested.type);
+  }
+  if (suggested.title) {
+    var titleInput = document.getElementById('title');
+    titleInput.value = suggested.title;
+    titleInput.style.borderColor = '#667eea';
+    titleInput.style.boxShadow = '0 0 0 2px rgba(102,126,234,0.2)';
+    document.getElementById('title-count').textContent = suggested.title.length;
+  }
+  if (suggested.content) {
+    var descInput = document.getElementById('description');
+    descInput.value = suggested.content;
+    descInput.style.borderColor = '#667eea';
+    descInput.style.boxShadow = '0 0 0 2px rgba(102,126,234,0.2)';
+    document.getElementById('desc-count').textContent = suggested.content.length;
+  }
+  if (suggested.tags && suggested.tags.length) {
+    // Apply tags
+    suggested.tags.forEach(tagName => {
+      var btn = document.querySelector(`.tag-option[data-tag-name="${tagName}"]`);
+      if (btn) toggleTag(btn);
+    });
+  }
+}
+
+function selectTypeForAI(type) {
+  // type: 1=供给, 2=需求
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  var target = document.querySelector(`.type-btn[data-type="${type}"]`);
+  if (target) target.classList.add('selected');
+  document.getElementById('supply_type').value = type;
+}
+
+function getCSRFToken() {
+  var match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : '';
+}
+</script>
+
+<!-- AI引导发布对话框 -->
+<div class="ai-guide-overlay" id="aiGuideOverlay" onclick="closeAIGuideOnOverlay(event)" 
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; justify-content:flex-end; flex-direction:column;">
+  <div class="ai-guide-dialog" style="background:#fff; border-radius:16px 16px 0 0; max-height:85vh; display:flex; flex-direction:column;">
+    <!-- Header -->
+    <div style="padding:16px 20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-size:15px; font-weight:600; color:#1a1a1a;">🤖 AI帮你写</div>
+        <div style="font-size:11px; color:#888; margin-top:2px;">AI引导你完成高质量发布</div>
+      </div>
+      <button onclick="closeAIGuide()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#999; padding:4px 8px;">✕</button>
+    </div>
+    <!-- Progress -->
+    <div style="padding:10px 20px; background:#f8f9fa; display:flex; gap:8px; font-size:11px;">
+      <span id="guide-step-1" class="guide-step active" style="color:#667eea; font-weight:600;">1.类型</span>
+      <span style="color:#ccc;">›</span>
+      <span id="guide-step-2" class="guide-step" style="color:#ccc;">2.内容</span>
+      <span style="color:#ccc;">›</span>
+      <span id="guide-step-3" class="guide-step" style="color:#ccc;">3.确认</span>
+    </div>
+    <!-- Messages -->
+    <div id="guideMessages" style="flex:1; overflow-y:auto; padding:16px 20px; min-height:200px;">
+    </div>
+    <!-- Quick replies -->
+    <div id="guideQuickReplies" style="padding:8px 20px; display:flex; flex-wrap:wrap; gap:6px; border-top:1px solid #f0f0f0;">
+    </div>
+    <!-- Input -->
+    <div style="padding:12px 20px; border-top:1px solid #eee; display:flex; gap:8px;">
+      <input type="text" id="guideInput" placeholder="输入你的回答..." 
+             style="flex:1; padding:10px 14px; border:1px solid #ddd; border-radius:20px; font-size:14px; outline:none;"
+             onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendGuideMessage()}">
+      <button onclick="sendGuideMessage()" style="padding:10px 18px; background:#667eea; color:#fff; border:none; border-radius:20px; font-size:13px; cursor:pointer;">发送</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

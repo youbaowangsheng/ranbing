@@ -1,0 +1,353 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}编辑资料 · 燃冰{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .form-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .form-row:last-child {
+    border-bottom: none;
+  }
+  .form-label {
+    width: 80px;
+    font-size: 13px;
+    color: #666;
+    flex-shrink: 0;
+  }
+  .form-label span {
+    color: #e86a3a;
+  }
+  .form-value {
+    flex: 1;
+  }
+  .form-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: #e86a3a;
+    background: #fff;
+  }
+  .form-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1a1a1a;
+    background: #fafafa;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .form-select:focus {
+    outline: none;
+    border-color: #e86a3a;
+    background-color: #fff;
+  }
+  .form-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #1a1a1a;
+    background: #fafafa;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+  }
+  .form-textarea:focus {
+    outline: none;
+    border-color: #e86a3a;
+    background: #fff;
+  }
+  .avatar-upload {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .avatar-preview {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: {{ user.real_name|avatar_color }};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .avatar-hint {
+    font-size: 11px;
+    color: #888;
+  }
+  .tag-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 0;
+  }
+  .tag-option {
+    padding: 5px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 15px;
+    font-size: 11px;
+    cursor: pointer;
+    background: #fff;
+    color: #666;
+    transition: all 0.2s;
+  }
+  .tag-option:hover {
+    border-color: #1a3a5c;
+    color: #1a3a5c;
+  }
+  .tag-option.selected {
+    border-color: #1a3a5c;
+    background: #1a3a5c;
+    color: #fff;
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1a3a5c, #2d5a8a);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(26,58,92,0.3);
+    transition: transform 0.1s;
+  }
+  .submit-btn:active {
+    transform: scale(0.98);
+  }
+  .cancel-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: #f0f0f0;
+    color: #666;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .bio-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1a1a1a;
+    background: #fafafa;
+    resize: none;
+    min-height: 80px;
+    font-family: inherit;
+  }
+  .bio-input:focus {
+    outline: none;
+    border-color: #1a3a5c;
+    background: #fff;
+  }
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom: 16px;">
+  <div style="font-size: 18px; font-weight: 700; color: #1a1a1a;">编辑资料</div>
+  <div style="font-size: 12px; color: #888; margin-top: 2px;">完善你的个人展示信息</div>
+</div>
+
+<form method="POST" action="{% url 'profile_edit' %}">
+  {% csrf_token %}
+
+  <!-- Basic Info -->
+  <div class="form-section">
+    <div class="section-title">👤 基本信息</div>
+    
+    <div class="form-row">
+      <label class="form-label">姓名<span>*</span></label>
+      <div class="form-value">
+        <input type="text" name="real_name" class="form-input" 
+               value="{{ user.real_name|default:'' }}" placeholder="请输入真实姓名" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">城市</label>
+      <div class="form-value">
+        <input type="text" name="city" class="form-input" 
+               value="{{ user.city|default:'' }}" placeholder="如：北京、上海">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">行业</label>
+      <div class="form-value">
+        <select name="industry" class="form-select">
+          <option value="">请选择行业</option>
+          <option value="互联网/IT" {% if user.industry == '互联网/IT' %}selected{% endif %}>互联网/IT</option>
+          <option value="金融" {% if user.industry == '金融' %}selected{% endif %}>金融</option>
+          <option value="教育" {% if user.industry == '教育' %}selected{% endif %}>教育</option>
+          <option value="医疗健康" {% if user.industry == '医疗健康' %}selected{% endif %}>医疗健康</option>
+          <option value="制造/生产" {% if user.industry == '制造/生产' %}selected{% endif %}>制造/生产</option>
+          <option value="房地产/建筑" {% if user.industry == '房地产/建筑' %}selected{% endif %}>房地产/建筑</option>
+          <option value="零售/消费" {% if user.industry == '零售/消费' %}selected{% endif %}>零售/消费</option>
+          <option value="媒体/广告" {% if user.industry == '媒体/广告' %}selected{% endif %}>媒体/广告</option>
+          <option value="政府/非营利" {% if user.industry == '政府/非营利' %}selected{% endif %}>政府/非营利</option>
+          <option value="其他" {% if user.industry == '其他' %}selected{% endif %}>其他</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Career Info -->
+  <div class="form-section">
+    <div class="section-title">💼 职业信息</div>
+    
+    <div class="form-row">
+      <label class="form-label">公司</label>
+      <div class="form-value">
+        <input type="text" name="company" class="form-input" 
+               value="{{ user.company|default:'' }}" placeholder="当前任职公司">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">职位</label>
+      <div class="form-value">
+        <input type="text" name="position" class="form-input" 
+               value="{{ user.position|default:'' }}" placeholder="当前职位">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">学校</label>
+      <div class="form-value">
+        <input type="text" name="education_school" class="form-input" 
+               value="{{ user.education_school|default:'' }}" placeholder="毕业院校">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">届数</label>
+      <div class="form-value">
+        <input type="text" name="education_year" class="form-input" 
+               value="{{ user.education_year|default:'' }}" placeholder="如：2018">
+      </div>
+    </div>
+  </div>
+
+  <!-- Bio -->
+  <div class="form-section">
+    <div class="section-title">✍️ 个人简介</div>
+    <textarea name="bio" class="bio-input" 
+              placeholder="简单介绍一下自己，让更多人了解你..." 
+              maxlength="200">{{ user.bio|default:'' }}</textarea>
+    <div class="char-count"><span id="bio-count">{{ user.bio|length|default:'0' }}</span>/200</div>
+  </div>
+
+  <!-- Supply Tags -->
+  <div class="form-section">
+    <div class="section-title">🏷️ 供给标签</div>
+    <div class="tag-selector">
+      {% for tag in available_tags %}
+      <button type="button" class="tag-option {% if tag.id in my_tag_ids %}selected{% endif %}" 
+              data-tag-id="{{ tag.id }}" onclick="toggleTag(this)">
+        {{ tag.name }}
+      </button>
+      {% empty %}
+      <span style="color: #999; font-size: 12px;">暂无可用标签</span>
+      {% endfor %}
+    </div>
+    <input type="hidden" name="tags" id="selected-tags" 
+           value="{% for tag in my_tags %}{{ tag.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+    <div style="font-size: 11px; color: #888; margin-top: 6px;">选择你能提供的资源或能力标签</div>
+  </div>
+
+  <!-- Submit -->
+  <div style="margin-top: 20px; margin-bottom: 30px;">
+    <button type="submit" class="submit-btn">保存修改</button>
+    <a href="{% url 'my_profile' %}">
+      <button type="button" class="cancel-btn">取消</button>
+    </a>
+  </div>
+</form>
+
+<script>
+let selectedTags = [];
+const MAX_TAGS = 10;
+
+// Initialize from existing tags
+const initialTags = document.getElementById('selected-tags').value;
+if (initialTags) {
+  selectedTags = initialTags.split(',').filter(t => t);
+}
+
+function toggleTag(btn) {
+  const tagId = btn.getAttribute('data-tag-id');
+  const idx = selectedTags.indexOf(tagId);
+  
+  if (idx > -1) {
+    selectedTags.splice(idx, 1);
+    btn.classList.remove('selected');
+  } else {
+    if (selectedTags.length >= MAX_TAGS) {
+      alert('最多只能选择' + MAX_TAGS + '个标签');
+      return;
+    }
+    selectedTags.push(tagId);
+    btn.classList.add('selected');
+  }
+  
+  document.getElementById('selected-tags').value = selectedTags.join(',');
+}
+
+// Bio character counter
+document.querySelector('textarea[name="bio"]').addEventListener('input', function() {
+  document.getElementById('bio-count').textContent = this.value.length;
+});
+</script>
+
+{% endblock %}
