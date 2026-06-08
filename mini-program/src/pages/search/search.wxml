@@ -1,0 +1,70 @@
+<view class="top-bar">
+  <view class="search-box-wrap">
+    <input class="search-box" placeholder="搜索供给/活动/社群/用户" value="{{q}}" bindinput="onInput" bindconfirm="doSearch" confirm-type="search" />
+    <view class="search-icon">🔍</view>
+  </view>
+  <view class="ai-btn" bindtap="toAiAssistant">✨</view>
+</view>
+
+<view class="container" style="padding-top:70px">
+
+  <!-- 无结果提示 -->
+  <view wx:if="{{hasSearched && !loading && profiles.length === 0 && supplies.length === 0 && activities.length === 0 && communities.length === 0}}" class="empty-tip">
+    <text>未找到"{{q}}"相关结果</text>
+  </view>
+
+  <!-- 用户列表 -->
+  <view wx:if="{{profiles.length > 0}}" class="result-section">
+    <view class="section-title">👤 用户 {{profiles.length}}</view>
+    <view class="user-list">
+      <view wx:for="{{profiles}}" wx:key="uuid" class="user-item" data-uuid="{{item.uuid}}" bindtap="toProfile">
+        <view class="avatar" style="background:{{item.avatar_color}}">{{item.real_name ? item.real_name[0] : '?'}}</view>
+        <view class="user-info">
+          <text class="user-name">{{item.real_name}}</text>
+          <text class="user-meta">{{item.company}}{{item.position ? '·'+item.position : ''}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 供给列表 -->
+  <view wx:if="{{supplies.length > 0}}" class="result-section">
+    <view class="section-title">📦 供给 {{supplies.length}}</view>
+    <view wx:for="{{supplies}}" wx:key="uuid" class="supply-card" data-uuid="{{item.uuid}}" bindtap="toSupply">
+      <view class="supply-header">
+        <text class="supply-badge {{item.supply_type === 1 ? 'supply' : 'demand'}}">{{item.supply_type === 1 ? '供给' : '需求'}}</text>
+        <text class="supply-title">{{item.title}}</text>
+      </view>
+      <text class="supply-content">{{item.content}}</text>
+      <text class="supply-author">{{item.profile.real_name}} · {{item.profile.company}}</text>
+    </view>
+  </view>
+
+  <!-- 活动列表 -->
+  <view wx:if="{{activities.length > 0}}" class="result-section">
+    <view class="section-title">📅 活动 {{activities.length}}</view>
+    <view wx:for="{{activities}}" wx:key="uuid" class="activity-card" data-uuid="{{item.uuid}}" bindtap="toActivity">
+      <view class="act-badge">📅</view>
+      <view class="act-info">
+        <text class="act-title">{{item.title}}</text>
+        <text class="act-meta">{{item.start_time_fmt}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 社群列表 -->
+  <view wx:if="{{communities.length > 0}}" class="result-section">
+    <view class="section-title">🤝 社群 {{communities.length}}</view>
+    <view wx:for="{{communities}}" wx:key="uuid" class="community-card" data-uuid="{{item.uuid}}" bindtap="toCommunity">
+      <view class="comm-banner" style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a)">
+        <text class="comm-icon">🤝</text>
+      </view>
+      <view class="comm-content">
+        <text class="comm-name">{{item.name}}</text>
+        <text class="comm-desc">{{item.description}}</text>
+        <text class="comm-meta">{{item.member_count}}人</text>
+      </view>
+    </view>
+  </view>
+
+</view>

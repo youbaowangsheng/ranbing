@@ -1,0 +1,51 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/login/register",
+    "pages/home/home",
+    "pages/supply-demand/supply-demand",
+    "pages/publish/publish",
+    "pages/my-posts/my-posts",
+    "pages/ai-assistant/ai-assistant",
+    "pages/activity/activity",
+    "pages/community/community",
+    "pages/profile/profile",
+    "pages/supply-detail/supply-detail",
+    "pages/activity-detail/activity-detail",
+    "pages/community-detail/community-detail",
+    "pages/messages/messages",
+    "pages/chat/chat",
+    "pages/search/search",
+    "pages/profile-edit/profile-edit",
+    "pages/profile-view/profile-view",
+    "pages/contacts/contacts",
+    "pages/contact-tags/contact-tags",
+    "pages/cards/cards",
+    "pages/card-edit/card-edit"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "navigationBarBackgroundColor": "#1a3a5c",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f0f2f5",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#1a3a5c",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "首页", "iconPath": "assets/tab-home.png", "selectedIconPath": "assets/tab-home-active.png" },
+      { "pagePath": "pages/supply-demand/supply-demand", "text": "供需", "iconPath": "assets/tab-supply.png", "selectedIconPath": "assets/tab-supply-active.png" },
+      { "pagePath": "pages/activity/activity", "text": "活动", "iconPath": "assets/tab-activity.png", "selectedIconPath": "assets/tab-activity-active.png" },
+      { "pagePath": "pages/community/community", "text": "社群", "iconPath": "assets/tab-community.png", "selectedIconPath": "assets/tab-community-active.png" },
+      { "pagePath": "pages/profile/profile", "text": "我的", "iconPath": "assets/tab-profile.png", "selectedIconPath": "assets/tab-profile-active.png" }
+    ]
+  },
+  "networkTimeout": {
+    "request": 60000,
+    "connectSocket": 10000
+  },
+  "debug": false
+}

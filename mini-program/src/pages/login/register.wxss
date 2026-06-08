@@ -1,0 +1,83 @@
+/* 注册页样式 */
+.container { min-height: 100vh; background: #f0f2f5; padding: 0 24px; }
+.hidden { display: none !important; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 0 20px;
+}
+.back { font-size: 32px; color: #1a3a5c; padding: 8px; }
+.title { font-size: 17px; font-weight: 600; color: #1a1a1a; }
+.placeholder { width: 48px; }
+
+.step-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+.step-hint { font-size: 13px; color: #999; margin-bottom: 30px; }
+
+.step-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.phone-display {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+.phone-label { font-size: 14px; color: #666; width: 60px; }
+.phone-value { font-size: 15px; color: #333; font-weight: 600; }
+
+.input-group { margin-bottom: 0; }
+.input-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.input-row:last-child { border-bottom: none; }
+.input-label { font-size: 14px; color: #333; width: 60px; flex-shrink: 0; }
+.input-field { flex: 1; font-size: 15px; color: #333; background: none; border: none; outline: none; }
+.code-input { flex: 1; }
+
+.btn-code {
+  background: #e86a3a;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 12px;
+  min-width: 80px;
+}
+.btn-code[disabled] { background: #ccc; }
+
+.btn-primary {
+  width: 100%;
+  background: #1a3a5c;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 14px 0;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 20px;
+}
+.btn-primary:active { opacity: 0.85; }
+
+.btn-back {
+  width: 100%;
+  background: none;
+  color: #999;
+  border: none;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.error-msg { text-align: center; color: #e85a3a; font-size: 13px; margin-top: 12px; min-height: 20px; }
+.show { color: #e85a3a; }
+.hidden { display: none; }

@@ -1,0 +1,70 @@
+/* 社群列表 */
+page { background: #f0f2f5; }
+.container { min-height: 100vh; background: #f0f2f5; padding-bottom: 80px; }
+
+.top-bar { background: #1a3a5c; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+.search-box { flex: 1; background: rgba(255,255,255,0.15); border-radius: 18px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+.search-icon { font-size: 14px; opacity: 0.7; }
+.search-placeholder { font-size: 13px; color: rgba(255,255,255,0.5); }
+.ai-btn { background: rgba(124,58,237,0.8); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 14px; flex-shrink: 0; font-weight: 600; }
+
+.loading { text-align: center; padding: 40px; color: #999; }
+
+.ai-entrance {
+  margin: 10px 14px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.3);
+}
+.ai-icon { width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.ai-text { flex: 1; }
+.ai-title { font-size: 13px; font-weight: 600; color: #fff; }
+.ai-sub { font-size: 11px; color: rgba(255,255,255,0.75); }
+.ai-arrow { color: rgba(255,255,255,0.8); font-size: 20px; }
+
+.section { margin-bottom: 6px; }
+.section-header { padding: 12px 14px 6px; display: flex; align-items: center; justify-content: space-between; }
+.section-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+.section-count { font-size: 12px; color: #999; }
+
+.community-list { padding: 0 14px; }
+.community-card { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.card-icon { width: 56px; height: 56px; border-radius: 12px; background: linear-gradient(135deg,#1a3a5c,#2d5a8a); display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+.card-info { flex: 1; min-width: 0; }
+.card-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px; }
+.card-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.card-name-row .card-name { margin-bottom: 0; }
+.joined-badge { background: #e8f4e8; color: #2a9d2a; font-size: 11px; padding: 2px 7px; border-radius: 10px; flex-shrink: 0; }
+.card-desc { font-size: 12px; color: #888; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-meta { font-size: 12px; color: #999; }
+.card-arrow { font-size: 22px; color: #ccc; flex-shrink: 0; }
+
+.join-btn {
+  background: linear-gradient(135deg,#e86a3a,#f0a06a);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.join-btn-joined {
+  background: #f0f0f0;
+  color: #888;
+  border: none;
+  border-radius: 16px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.empty { text-align: center; padding: 60px 0; }
+.empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+.empty-text { font-size: 14px; color: #999; }
+.bottom-spacer { height: 20px; }

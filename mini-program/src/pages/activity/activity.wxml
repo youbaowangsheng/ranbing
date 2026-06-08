@@ -1,0 +1,64 @@
+<!-- 活动列表 -->
+<view class="container">
+  <view class="top-bar">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索活动" value="{{keyword}}" bindinput="onKeywordInput" />
+    </view>
+    <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
+  </view>
+
+  <!-- Tab -->
+  <view class="tab-bar">
+    <view class="tab {{activeTab==='recommend'?'active':''}}" data-tab="recommend" bindtap="switchTab">推荐</view>
+    <view class="tab {{activeTab==='upcoming'?'active':''}}" data-tab="upcoming" bindtap="switchTab">即将举办</view>
+    <view class="tab {{activeTab==='past'?'active':''}}" data-tab="past" bindtap="switchTab">往期回顾</view>
+    <view class="tab {{activeTab==='mine'?'active':''}}" data-tab="mine" bindtap="switchTab">我参与的</view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+
+  <!-- AI精选区 -->
+  <view class="ai-section" wx:if="{{!aiLoading && aiItem && activeTab==='recommend'}}">
+    <view class="ai-label">✨ AI精选</view>
+    <view class="ai-card" bindtap="toDetail" data-uuid="{{aiItem.uuid}}">
+      <view class="ai-match-row">
+        <text class="match-pill">🔥 {{aiItem.pct}}%匹配</text>
+        <text class="match-reason">{{aiItem.match_reason}}</text>
+      </view>
+      <view class="ai-card-title">{{aiItem.title}}</view>
+      <view class="ai-card-meta">📅 {{aiItem.start_time_fmt}} · 📍 {{aiItem.location}}</view>
+      <view class="ai-card-footer">
+        <text class="ai-card-attend">{{aiItem.attendee_count || 0}}人已报名</text>
+        <text class="ai-card-tag" wx:for="{{aiItem.tags}}" wx:key="id" wx:for-item="t">#{{t.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类筛栏 -->
+  <view class="category-scroll">
+    <text class="cat-chip {{activeCat==='全部'?'active':''}}" data-cat="全部" bindtap="selectCat">全部</text>
+    <text class="cat-chip {{activeCat===cat?'active':''}}" wx:for="{{categories}}" wx:key="index" data-cat="{{cat}}" bindtap="selectCat">{{cat}}</text>
+  </view>
+
+  <!-- 活动列表 -->
+  <view class="event-list" wx:if="{{!loading}}">
+    <view class="event-card" wx:for="{{items}}" wx:key="uuid" bindtap="toDetail" data-uuid="{{item.uuid}}">
+      <view class="event-thumb" style="background: {{item.cover_color || '#1a3a5c'}}">
+        <text style="font-size:28px;">🎯</text>
+        <view class="event-label" wx:if="{{item.status===2}}">回顾</view>
+      </view>
+      <view class="event-info">
+        <view class="event-title">{{item.title}}</view>
+        <view class="event-meta">📅 {{item.start_time_fmt}} · 📍 {{item.location}}</view>
+        <view class="event-meta">👥 {{item.attendee_count}}人报名</view>
+        <view class="event-tags">
+          <text wx:for="{{item.tags}}" wx:key="id" wx:for-item="t" class="e-tag">#{{t.name}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMore"><text>{{loadingMore?'加载中...':'加载更多'}}</text></view>
+    <view class="no-more" wx:if="{{!hasMore && items.length>0}}"><text>— 没有更多了 —</text></view>
+    <view class="empty" wx:if="{{!loading && items.length===0}}"><text style="font-size:48px;">🎪</text><text style="display:block;margin-top:12px;color:#999;font-size:14px;">暂无活动</text></view>
+  </view>
+</view>

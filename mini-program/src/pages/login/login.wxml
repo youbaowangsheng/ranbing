@@ -1,0 +1,69 @@
+<!-- 登录页 - 同步web端设计 -->
+<view class="container">
+  <!-- Logo -->
+  <view class="logo-section">
+    <view class="logo-icon">冰</view>
+    <view class="logo-text">燃冰</view>
+    <view class="logo-sub">AI商务社交平台</view>
+  </view>
+
+  <!-- 登录卡片 -->
+  <view class="login-card">
+    <!-- Tab切换 -->
+    <view class="tab-nav">
+      <button class="tab-btn {{activeTab==='password'?'active':''}}" data-tab="password" bindtap="switchTab">密码登录</button>
+      <button class="tab-btn {{activeTab==='sms'?'active':''}}" data-tab="sms" bindtap="switchTab">短信登录</button>
+      <button class="tab-btn {{activeTab==='wechat'?'active':''}}" data-tab="wechat" bindtap="switchTab">微信登录</button>
+    </view>
+
+    <!-- 错误提示 -->
+    <view class="error-box {{errorMsg?'show':'hidden'}}">{{errorMsg}}</view>
+
+    <!-- 密码登录 -->
+    <view class="tab-content {{activeTab!=='password'?'hidden':''}}">
+      <view class="form-group">
+        <text class="form-label">手机号</text>
+        <input class="form-input" type="number" maxlength="11" placeholder="请输入手机号" value="{{phone}}" bindinput="onPhoneInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">密码</text>
+        <input class="form-input" password type="text" placeholder="请输入密码" value="{{password}}" bindinput="onPasswordInput" />
+      </view>
+      <button class="btn-login" bindtap="doPasswordLogin">登录</button>
+    </view>
+
+    <!-- 短信登录 -->
+    <view class="tab-content {{activeTab!=='sms'?'hidden':''}}">
+      <view class="form-group">
+        <text class="form-label">手机号</text>
+        <input class="form-input" type="number" maxlength="11" placeholder="请输入手机号" value="{{phone}}" bindinput="onPhoneInput" />
+      </view>
+      <view class="form-group">
+        <text class="form-label">验证码</text>
+        <view class="form-row">
+          <input class="form-input" type="number" maxlength="6" placeholder="请输入验证码" value="{{smsCode}}" bindinput="onSmsCodeInput" />
+          <button class="btn-send" bindtap="doSendCode" disabled="{{countdown>0}}">{{countdown>0?countdown+'s':'获取验证码'}}</button>
+        </view>
+      </view>
+      <button class="btn-login" bindtap="doSmsLogin">登录</button>
+    </view>
+
+    <!-- 微信登录 -->
+    <view class="tab-content {{activeTab!=='wechat'?'hidden':''}}">
+      <view class="wechat-content">
+        <view class="wechat-logo">微信</view>
+        <view class="wechat-title">微信一键登录</view>
+        <view class="wechat-desc">授权后自动创建账号并登录</view>
+      </view>
+      <button class="btn-wechat" bindtap="doWechatLogin" loading="{{wechatLoading}}">
+        <text>{{wechatLoading?'登录中...':'确认登录'}}</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 注册链接 -->
+  <view class="reg-hint">
+    还没有账号？
+    <text bindtap="toRegister">立即注册 ›</text>
+  </view>
+</view>

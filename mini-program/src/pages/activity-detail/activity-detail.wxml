@@ -1,0 +1,57 @@
+<!-- 活动详情 -->
+<view class="container">
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+
+  <view class="detail-content" wx:if="{{!loading && item}}">
+    <!-- 封面 -->
+    <view class="cover" style="background: {{item.cover_color || '#1a3a5c'}}">
+      <text style="font-size:64px;">🎯</text>
+    </view>
+
+    <!-- 基本信息 -->
+    <view class="info-card">
+      <view class="info-title">{{item.title}}</view>
+      <view class="info-meta">
+        <text class="meta-item">📅 {{item.start_time}}</text>
+        <text class="meta-item">📍 {{item.location}}</text>
+        <text class="meta-item" wx:if="{{item.fee > 0}}">💰 {{item.fee}}元</text>
+        <text class="meta-item" wx:if="{{item.fee == 0}}">免费</text>
+      </view>
+      <view class="info-tags">
+        <text class="e-tag" wx:for="{{item.tags}}" wx:key="id" wx:for-item="t">#{{t.name}}</text>
+      </view>
+      <view class="info-attendees" wx:if="{{item.current_attendees > 0}}">
+        <text class="attendees-count">👥 {{item.current_attendees}}人已报名</text>
+      </view>
+    </view>
+
+    <!-- 活动介绍 -->
+    <view class="desc-card">
+      <view class="card-title">活动介绍</view>
+      <view class="card-body">{{item.description || '暂无详细介绍'}}</view>
+    </view>
+
+    <!-- 主办方 -->
+    <view class="organizer-card" wx:if="{{item.organizer}}">
+      <view class="card-title">主办方</view>
+      <view class="organizer-row">
+        <view class="org-avatar" style="background: {{item.organizer.avatar_color || '#1a3a5c'}}">
+          {{item.organizer.real_name ? item.organizer.real_name.charAt(0) : '?'}}
+        </view>
+        <view class="org-info">
+          <text class="org-name">{{item.organizer.real_name}}</text>
+          <text class="org-company">{{item.organizer.company}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部报名按钮 -->
+    <view class="bottom-bar">
+      <view class="bottom-left">
+        <text class="share-hint">分享给朋友一起参加</text>
+      </view>
+      <button class="btn-join" bindtap="joinActivity" wx:if="{{!joined}}">立即报名</button>
+      <button class="btn-joined" wx:if="{{joined}}">已报名 ✓</button>
+    </view>
+  </view>
+</view>

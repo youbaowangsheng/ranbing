@@ -1,0 +1,48 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <text class="top-bar-title">{{isEdit?'编辑名片':'新建名片'}}</text>
+  </view>
+
+  <view class="form">
+    <view class="field">
+      <text class="label">姓名</text>
+      <input class="input" value="{{form.name}}" bindinput="onInput" data-field="name" placeholder="请输入姓名" />
+    </view>
+    <view class="field">
+      <text class="label">公司</text>
+      <input class="input" value="{{form.company}}" bindinput="onInput" data-field="company" placeholder="请输入公司" />
+    </view>
+    <view class="field">
+      <text class="label">职位</text>
+      <input class="input" value="{{form.position}}" bindinput="onInput" data-field="position" placeholder="请输入职位" />
+    </view>
+    <view class="field">
+      <text class="label">手机</text>
+      <input class="input" type="number" value="{{form.phone}}" bindinput="onInput" data-field="phone" placeholder="请输入手机号" />
+    </view>
+    <view class="field">
+      <text class="label">微信</text>
+      <input class="input" value="{{form.wechat}}" bindinput="onInput" data-field="wechat" placeholder="请输入微信号" />
+    </view>
+    <view class="field">
+      <text class="label">邮箱</text>
+      <input class="input" value="{{form.email}}" bindinput="onInput" data-field="email" placeholder="请输入邮箱" />
+    </view>
+    <view class="field">
+      <text class="label">简介</text>
+      <textarea class="textarea" value="{{form.bio}}" bindinput="onInput" data-field="bio" placeholder="个人简介" />
+    </view>
+    <view class="field">
+      <text class="label">标签</text>
+      <input class="input" value="{{form.tags}}" bindinput="onInput" data-field="tags" placeholder="用逗号分隔标签" />
+    </view>
+
+    <view class="field default-row">
+      <text class="label">设为默认</text>
+      <switch checked="{{form.is_default}}" bindchange="onSwitch" data-field="is_default" />
+    </view>
+
+    <view class="submit-btn" bindtap="doSubmit">{{isEdit?'保存修改':'创建名片'}}</view>
+  </view>
+</view>

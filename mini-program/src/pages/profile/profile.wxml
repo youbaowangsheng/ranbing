@@ -1,0 +1,110 @@
+<!-- 我的主页 -->
+<view class="container">
+
+  <!-- 用户信息卡 -->
+  <view class="profile-card" bindtap="toEditProfile">
+    <view class="profile-avatar" style="background: {{userInfo.avatar_color || '#1a3a5c'}}">
+      {{userInfo.real_name_first || userInfo.nickname_first || '?'}}
+    </view>
+    <view class="profile-info">
+      <view class="profile-name">{{userInfo.real_name || userInfo.nickname || '未登录'}}</view>
+      <view class="profile-meta" wx:if="{{userInfo.company}}">{{userInfo.company}}{{userInfo.position ? ' · '+userInfo.position : ''}}</view>
+      <view class="cert-row" wx:if="{{userInfo.cert_level >= 1}}">
+        <text class="cert-badge" wx:if="{{userInfo.cert_level === 1}}">📱 已手机认证</text>
+        <text class="cert-badge" wx:if="{{userInfo.cert_level === 2}}">🎓 校友认证</text>
+        <text class="cert-badge cert-deep" wx:if="{{userInfo.cert_level === 3}}">✅ 深度认证</text>
+      </view>
+    </view>
+    <text class="edit-arrow">›</text>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="stats-row">
+    <view class="stat-item" bindtap="toMyPosts">
+      <text class="stat-num">{{stats.supply_count || 0}}</text>
+      <text class="stat-label">发布</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item" bindtap="toMyConnections">
+      <text class="stat-num">{{stats.conn_count || 0}}</text>
+      <text class="stat-label">人脉</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item" bindtap="toMyMatches">
+      <text class="stat-num">{{stats.match_count || 0}}</text>
+      <text class="stat-label">匹配</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item" bindtap="toMyCommunities">
+      <text class="stat-num">{{stats.community_count || 0}}</text>
+      <text class="stat-label">社群</text>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-title">人脉管理</view>
+    <view class="menu-item" bindtap="toMyConnections">
+      <text class="menu-icon">👥</text>
+      <text class="menu-text">通讯录</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="toCardTags">
+      <text class="menu-icon">🏷️</text>
+      <text class="menu-text">联系人标签</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="toMyCards">
+      <text class="menu-icon">💳</text>
+      <text class="menu-text">我的名片</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+  <view class="menu-section">
+    <view class="menu-title">我的内容</view>
+    <view class="menu-item" bindtap="toMyPosts">
+      <text class="menu-icon">📝</text>
+      <text class="menu-text">我的发布</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="toActivities">
+      <text class="menu-icon">🎪</text>
+      <text class="menu-text">我报名的活动</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="toMyCommunities">
+      <text class="menu-icon">🤝</text>
+      <text class="menu-text">我的社群</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="menu-section">
+    <view class="menu-title">账号与设置</view>
+    <view class="menu-item" bindtap="toMessages">
+      <text class="menu-icon">💬</text>
+      <text class="menu-text">私信</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="toEditProfile">
+      <text class="menu-icon">✏️</text>
+      <text class="menu-text">编辑资料</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="toCert">
+      <text class="menu-icon">🎓</text>
+      <text class="menu-text">校友认证</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="toSettings">
+      <text class="menu-icon">⚙️</text>
+      <text class="menu-text">设置</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="logout">
+      <text class="menu-icon">🚪</text>
+      <text class="menu-text logout-text">退出登录</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+</view>

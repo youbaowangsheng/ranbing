@@ -1,0 +1,159 @@
+.page {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: #1a3a5c;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+}
+.back-btn {
+  color: #fff;
+  font-size: 24px;
+  padding: 0 12px;
+}
+.top-bar-title {
+  flex: 1;
+  text-align: center;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 500;
+  padding-right: 36px;
+}
+.tab-bar {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: #fff;
+  display: flex;
+  border-bottom: 1px solid #eee;
+  z-index: 99;
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  line-height: 44px;
+  font-size: 15px;
+  color: #888;
+}
+.tab-item.active {
+  color: #1a3a5c;
+  font-weight: 600;
+  border-bottom: 2px solid #1a3a5c;
+}
+.section {
+  padding: 100px 16px 20px;
+}
+.loading, .empty {
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+  padding: 40px 0;
+}
+.contact-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1a3a5c;
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.contact-info {
+  flex: 1;
+  margin-left: 12px;
+}
+.contact-name {
+  display: block;
+  font-size: 15px;
+  color: #222;
+  font-weight: 500;
+}
+.contact-meta {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-top: 3px;
+}
+.card-arrow {
+  color: #ccc;
+  font-size: 20px;
+}
+.request-card {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.request-info {
+  flex: 1;
+  margin-left: 12px;
+}
+.request-name {
+  display: block;
+  font-size: 15px;
+  color: #222;
+  font-weight: 500;
+}
+.request-meta {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-top: 3px;
+}
+.request-msg {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+.request-actions {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.action-btns {
+  display: flex;
+  gap: 6px;
+}
+.btn-accept {
+  background: #1a3a5c;
+  color: #fff;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 4px;
+}
+.btn-reject {
+  background: #fff;
+  color: #888;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+.status-text {
+  font-size: 12px;
+  color: #aaa;
+}
