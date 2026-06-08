@@ -2,6 +2,7 @@
 阿里云短信发送封装
 文档: https://help.aliyun.com/document_detail/101419.html
 """
+import os
 import random
 import json
 import base64
@@ -12,11 +13,11 @@ import urllib.parse
 from datetime import datetime
 
 
-ALIYUN_ACCESS_KEY_ID = 'LTAI5t5qBjRMNDJMN1PN25bt'
-ALIYUN_ACCESS_KEY_SECRET = 'p1EEqf45q97hrtycNlzMlo1gIg9PRg'
-ALIYUN_SMS_SIGN_NAME = '湖南器宇'
-ALIYUN_SMS_TEMPLATE_CODE = 'SMS_481780008'
-DEMO_MODE = False
+ALIYUN_ACCESS_KEY_ID = os.environ.get('ALIYUN_ACCESS_KEY_ID', '')
+ALIYUN_ACCESS_KEY_SECRET = os.environ.get('ALIYUN_ACCESS_KEY_SECRET', '')
+ALIYUN_SMS_SIGN_NAME = os.environ.get('ALIYUN_SMS_SIGN_NAME', '湖南器宇')
+ALIYUN_SMS_TEMPLATE_CODE = os.environ.get('ALIYUN_SMS_TEMPLATE_CODE', 'SMS_481780008')
+DEMO_MODE = os.environ.get('SMS_DEMO_MODE', 'False').lower() == 'true'
 
 
 def _make_signature(method, path, params, secret):
