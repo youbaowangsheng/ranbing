@@ -1,0 +1,56 @@
+<!-- pages/community/community.wxml -->
+<view class="container">
+  <view class="top-bar">
+    <view class="search-box" bindtap="toSearch">
+      <text class="search-icon">🔍</text>
+      <text class="search-placeholder">搜索社群</text>
+    </view>
+    <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
+  </view>
+
+  <view class="loading" wx:if="{{loading && !items.length}}"><text>加载中...</text></view>
+
+  <!-- AI社群助手入口 -->
+  <view class="ai-entrance" bindtap="toAiAssistant">
+    <view class="ai-icon">🏘️</view>
+    <view class="ai-text">
+      <view class="ai-title">AI社群助手</view>
+      <view class="ai-sub">帮你筛选社群、申请发起社群、参加社群活动</view>
+    </view>
+    <text class="ai-arrow">›</text>
+  </view>
+
+  <!-- 全部社群列表 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🏘️ 全部社群</text>
+      <text class="section-count" wx:if="{{items.length > 0}}">{{items.length}}个</text>
+    </view>
+    <view class="community-list">
+      <view class="community-card" wx:for="{{items}}" wx:key="uuid" bindtap="toDetail" data-uuid="{{item.uuid}}">
+        <view class="card-icon">{{item.cover_emoji || '🤝'}}</view>
+        <view class="card-info">
+          <view class="card-name-row">
+            <view class="card-name">{{item.name}}</view>
+            <view class="joined-badge" wx:if="{{item.join_status === 1}}">已加入</view>
+          </view>
+          <view class="card-desc">{{item.description || '暂无简介'}}</view>
+          <view class="card-meta">
+            <text>👥 {{item.member_count || 0}}人</text>
+            <text wx:if="{{item.join_status === 1 && item.role === 3}}"> · 群主</text>
+            <text wx:if="{{item.join_status === 1 && item.role === 2}}"> · 管理员</text>
+          </view>
+        </view>
+        <view wx:if="{{item.join_status !== 1}}" class="join-btn" bindtap="joinNow" data-uuid="{{item.uuid}}">加入</view>
+        <text wx:if="{{item.join_status === 1}}" class="card-arrow">›</text>
+      </view>
+
+      <view class="empty" wx:if="{{!loading && items.length === 0}}">
+        <text class="empty-icon">🤝</text>
+        <text class="empty-text">暂无社群</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="bottom-spacer"></view>
+</view>

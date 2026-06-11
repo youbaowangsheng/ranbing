@@ -1,0 +1,89 @@
+{
+  "description": "燃冰小程序项目配置文件",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "autoAudits": false,
+    "showShadow": true,
+    "showRewardAndAchievement": true,
+    "fetchPlugins": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "useIsolateContext": true,
+    "userConfirmedBundleSwitch": false,
+    "packNpmManually": false,
+    "packNpmAlongWithNpmFile": false,
+    "minifyWXSS": true,
+    "disableUseStrict": false,
+    "minifyJS": true,
+    "showES6CompileOption": false,
+    "compileHotReload": false,
+    "lazyloadPlaceholderEnable": false,
+    "useMultiFrameRuntime": true,
+    "useNeedDownloadFont": false,
+    "usePreloadFile": false,
+    "useHeadWhenCompile": false,
+    "bundleLocationChange": false,
+    "checkInvalidKey": true,
+    "checkSiteData": true,
+    "transformArguments": true,
+    "bundleProgress": false,
+    "uploadWithCredentials": false,
+    "compileParallel": true,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "packNpmRelationList": [],
+    "minifyWXML": true,
+    "localPlugins": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.3.5",
+  "appid": "wx5c3b0ab31ced45fa",
+  "projectname": "ranbing-mini-program",
+  "condition": {
+    "search": {
+      "list": []
+    },
+    "conversation": {
+      "list": []
+    },
+    "game": {
+      "list": []
+    },
+    "plugin": {
+      "list": []
+    },
+    "gamePlugin": {
+      "list": []
+    },
+    "miniprogram": {
+      "list": []
+    }
+  },
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2,
+    "pictographic": true
+  },
+  "simulatorPluginLibVersion": {}
+}

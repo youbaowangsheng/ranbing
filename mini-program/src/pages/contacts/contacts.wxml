@@ -1,0 +1,56 @@
+<view class="page">
+  <!-- top bar -->
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <text class="top-bar-title">通讯录</text>
+  </view>
+
+  <!-- tab -->
+  <view class="tab-bar">
+    <text class="tab-item {{activeTab==='friends'?'active':''}}" bindtap="switchTab" data-tab="friends">好友</text>
+    <text class="tab-item {{activeTab==='requests'?'active':''}}" bindtap="switchTab" data-tab="requests">申请</text>
+  </view>
+
+  <!-- 好友列表 -->
+  <view wx:if="{{activeTab==='friends'}}" class="section">
+    <view wx:if="{{loading}}" class="loading">加载中...</view>
+    <view wx:elif="{{items.length===0}}" class="empty">
+      <text>还没有好友，快去添加吧</text>
+    </view>
+    <view wx:else>
+      <view wx:for="{{items}}" wx:key="uuid" class="contact-card" bindtap="viewProfile" data-uuid="{{item.uuid}}">
+        <view class="avatar-circle">{{item.initials}}</view>
+        <view class="contact-info">
+          <text class="contact-name">{{item.real_name}}</text>
+          <text class="contact-meta">{{item.company}} · {{item.position}}</text>
+        </view>
+        <view class="card-arrow">›</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 好友申请 -->
+  <view wx:if="{{activeTab==='requests'}}" class="section">
+    <view wx:if="{{loading}}" class="loading">加载中...</view>
+    <view wx:elif="{{requests.length===0}}" class="empty">
+      <text>暂无好友申请</text>
+    </view>
+    <view wx:else>
+      <view wx:for="{{requests}}" wx:key="uuid" class="request-card">
+        <view class="avatar-circle" bindtap="viewProfile" data-uuid="{{item.from_profile.uuid}}">{{item.from_profile.initials}}</view>
+        <view class="request-info">
+          <text class="request-name">{{item.from_profile.real_name}}</text>
+          <text class="request-meta">{{item.from_profile.company}} · {{item.from_profile.position}}</text>
+          <text wx:if="{{item.message}}" class="request-msg">{{item.message}}</text>
+        </view>
+        <view class="request-actions">
+          <view wx:if="{{item.status===1}}" class="action-btns">
+            <view class="btn-accept" bindtap="accept" data-uuid="{{item.uuid}}">接受</view>
+            <view class="btn-reject" bindtap="reject" data-uuid="{{item.uuid}}">拒绝</view>
+          </view>
+          <text wx:else class="status-text">{{item.statusText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

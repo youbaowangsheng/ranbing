@@ -1,0 +1,132 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}{{ other_profile.real_name|default:'私信' }} · 燃冰{% endblock %}
+
+{% block content %}
+
+{% if error %}
+<div class="card" style="text-align:center; padding:40px; color:#999;">
+  <div style="font-size:40px; margin-bottom:10px;">🚫</div>
+  <div>{{ error }}</div>
+  <a href="{% url 'message_list' %}" style="color:#e86a3a; font-size:13px;">返回私信列表 ›</a>
+</div>
+{% else %}
+
+<!-- Header -->
+<div class="card" style="margin-bottom:10px; display:flex; align-items:center; gap:12px;">
+  <a href="{% url 'message_list' %}" style="font-size:20px; color:#888; text-decoration:none;">‹</a>
+  <div style="width:40px; height:40px; border-radius:50%; background:{{ other_profile.real_name|avatar_color }}; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0;">
+    {{ other_profile.real_name|initials }}
+  </div>
+  <div style="flex:1;">
+    <div style="font-size:15px; font-weight:700; color:#1a1a1a;">{{ other_profile.real_name|default:'匿名' }}</div>
+    {% if other_profile.company %}
+    <div style="font-size:12px; color:#888;">{{ other_profile.company }}</div>
+    {% endif %}
+  </div>
+  <a href="{% url 'profile_view' other_profile.uuid %}" style="font-size:12px; color:#e86a3a; text-decoration:none;">名片 ›</a>
+</div>
+
+<!-- Message List -->
+<div id="msg-list" style="max-height:60vh; overflow-y:auto; margin-bottom:10px;">
+  {% for msg in messages %}
+  <div style="margin-bottom:12px; display:flex; {% if msg.from_profile == my_profile %}justify-content:flex-end{% else %}justify-content:flex-start{% endif %};">
+    <div style="max-width:75%;">
+      {% if msg.from_profile != my_profile %}
+      <div style="font-size:11px; color:#aaa; margin-bottom:3px;">{{ msg.from_profile.real_name|default:'匿名' }}</div>
+      {% endif %}
+      <div style="padding:10px 14px; border-radius:16px; font-size:13px; line-height:1.5;
+        {% if msg.from_profile == my_profile %}
+        background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border-bottom-right-radius:4px;
+        {% else %}
+        background:#f0f0f0; color:#333; border-bottom-left-radius:4px;
+        {% endif %}">
+        {{ msg.content|escape }}
+      </div>
+      <div style="font-size:10px; color:#ccc; margin-top:3px; text-align:{% if msg.from_profile == my_profile %}right{% else %}left{% endif %};">
+        {{ msg.created_at|date:"H:i" }}
+        {% if msg.from_profile == my_profile and msg.is_read %} · 已读{% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div style="text-align:center; padding:40px 20px; color:#ccc; font-size:13px;">
+    开始对话吧
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Input -->
+<div class="card" style="padding:12px; position:sticky; bottom:60px; background:#fff;">
+  <form id="msg-form" onsubmit="return sendMsg(event)">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <input type="hidden" name="uuid" value="{{ other_profile.uuid }}">
+    <div style="display:flex; gap:8px; align-items:flex-end;">
+      <textarea name="content" rows="2" placeholder="输入消息..." id="msg-input"
+        style="flex:1; border:1px solid #e5e5e5; border-radius:12px; padding:8px 12px; font-size:13px; resize:none; outline:none; focus:border-color:#e86a3a;"></textarea>
+      <button type="submit" style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer; flex-shrink:0;">
+        发送
+      </button>
+    </div>
+    <div id="tip" style="font-size:12px; color:#999; margin-top:4px;"></div>
+  </form>
+</div>
+
+{% endif %}
+
+<script>
+var myUuid = '{{ my_profile.uuid }}';
+
+function sendMsg(e) {
+  e.preventDefault();
+  var form = document.getElementById('msg-form');
+  var fd = new FormData(form);
+  var tip = document.getElementById('tip');
+  var input = document.getElementById('msg-input');
+
+  fetch("{% url 'send_message' %}", {
+    method: 'POST',
+    headers: {'X-CSRFToken': fd.get('csrfmiddlewaretoken')},
+    body: fd,
+  }).then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.code == 0) {
+      tip.textContent = '✓ 已发送';
+      tip.style.color = '#059669';
+      input.value = '';
+      // Append message bubble
+      var list = document.getElementById('msg-list');
+      var content = fd.get('content');
+      var now = new Date();
+      var time = (now.getHours()+'').padStart(2,'0') + ':' + (now.getMinutes()+'').padStart(2,'0');
+      var div = document.createElement('div');
+      div.style = 'margin-bottom:12px; display:flex; justify-content:flex-end;';
+      div.innerHTML = '<div style="max-width:75%;">' +
+        '<div style="padding:10px 14px; border-radius:16px; font-size:13px; line-height:1.5; background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border-bottom-right-radius:4px;">' +
+        content.replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+        '</div>' +
+        '<div style="font-size:10px; color:#ccc; margin-top:3px; text-align:right;">' + time + ' · 已发送</div>' +
+        '</div>';
+      list.appendChild(div);
+      list.scrollTop = list.scrollHeight;
+      setTimeout(function() { tip.textContent = ''; }, 3000);
+    } else {
+      tip.textContent = data.message || '发送失败';
+      tip.style.color = '#d00';
+    }
+  }).catch(function() {
+    tip.textContent = '网络错误';
+    tip.style.color = '#d00';
+  });
+  return false;
+}
+
+// scroll to bottom on load
+window.onload = function() {
+  var list = document.getElementById('msg-list');
+  if (list) list.scrollTop = list.scrollHeight;
+};
+</script>
+
+{% endblock %}

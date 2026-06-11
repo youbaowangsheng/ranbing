@@ -1,0 +1,249 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}校友筛选 · 燃冰{% endblock %}
+
+{% block header_content %}
+<div style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+  <button onclick="history.back()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:4px;">←</button>
+  <span style="flex:1; font-size:14px; font-weight:600;">筛选校友</span>
+  <button id="resetBtn" style="background:none; border:none; color:#fff; font-size:13px; cursor:pointer; padding:4px 8px;">重置</button>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filter Summary -->
+<div id="filterSummary" class="card" style="margin-bottom:12px; display:none;">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="font-size:12px; color:#888;">
+      <span id="activeCount">0</span> 位校友符合条件
+    </div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;" id="activeFilters"></div>
+  </div>
+</div>
+
+<!-- Graduation Year Filter -->
+<div class="section-header mt12">
+  <span class="section-title">🎓 毕业年份</span>
+</div>
+<div class="card" style="padding:12px;">
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <select id="yearStart" style="flex:1; min-width:100px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+      <option value="">起始年</option>
+      {% for year in years %}
+      <option value="{{ year }}">{{ year }}</option>
+      {% endfor %}
+    </select>
+    <span style="color:#888; line-height:36px;">至</span>
+    <select id="yearEnd" style="flex:1; min-width:100px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+      <option value="">结束年</option>
+      {% for year in years %}
+      <option value="{{ year }}">{{ year }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<!-- Major Filter -->
+<div class="section-header mt12">
+  <span class="section-title">📚 院系专业</span>
+</div>
+<div class="card" style="padding:12px;">
+  <div style="display:flex; flex-direction:column; gap:8px;">
+    <select id="collegeSelect" style="padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+      <option value="">选择院系</option>
+      {% for college in colleges %}
+      <option value="{{ college }}">{{ college }}</option>
+      {% endfor %}
+    </select>
+    <select id="majorSelect" style="padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;" disabled>
+      <option value="">选择专业</option>
+    </select>
+  </div>
+</div>
+
+<!-- Location Filter -->
+<div class="section-header mt12">
+  <span class="section-title">📍 所在地</span>
+</div>
+<div class="card" style="padding:12px;">
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <select id="provinceSelect" style="flex:1; min-width:100px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+      <option value="">省份/直辖市</option>
+      {% for province in provinces %}
+      <option value="{{ province }}">{{ province }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" id="cityInput" placeholder="城市" style="flex:1; min-width:100px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+  </div>
+</div>
+
+<!-- Industry Filter -->
+<div class="section-header mt12">
+  <span class="section-title">🏢 所在行业</span>
+</div>
+<div class="card" style="padding:12px;">
+  <div id="industryList" style="display:flex; flex-wrap:wrap; gap:6px;">
+    {% for industry in industries %}
+    <button 
+      class="tag tag-gray industry-btn"
+      data-value="{{ industry }}"
+      onclick="toggleIndustry(this)"
+      style="border:none; cursor:pointer;">
+      {{ industry }}
+    </button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Tags Filter -->
+<div class="section-header mt12">
+  <span class="section-title">🏷️ 标签筛选</span>
+</div>
+<div class="card" style="padding:12px;">
+  <div id="tagFilterList" style="display:flex; flex-wrap:wrap; gap:6px;">
+    {% for tag in all_tags %}
+    <button 
+      class="tag tag-gray tag-filter-btn"
+      data-id="{{ tag.id }}"
+      onclick="toggleTagFilter(this)"
+      style="border:none; cursor:pointer;">
+      {{ tag.name }}
+    </button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Apply Button -->
+<div style="padding:16px 0 30px;">
+  <button id="applyBtn" onclick="applyFilters()" style="width:100%; background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:10px; padding:12px; font-size:15px; font-weight:600; cursor:pointer;">
+    应用筛选
+  </button>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const majorMap = {{ major_map_json|safe }};
+const selectedIndustries = new Set();
+const selectedTagIds = new Set();
+
+document.getElementById('collegeSelect').addEventListener('change', function() {
+  const college = this.value;
+  const majorSelect = document.getElementById('majorSelect');
+  
+  if (college && majorMap[college]) {
+    majorSelect.disabled = false;
+    majorSelect.innerHTML = '<option value="">选择专业</option>' + 
+      majorMap[college].map(m => `<option value="${m}">${m}</option>`).join('');
+  } else {
+    majorSelect.disabled = true;
+    majorSelect.innerHTML = '<option value="">选择专业</option>';
+  }
+});
+
+function toggleIndustry(btn) {
+  const value = btn.dataset.value;
+  if (selectedIndustries.has(value)) {
+    selectedIndustries.delete(value);
+    btn.classList.remove('tag-orange');
+    btn.classList.add('tag-gray');
+  } else {
+    selectedIndustries.add(value);
+    btn.classList.remove('tag-gray');
+    btn.classList.add('tag-orange');
+  }
+  updateFilterSummary();
+}
+
+function toggleTagFilter(btn) {
+  const id = btn.dataset.id;
+  if (selectedTagIds.has(id)) {
+    selectedTagIds.delete(id);
+    btn.classList.remove('tag-orange');
+    btn.classList.add('tag-gray');
+  } else {
+    selectedTagIds.add(id);
+    btn.classList.remove('tag-gray');
+    btn.classList.add('tag-orange');
+  }
+  updateFilterSummary();
+}
+
+function updateFilterSummary() {
+  const summary = document.getElementById('filterSummary');
+  const activeDiv = document.getElementById('activeFilters');
+  const countSpan = document.getElementById('activeCount');
+  
+  let total = selectedIndustries.size + selectedTagIds.size;
+  if (document.getElementById('yearStart').value) total++;
+  if (document.getElementById('yearEnd').value) total++;
+  if (document.getElementById('collegeSelect').value) total++;
+  if (document.getElementById('majorSelect').value) total++;
+  if (document.getElementById('provinceSelect').value) total++;
+  if (document.getElementById('cityInput').value) total++;
+  
+  if (total > 0) {
+    summary.style.display = 'block';
+    countSpan.textContent = total;
+    
+    let html = '';
+    selectedIndustries.forEach(ind => {
+      html += `<span class="tag tag-orange" style="font-size:11px;">${ind}</span>`;
+    });
+    selectedTagIds.forEach(id => {
+      const btn = document.querySelector(`.tag-filter-btn[data-id="${id}"]`);
+      if (btn) {
+        html += `<span class="tag tag-blue" style="font-size:11px;">${btn.textContent}</span>`;
+      }
+    });
+    activeDiv.innerHTML = html;
+  } else {
+    summary.style.display = 'none';
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', function() {
+  document.querySelectorAll('select').forEach(s => s.value = '');
+  document.querySelectorAll('input').forEach(i => i.value = '');
+  document.querySelectorAll('.tag-orange').forEach(t => {
+    t.classList.remove('tag-orange');
+    t.classList.add('tag-gray');
+  });
+  selectedIndustries.clear();
+  selectedTagIds.clear();
+  document.getElementById('majorSelect').disabled = true;
+  updateFilterSummary();
+});
+
+function applyFilters() {
+  const params = new URLSearchParams();
+  
+  const yearStart = document.getElementById('yearStart').value;
+  const yearEnd = document.getElementById('yearEnd').value;
+  const college = document.getElementById('collegeSelect').value;
+  const major = document.getElementById('majorSelect').value;
+  const province = document.getElementById('provinceSelect').value;
+  const city = document.getElementById('cityInput').value;
+  
+  if (yearStart) params.set('year_start', yearStart);
+  if (yearEnd) params.set('year_end', yearEnd);
+  if (college) params.set('college', college);
+  if (major) params.set('major', major);
+  if (province) params.set('province', province);
+  if (city) params.set('city', city);
+  if (selectedIndustries.size > 0) params.set('industries', Array.from(selectedIndustries).join(','));
+  if (selectedTagIds.size > 0) params.set('tags', Array.from(selectedTagIds).join(','));
+  
+  const baseUrl = "/pages/network/filter/";
+  window.location.href = baseUrl + '?' + params.toString();
+}
+
+document.querySelectorAll('select, input').forEach(el => {
+  el.addEventListener('change', updateFilterSummary);
+  el.addEventListener('input', updateFilterSummary);
+});
+</script>
+{% endblock %}

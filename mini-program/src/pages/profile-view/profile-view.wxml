@@ -1,0 +1,48 @@
+<!-- pages/profile-view/profile-view.wxml -->
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <view class="top-bar-title">个人主页</view>
+    <view style="width:44px"></view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+
+  <view class="profile-content" wx:if="{{!loading && profile}}">
+    <!-- 头像和基本信息 -->
+    <view class="profile-header">
+      <view class="avatar" style="background: {{avatar_color}}">{{avatar_char}}</view>
+      <view class="header-info">
+        <view class="name-row">
+          <text class="name">{{profile.real_name}}</text>
+          <text class="cert-badge" wx:if="{{profile.cert_level >= 1}}">✓</text>
+        </view>
+        <view class="meta">{{profile.company || ''}}{{profile.position ? ' · '+profile.position : ''}}</view>
+        <view class="meta" wx:if="{{profile.education_school}}">{{profile.education_school}}{{profile.education_year ? ' '+profile.education_year+'届' : ''}}</view>
+      </view>
+    </view>
+
+    <!-- 标签 -->
+    <view class="tags-row" wx:if="{{profile.tags && profile.tags.length > 0}}">
+      <text class="tag" wx:for="{{profile.tags}}" wx:key="">{{item.name}}</text>
+    </view>
+
+    <!-- 个人简介 -->
+    <view class="bio-section" wx:if="{{profile.bio}}">
+      <view class="bio-text">{{profile.bio}}</view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-row">
+      <view class="action-btn primary" bindtap="onConnect" wx:if="{{!is_self}}">
+        {{connected ? '已连接' : '连接'}}
+      </view>
+      <view class="action-btn" bindtap="onMessage" wx:if="{{!is_self}}">发私信</view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && !profile}}">
+    <text class="empty-icon">👤</text>
+    <view class="empty-text">用户不存在</view>
+  </view>
+</view>

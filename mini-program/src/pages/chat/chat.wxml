@@ -1,0 +1,26 @@
+<!-- 私信聊天详情 -->
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <view class="top-bar-title">{{peer_name}}</view>
+    <view class="top-bar-right"></view>
+  </view>
+
+  <!-- 消息列表 -->
+  <scroll-view class="msg-scroll" scroll-y="true" scroll-top="{{scrollTop}}" bindscrolltoupper="loadMore">
+    <view class="msg-area">
+      <view class="load-tip" wx:if="{{loadingMore}}">加载中...</view>
+      <view class="msg-bubble-wrap {{item.is_mine ? 'mine' : 'theirs'}}" wx:for="{{messages}}" wx:key="id">
+        <view class="bubble" wx:if="{{!item.is_mine}}">{{item.content}}</view>
+        <view class="bubble mine-bubble" wx:if="{{item.is_mine}}">{{item.content}}</view>
+      </view>
+      <view class="load-tip" wx:if="{{!hasMore && messages.length > 0}}">— 已加载全部 —</view>
+    </view>
+  </scroll-view>
+
+  <!-- 输入框 -->
+  <view class="input-bar">
+    <input class="msg-input" value="{{inputText}}" bindinput="onInput" bindconfirm="send" confirm-type="send" placeholder="输入消息..." />
+    <view class="send-btn {{inputText ? 'active' : ''}}" bindtap="send">发送</view>
+  </view>
+</view>

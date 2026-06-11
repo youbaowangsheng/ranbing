@@ -1,0 +1,60 @@
+/* AI助手 */
+page { background: #f0f2f5; }
+.container { min-height: 100vh; background: #f0f2f5; display: flex; flex-direction: column; }
+
+/* 顶栏 */
+.top-bar { background: #1a3a5c; padding: 70px 16px 14px; display: flex; align-items: center; justify-content: space-between; }
+.back-btn { font-size: 28px; color: #fff; width: 32px; }
+.top-bar-title { font-size: 17px; font-weight: 600; color: #fff; }
+.top-bar-right { width: 32px; }
+
+/* 消息列表 */
+.message-list { flex: 1; height: calc(100vh - 200px); padding: 12px 16px 0; }
+
+/* 欢迎语 */
+.welcome { text-align: center; padding: 24px 16px 20px; }
+.welcome-icon { font-size: 48px; margin-bottom: 10px; }
+.welcome-title { font-size: 18px; font-weight: 700; color: #1a3a5c; margin-bottom: 6px; }
+.welcome-desc { font-size: 13px; color: #888; line-height: 1.5; }
+
+/* 消息行 */
+.msg-row { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-start; }
+.msg-row.user { flex-direction: row-reverse; }
+.msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: #f0f2f5; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.msg-row.ai .msg-avatar { background: #e8f0fe; }
+.msg-content { max-width: 75%; }
+.msg-bubble { background: #fff; border-radius: 14px; padding: 10px 14px; font-size: 14px; color: #333; line-height: 1.6; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.msg-row.user .msg-bubble { background: #1a3a5c; color: #fff; }
+
+/* 匹配结果 */
+.match-results { padding: 12px 0; }
+.results-title { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 10px; }
+.result-card { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.result-type { font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+.type-supply { background: #e8fdf5; color: #059669; }
+.type-demand { background: #fff3e8; color: #c2410c; }
+.result-score { font-size: 12px; color: #e86a3a; font-weight: 600; }
+.result-title { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.result-reason { font-size: 12px; color: #888; margin-bottom: 4px; }
+.result-meta { font-size: 11px; color: #aaa; }
+
+/* 加载中 */
+.ai-typing { padding: 4px 0; }
+.msg-bubble.typing { display: flex; gap: 4px; align-items: center; padding: 12px 16px; }
+.dot { font-size: 6px; color: #999; animation: blink 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100% { opacity: 0.3 } 40% { opacity: 1 } }
+
+/* 快捷问题 */
+.quick-bar { background: #fff; padding: 8px 16px 8px; border-top: 1px solid #f0f0f0; }
+.quick-label { font-size: 11px; color: #aaa; display: block; margin-bottom: 6px; }
+.quick-scroll { white-space: nowrap; }
+.quick-chip { display: inline-block; background: #f0f2f5; color: #666; font-size: 12px; padding: 5px 12px; border-radius: 14px; margin-right: 8px; }
+
+/* 输入框 */
+.input-bar { background: #fff; padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); display: flex; gap: 10px; align-items: center; border-top: 1px solid #f0f0f0; }
+.chat-input { flex: 1; background: #f5f5f5; border-radius: 20px; padding: 8px 14px; font-size: 14px; border: none; outline: none; }
+.btn-send { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; border: none; border-radius: 20px; padding: 8px 18px; font-size: 14px; white-space: nowrap; }
+.btn-send[disabled] { opacity: 0.5; }

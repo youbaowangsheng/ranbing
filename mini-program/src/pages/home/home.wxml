@@ -1,0 +1,144 @@
+<!-- 首页 - 瀑布流混合信息流 -->
+<view class="container">
+  <view class="top-bar">
+    <view class="search-icon-btn" bindtap="toSearch">🔍</view>
+    <view class="top-bar-center"><text class="top-bar-title">燃冰</text></view>
+    <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
+  </view>
+  <view class="user-card">
+    <view class="user-info">
+      <view class="user-name">{{userInfo.nickname || '用户'}}</view>
+      <view class="user-meta">{{userInfo.company || '未填写公司'}} · {{userInfo.position || '未填写职位'}}</view>
+    </view>
+    <button class="publish-btn" bindtap="toPublish">+ 发布</button>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+
+  <!-- 瀑布流主体 -->
+  <view class="waterfall" wx:if="{{!loading && items.length > 0}}">
+    <!-- 左列 -->
+    <view class="waterfall-col">
+      <view class="waterfall-item" wx:for="{{leftItems}}" wx:key="uuid" bindtap="onItemTap" data-item="{{item}}">
+        <!-- 供需卡片 -->
+        <block wx:if="{{item.card_type === 'supply'}}">
+          <view class="supply-card">
+            <view class="sc-header">
+              <view class="sc-avatar" style="background: {{item.avatar_color}}">{{item.avatar_char}}</view>
+              <view class="sc-user">
+                <text class="sc-name">{{item.profile.real_name || '匿名'}}</text>
+                <text class="sc-meta">{{item.profile.company || ''}}</text>
+              </view>
+              <text class="sc-type {{item.supply_type === 1 ? 'type-supply' : 'type-demand'}}">{{item.supply_type === 1 ? '供给' : '需求'}}</text>
+            </view>
+            <view class="sc-title">{{item.title}}</view>
+            <view class="sc-content">{{item.content}}</view>
+            <view class="sc-footer">
+              <text class="sc-time">{{item.created_at_fmt}}</text>
+              <text class="sc-match" wx:if="{{item.pct > 0}}">🔥 {{item.pct}}%</text>
+            </view>
+          </view>
+        </block>
+        <!-- 活动卡片 -->
+        <block wx:elif="{{item.card_type === 'activity'}}">
+          <view class="activity-card">
+            <view class="ac-top">
+              <text class="ac-type-tag">📅 活动</text>
+            </view>
+            <view class="ac-thumb"><text class="ac-thumb-icon">📅</text></view>
+            <view class="ac-body">
+              <view class="ac-title">{{item.title}}</view>
+              <view class="ac-meta">{{item.start_time_fmt}}</view>
+              <view class="ac-meta">👥 {{item.attendee_count || 0}}人参与</view>
+              <view class="sc-footer"><text class="sc-time">{{item.created_at_fmt}}</text></view>
+            </view>
+          </view>
+        </block>
+        <!-- 社群卡片 -->
+        <block wx:elif="{{item.card_type === 'community'}}">
+          <view class="community-card">
+            <view class="cc-top">
+              <text class="cc-type-tag">🤝 社群</text>
+            </view>
+            <view class="cc-icon">🤝</view>
+            <view class="cc-body">
+              <view class="cc-name">{{item.name}}</view>
+              <view class="cc-desc">{{item.description || '暂无简介'}}</view>
+              <view class="cc-meta">{{item.member_count || 0}}人</view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 右列 -->
+    <view class="waterfall-col">
+      <view class="waterfall-item" wx:for="{{rightItems}}" wx:key="uuid" bindtap="onItemTap" data-item="{{item}}">
+        <!-- 供需卡片 -->
+        <block wx:if="{{item.card_type === 'supply'}}">
+          <view class="supply-card">
+            <view class="sc-header">
+              <view class="sc-avatar" style="background: {{item.avatar_color}}">{{item.avatar_char}}</view>
+              <view class="sc-user">
+                <text class="sc-name">{{item.profile.real_name || '匿名'}}</text>
+                <text class="sc-meta">{{item.profile.company || ''}}</text>
+              </view>
+              <text class="sc-type {{item.supply_type === 1 ? 'type-supply' : 'type-demand'}}">{{item.supply_type === 1 ? '供给' : '需求'}}</text>
+            </view>
+            <view class="sc-title">{{item.title}}</view>
+            <view class="sc-content">{{item.content}}</view>
+            <view class="sc-footer">
+              <text class="sc-time">{{item.created_at_fmt}}</text>
+              <text class="sc-match" wx:if="{{item.pct > 0}}">🔥 {{item.pct}}%</text>
+            </view>
+          </view>
+        </block>
+        <!-- 活动卡片 -->
+        <block wx:elif="{{item.card_type === 'activity'}}">
+          <view class="activity-card">
+            <view class="ac-top">
+              <text class="ac-type-tag">📅 活动</text>
+            </view>
+            <view class="ac-thumb"><text class="ac-thumb-icon">📅</text></view>
+            <view class="ac-body">
+              <view class="ac-title">{{item.title}}</view>
+              <view class="ac-meta">{{item.start_time_fmt}}</view>
+              <view class="ac-meta">👥 {{item.attendee_count || 0}}人参与</view>
+              <view class="sc-footer"><text class="sc-time">{{item.created_at_fmt}}</text></view>
+            </view>
+          </view>
+        </block>
+        <!-- 社群卡片 -->
+        <block wx:elif="{{item.card_type === 'community'}}">
+          <view class="community-card">
+            <view class="cc-top">
+              <text class="cc-type-tag">🤝 社群</text>
+            </view>
+            <view class="cc-icon">🤝</view>
+            <view class="cc-body">
+              <view class="cc-name">{{item.name}}</view>
+              <view class="cc-desc">{{item.description || '暂无简介'}}</view>
+              <view class="cc-meta">{{item.member_count || 0}}人</view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMore">
+    <text wx:if="{{loadingMore}}">加载中...</text>
+    <text wx:else>加载更多</text>
+  </view>
+  <view class="no-more" wx:if="{{!hasMore && items.length > 0}}"><text>— 没有更多了 —</text></view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && items.length === 0}}">
+    <text class="empty-icon">📭</text>
+    <view class="empty-text">暂无内容</view>
+    <button class="publish-btn-empty" bindtap="toPublish">发布第一条</button>
+  </view>
+
+</view>

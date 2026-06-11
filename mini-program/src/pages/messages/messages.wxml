@@ -1,0 +1,34 @@
+<!-- 私信列表 -->
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <view class="top-bar-title">私信</view>
+    <view class="top-bar-right"></view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+
+  <view class="msg-list" wx:if="{{!loading && conversations.length > 0}}">
+    <view class="msg-item" wx:for="{{conversations}}" wx:key="peer_uuid" bindtap="toChat" data-peer="{{item.peer_uuid}}" data-name="{{item.peer_name}}">
+      <view class="msg-avatar" style="background: {{item.avatar_color || '#1a3a5c'}}">
+        {{item.avatar_char}}
+      </view>
+      <view class="msg-body">
+        <view class="msg-row">
+          <text class="msg-name">{{item.peer_name}}</text>
+          <text class="msg-time">{{item.time_ago}}</text>
+        </view>
+        <view class="msg-row">
+          <text class="msg-preview">{{item.last_message}}</text>
+          <view class="unread-dot" wx:if="{{item.unread_count > 0}}">{{item.unread_count > 99 ? '99+' : item.unread_count}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty" wx:if="{{!loading && conversations.length === 0}}">
+    <text style="font-size:48px;">💬</text>
+    <text style="display:block;margin-top:12px;color:#999;font-size:14px;">暂无私信</text>
+    <text style="display:block;margin-top:8px;color:#bbb;font-size:12px;">去供需详情页找Ta合作吧</text>
+  </view>
+</view>

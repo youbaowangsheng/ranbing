@@ -1,0 +1,67 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}私信 · 燃冰{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="card" style="margin-bottom:10px; display:flex; align-items:center; gap:12px;">
+  <a href="{% url 'home' %}" style="font-size:20px; color:#888; text-decoration:none;">‹</a>
+  <div style="flex:1;">
+    <div style="font-size:16px; font-weight:700; color:#1a1a1a;">💬 我的私信</div>
+    <div style="font-size:12px; color:#888; margin-top:2px;">与校友的单聊会话</div>
+  </div>
+</div>
+
+<!-- Conversation List -->
+<div>
+  {% for conv in conversations %}
+  <a href="{% url 'message_detail' conv.profile.uuid %}" style="text-decoration:none; color:inherit;">
+    <div class="card" style="display:flex; gap:10px; align-items:center; margin-bottom:6px; padding:12px;">
+      <!-- Avatar -->
+      <div style="width:48px; height:48px; border-radius:50%; background:{{ conv.profile.real_name|avatar_color }}; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff; flex-shrink:0; position:relative;">
+        {{ conv.profile.real_name|initials }}
+        {% if conv.unread_count > 0 %}
+        <span style="position:absolute; top:-2px; right:-2px; width:16px; height:16px; border-radius:50%; background:#e86a3a; color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+          {% if conv.unread_count > 9 %}9+{% else %}{{ conv.unread_count }}{% endif %}
+        </span>
+        {% endif %}
+      </div>
+      <!-- Info -->
+      <div style="flex:1; min-width:0;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;">
+          <span style="font-size:14px; font-weight:600; color:#1a1a1a;">{{ conv.profile.real_name|default:'匿名' }}</span>
+          {% if conv.latest_message %}
+          <span style="font-size:11px; color:#aaa;">{{ conv.latest_message.created_at|date:"m-d H:i" }}</span>
+          {% endif %}
+        </div>
+        {% if conv.latest_message %}
+        <div style="font-size:12px; color:#888; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          {% if conv.latest_message.from_profile == conv.profile %}
+          <span style="color:#555;">{{ conv.latest_message.content|truncatechars:40 }}</span>
+          {% else %}
+          <span style="color:#aaa;">我：</span><span style="color:#555;">{{ conv.latest_message.content|truncatechars:36 }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+        {% if conv.profile.company %}
+        <div style="font-size:11px; color:#aaa; margin-top:2px;">{{ conv.profile.company }}</div>
+        {% endif %}
+      </div>
+      <!-- Unread dot -->
+      {% if conv.unread_count > 0 %}
+      <div style="width:8px; height:8px; border-radius:50%; background:#e86a3a; flex-shrink:0;"></div>
+      {% endif %}
+    </div>
+  </a>
+  {% empty %}
+  <div style="text-align:center; padding:60px 20px; color:#999;">
+    <div style="font-size:48px; margin-bottom:12px;">💬</div>
+    <div style="font-size:14px; margin-bottom:8px;">暂无私信会话</div>
+    <div style="font-size:12px; color:#aaa;">在供需详情页或名片页联系校友即可开启对话</div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}{{ view_profile.real_name }} · 燃冰{% endblock %}
+
+{% block content %}
+
+<!-- Profile Header -->
+<div class="card" style="margin-bottom:10px;">
+  <div style="display:flex; gap:14px; align-items:flex-start;">
+    <div style="width:60px; height:60px; border-radius:50%; background:{{ view_profile.real_name|avatar_color }}; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:#fff; flex-shrink:0;">
+      {{ view_profile.real_name|initials }}
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:18px; font-weight:700; color:#1a1a1a; margin-bottom:3px;">
+        {{ view_profile.real_name }}
+        {% if view_profile.cert_level == 3 %}
+          <span>🏅</span>
+        {% elif view_profile.cert_level >= 1 %}
+          <span>✓</span>
+        {% endif %}
+      </div>
+      <div style="font-size:12px; color:#888; margin-bottom:6px;">
+        {% if view_profile.education_school %}{{ view_profile.education_school }}{% endif %}
+        {% if view_profile.education_year %}{{ view_profile.education_year }}届{% endif %}
+        {% if view_profile.company %} · {{ view_profile.company }}{% endif %}
+        {% if view_profile.position %} · {{ view_profile.position }}{% endif %}
+      </div>
+      <div style="font-size:11px; color:#aaa;">
+        {% if view_profile.city %}📍 {{ view_profile.city }}{% endif %}
+        {% if view_profile.industry %} · {{ view_profile.industry }}{% endif %}
+      </div>
+    </div>
+    {% if not is_mine %}
+    <div id="connect-btn-area">
+      {% if is_connected %}
+      <button disabled style="background:#e0e0e0; color:#999; border:none; border-radius:20px; padding:6px 16px; font-size:12px; font-weight:600; cursor:not-allowed;">✓ 已连接</button>
+      {% else %}
+      <button onclick="doConnect()" id="connect-btn" style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:20px; padding:6px 16px; font-size:12px; font-weight:600; cursor:pointer;">+ 连接</button>
+      {% endif %}
+    </div>
+    <div id="connect-msg" style="display:none; font-size:11px; color:#e86a3a; margin-top:4px;"></div>
+    {% else %}
+    <div>
+      <a href="{% url 'profile_settings' %}"><button style="background:#f0f0f0; color:#666; border:none; border-radius:20px; padding:6px 14px; font-size:12px; cursor:pointer;">编辑</button></a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Bio -->
+  {% if view_profile.bio %}
+  <div style="margin-top:10px; font-size:13px; color:#444; line-height:1.6; padding-top:10px; border-top:1px solid #f0f0f0;">
+    {{ view_profile.bio }}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Tags -->
+<div class="card" style="margin-bottom:10px;">
+  <div class="section-title mb10">🏷️ 供给标签</div>
+  <div style="display:flex; flex-wrap:wrap; gap:5px;">
+    {% for tname in my_tags %}
+      {% if forloop.counter0 < 10 %}
+      <span class="tag tag-blue">{{ tname }}</span>
+      {% endif %}
+    {% empty %}
+    <span style="color:#999; font-size:12px;">暂无供给标签</span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Info -->
+<div class="card" style="margin-bottom:10px;">
+  <div class="section-title mb10">📋 基本信息</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+    <div><span style="color:#888;">公司：</span>{{ view_profile.company|default:'—' }}</div>
+    <div><span style="color:#888;">职位：</span>{{ view_profile.position|default:'—' }}</div>
+    <div><span style="color:#888;">行业：</span>{{ view_profile.industry|default:'—' }}</div>
+    <div><span style="color:#888;">城市：</span>{{ view_profile.city|default:'—' }}</div>
+    {% if view_profile.education_school %}
+    <div><span style="color:#888;">学校：</span>{{ view_profile.education_school }}</div>
+    <div><span style="color:#888;">届数：</span>{{ view_profile.education_year|default:'—' }}</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- My Supplies -->
+<div style="margin-bottom:60px;">
+  <div class="section-header">
+    <span class="section-title">💼 他的供需</span>
+    <a href="{% url 'supply_demand' %}" class="section-more">查看全部 ›</a>
+  </div>
+  {% for s in my_supplies %}
+  <a href="{% url 'supply_demand' %}?type={{ s.supply_type }}" style="text-decoration:none;">
+    <div class="card" style="display:flex; gap:10px; align-items:center; margin-bottom:6px;">
+      <div style="width:32px; height:32px; border-radius:8px; background:{% if s.supply_type == 1 %}linear-gradient(135deg,#e86a3a,#f0a06a){% else %}linear-gradient(135deg,#059669,#34d399){% endif %}; display:flex; align-items:center; justify-content:center; font-size:15px;">
+        {% if s.supply_type == 1 %}📤{% else %}📥{% endif %}
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:13px; font-weight:600; color:#1a1a1a;">{{ s.title|slice:":30" }}</div>
+        <div style="font-size:11px; color:#aaa;">{{ s.created_at|date:"Y-m-d" }}</div>
+      </div>
+      <div style="font-size:11px; color:{% if s.supply_type == 1 %}#e86a3a{% else %}#059669{% endif %}; font-weight:600;">{{ s.get_supply_type_display }}</div>
+    </div>
+  </a>
+{% block og_meta %}
+{{ block.super }}
+<meta property="og:title" content="{{ view_profile.real_name }} · 燃冰">
+<meta property="og:description" content="{% if view_profile.company %}{{ view_profile.company }}{% if view_profile.position %} · {{ view_profile.position }}{% endif %}{% else %}商务人脉{% endif %}">
+<meta property="og:image" content="https://asiamlhk.com/static/img/og-avatar.png">
+<meta property="og:url" content="https://asiamlhk.com/pages/profile/{{ view_profile.uuid }}/">
+{% endblock %}
+
+<script>
+async function doConnect() {
+  const btn = document.getElementById('connect-btn');
+  const msg = document.getElementById('connect-msg');
+  btn.disabled = true;
+  btn.textContent = '连接中…';
+  msg.style.display = 'none';
+  try {
+    const csrftoken = getCookie('csrftoken');
+    const res = await fetch('/api/v1/profiles/connect/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+      body: JSON.stringify({target_uuid: '{{ view_profile.uuid }}'})
+    });
+    const data = await res.json();
+    if (data.code === 0) {
+      btn.textContent = '✓ 已连接';
+      btn.style.background = '#e0e0e0';
+      btn.style.color = '#999';
+      btn.style.cursor = 'not-allowed';
+    } else {
+      msg.textContent = data.message || '连接失败';
+      msg.style.display = 'block';
+      btn.textContent = '+ 连接';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    msg.textContent = '网络错误';
+    msg.style.display = 'block';
+    btn.textContent = '+ 连接';
+    btn.disabled = false;
+  }
+}
+function getCookie(name) {
+  let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
+</script>
+
+{% endblock %}

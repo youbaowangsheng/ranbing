@@ -1,0 +1,80 @@
+<view class="page">
+  <!-- header banner -->
+  <view class="comm-header">
+    <view class="comm-cover" wx:if="{{community.cover_url}}">
+      <image src="{{community.cover_url}}" mode="aspectFill" class="cover-img"/>
+    </view>
+    <view class="comm-cover-placeholder" wx:else>
+      <text class="comm-icon">🏘️</text>
+    </view>
+    <view class="comm-info">
+      <text class="comm-name">{{community.name}}</text>
+      <text class="comm-meta">{{community.community_type_name}} · {{community.member_count}}人</text>
+    </view>
+  </view>
+
+  <!-- desc -->
+  <view class="section" wx:if="{{community.description}}">
+    <text class="section-title">社群简介</text>
+    <text class="comm-desc">{{community.description}}</text>
+  </view>
+
+  <!-- tabs -->
+  <view class="tab-bar">
+    <text class="tab {{activeTab==='members'?'tab-on':''}}" bindtap="switchTab" data-tab="members">成员</text>
+    <text class="tab {{activeTab==='messages'?'tab-on':''}}" bindtap="switchTab" data-tab="messages">动态</text>
+    <text class="tab {{activeTab==='post'?'tab-on':''}}" bindtap="switchTab" data-tab="post">发动态</text>
+  </view>
+
+  <!-- members -->
+  <view wx:if="{{activeTab==='members'}}">
+    <view class="member-grid">
+      <view class="member-card" wx:for="{{members}}" wx:key="uuid" bindtap="viewProfile" data-uuid="{{item.profile.uuid}}">
+        <image class="member-avatar" src="{{item.profile.avatar_url||'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}}" mode="aspectFill"/>
+        <text class="member-name">{{item.profile.real_name||'匿名'}}</text>
+        <text class="member-role" wx:if="{{item.role===3}}">群主</text>
+        <text class="member-role member-admin" wx:elif="{{item.role===2}}">管理员</text>
+      </view>
+    </view>
+    <view class="load-more" wx:if="{{membersLoading}}">
+      <text>加载中...</text>
+    </view>
+    <view class="empty-tip" wx:elif="{{members.length===0}}">
+      <text>暂无成员</text>
+    </view>
+  </view>
+
+  <!-- messages -->
+  <view wx:if="{{activeTab==='messages'}}">
+    <view class="msg-item" wx:for="{{messages}}" wx:key="uuid">
+      <view class="msg-header">
+        <image class="msg-avatar" src="{{item.profile.avatar_url||''}}" mode="aspectFill"/>
+        <view class="msg-meta">
+          <text class="msg-name">{{item.profile.real_name}}</text>
+          <text class="msg-time">{{item.created_at_fmt}}</text>
+        </view>
+        <text class="pin-badge" wx:if="{{item.is_pinned}}">置顶</text>
+      </view>
+      <text class="msg-content">{{item.content}}</text>
+    </view>
+    <view class="load-more" wx:if="{{msgLoading}}"><text>加载中...</text></view>
+    <view class="empty-tip" wx:elif="{{messages.length===0}}">
+      <text>暂无动态，快来发表第一条吧</text>
+    </view>
+  </view>
+
+  <!-- post form -->
+  <view wx:if="{{activeTab==='post'}}">
+    <textarea class="post-input" placeholder="说点什么..." maxlength="500" bindinput="onContentInput" value="{{postContent}}"/>
+    <text class="word-count">{{postContent.length}}/500</text>
+    <button class="post-btn {{posting?'disabled':''}}" bindtap="doPost">{{posting?'发布中...':'发布动态'}}</button>
+  </view>
+
+  <!-- bottom bar -->
+  <view class="bottom-bar">
+    <button class="action-btn {{isJoined?'joined-btn':'join-btn'}}" bindtap="toggleJoin">
+      {{isJoined?'已加入':'加入社群'}}
+    </button>
+    <button class="msg-btn" bindtap="switchTab" data-tab="post">发动态</button>
+  </view>
+</view>

@@ -1,0 +1,73 @@
+<!-- 发布供需 -->
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <text class="top-bar-title">发布机会</text>
+    <view class="top-bar-right"></view>
+  </view>
+
+  <!-- 供给/需求选择 -->
+  <view class="type-select">
+    <view class="type-btn {{supplyType===1?'active':''}}" data-type="1" bindtap="selectType">
+      <text class="type-icon">📤</text>
+      <text class="type-name">我有供给</text>
+      <text class="type-desc">资金/资源/人脉/技术</text>
+    </view>
+    <view class="type-btn {{supplyType===2?'active':''}}" data-type="2" bindtap="selectType">
+      <text class="type-icon">📥</text>
+      <text class="type-name">我有需求</text>
+      <text class="type-desc">找投资/找客户/找人</text>
+    </view>
+  </view>
+
+  <!-- 图片选择 -->
+  <view class="section">
+    <view class="section-title">添加图片（可选，最多9张）</view>
+    <view class="image-grid">
+      <view class="img-item" wx:for="{{images}}" wx:key="index">
+        <image class="img-thumb" src="{{item}}" mode="aspectFill" />
+        <view class="img-remove" bindtap="removeImage" data-idx="{{index}}">×</view>
+      </view>
+      <view class="img-add" bindtap="chooseImages" wx:if="{{images.length < 9}}">
+        <text class="img-add-icon">+</text>
+        <text class="img-add-text">添加图片</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签选择 -->
+  <view class="section">
+    <view class="section-title">选择标签（可多选）</view>
+    <view class="tag-list">
+      <text class="tag-chip {{selectedTags.includes(tag.id)?'selected':''}}" wx:for="{{tags}}" wx:key="id" bindtap="toggleTag" data-id="{{tag.id}}">
+        {{tag.name}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 内容填写 -->
+  <view class="section">
+    <view class="section-title">填写内容</view>
+    <view class="input-group">
+      <view class="input-row">
+        <input class="title-input" placeholder="标题（一句话概括）" value="{{title}}" maxlength="50" bindinput="onTitleInput" />
+      </view>
+      <view class="textarea-row">
+        <textarea class="content-input" placeholder="详细说明：描述你的需求或供给、期望的合作方式、你能提供的价值等" value="{{content}}" maxlength="500" bindinput="onContentInput" />
+        <text class="word-count">{{content.length}}/500</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI优化提示 -->
+  <view class="ai-tip">
+    <text class="tip-icon">💡</text>
+    <text class="tip-text">AI建议完善内容描述，可获得更高匹配度</text>
+  </view>
+
+  <!-- 发布按钮 -->
+  <button class="btn-publish" bindtap="submit">发布机会</button>
+
+  <!-- 错误提示 -->
+  <view class="error-msg {{errorMsg?'show':'hidden'}}">{{errorMsg}}</view>
+</view>

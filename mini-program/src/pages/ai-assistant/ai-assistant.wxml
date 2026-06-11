@@ -1,0 +1,69 @@
+<!-- AI助手 -->
+<view class="container">
+  <!-- 顶栏 -->
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <text class="top-bar-title">✨ AI助手</text>
+    <view class="top-bar-right"></view>
+  </view>
+
+  <!-- 消息列表 -->
+  <scroll-view class="message-list" scroll-y="true" scroll-top="{{scrollTop}}" enhanced="true">
+    <!-- 欢迎语 -->
+    <view class="welcome" wx:if="{{messages.length === 0}}">
+      <view class="welcome-icon">🤖</view>
+      <view class="welcome-title">我是燃冰AI助手</view>
+      <view class="welcome-desc">可以问我任何关于供需匹配、人脉连接、行业资源的问题</view>
+    </view>
+
+    <!-- 消息 -->
+    <view class="messages" wx:if="{{messages.length > 0}}">
+      <view class="msg-row {{msg.role}}" wx:for="{{messages}}" wx:key="index">
+        <view class="msg-avatar">{{msg.role === 'user' ? '👤' : '🤖'}}</view>
+        <view class="msg-content">
+          <view class="msg-bubble">{{msg.content}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 匹配结果 -->
+    <view class="match-results" wx:if="{{matchResults.length > 0}}">
+      <view class="results-title">🎯 为你找到 {{matchResults.length}} 条匹配</view>
+      <view class="result-card" wx:for="{{matchResults}}" wx:key="uuid" bindtap="toDetail" data-uuid="{{item.uuid}}">
+        <view class="result-header">
+          <text class="result-type {{item.supply_type === 1 ? 'type-supply' : 'type-demand'}}">{{item.supply_type === 1 ? '供给' : '需求'}}</text>
+          <text class="result-score" wx:if="{{item.match_score}}">🔥 {{item.match_score}}%</text>
+        </view>
+        <view class="result-title">{{item.title}}</view>
+        <view class="result-reason" wx:if="{{item.match_reason}}">💡 {{item.match_reason}}</view>
+        <view class="result-meta" wx:if="{{item.profile}}">{{item.profile.real_name || ''}} · {{item.profile.company || ''}}</view>
+      </view>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="ai-typing" wx:if="{{aiTyping}}">
+      <view class="msg-row ai">
+        <view class="msg-avatar">🤖</view>
+        <view class="msg-content">
+          <view class="msg-bubble typing">
+            <text class="dot">●</text><text class="dot">●</text><text class="dot">●</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 快捷问题 -->
+  <view class="quick-bar" wx:if="{{messages.length <= 1}}">
+    <text class="quick-label">快捷问题</text>
+    <scroll-view class="quick-scroll" scroll-x="true">
+      <text class="quick-chip" wx:for="{{quickQuestions}}" wx:key="index" bindtap="quickAsk" data-q="{{item}}">{{item}}</text>
+    </scroll-view>
+  </view>
+
+  <!-- 输入框 -->
+  <view class="input-bar">
+    <input class="chat-input" placeholder="问我任何问题..." value="{{inputText}}" bindinput="onInput" bindconfirm="sendMessage" confirm-type="send" />
+    <button class="btn-send" bindtap="sendMessage" disabled="{{!inputText.trim() || aiTyping}}">发送</button>
+  </view>
+</view>

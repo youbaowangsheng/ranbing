@@ -1,0 +1,32 @@
+<!-- 供需详情 -->
+<view class="container">
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+  <view class="detail-content" wx:if="{{!loading && item}}">
+    <view class="user-row">
+      <view class="user-avatar" style="background: {{item.profile ? item.profile.avatar_color : '#1a3a5c'}}">
+        {{item.avatar_char}}
+      </view>
+      <view class="user-info">
+        <text class="user-name">{{item.profile ? item.profile.real_name : '匿名用户'}}</text>
+        <text class="user-meta">{{item.profile ? item.profile.company : ''}}{{item.profile && item.profile.position ? ' · '+item.profile.position : ''}}</text>
+      </view>
+      <view class="cert-badge" wx:if="{{item.profile && item.profile.cert_level >= 2}}">已认证</view>
+    </view>
+    <view class="type-tag {{item.supply_type===1?'type-supply':'type-demand'}}">{{item.supply_type===1?'供给':'需求'}}</view>
+    <view class="detail-title">{{item.title}}</view>
+    <view class="detail-content-text">{{item.content}}</view>
+    <view class="detail-tags">
+      <text class="s-tag" wx:for="{{item.tags}}" wx:key="id" wx:for-item="tag">#{{tag.name}}</text>
+    </view>
+    <view class="detail-stats">
+      <text>👁 {{item.view_count || 0}} 浏览</text>
+      <text>🤝 {{item.match_count || 0}} 匹配</text>
+      <text>📅 {{item.created_at}}</text>
+    </view>
+    <!-- 操作按钮 -->
+    <view class="action-bar">
+      <button class="btn-connect" bindtap="connectUser">🤝 找Ta合作</button>
+      <button class="btn-share" open-type="share">分享给朋友</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,88 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}供需广场 · 燃冰{% endblock %}
+
+{% block content %}
+
+<!-- Tabs -->
+<div style="display:flex; background:#fff; border-radius:12px; padding:3px; margin-bottom:12px; gap:3px;">
+  <a href="{% url 'supply_demand' %}" style="flex:1; text-align:center; padding:8px; border-radius:10px; font-size:13px; font-weight:600; text-decoration:none; background:{% if not current_type %}linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff{% else %}transparent; color:#666{% endif %};">
+    全部
+  </a>
+  <a href="{% url 'supply_demand' %}?type=1" style="flex:1; text-align:center; padding:8px; border-radius:10px; font-size:13px; font-weight:600; text-decoration:none; background:{% if current_type == '1' %}linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff{% else %}transparent; color:#666{% endif %};">
+    📤 供给
+  </a>
+  <a href="{% url 'supply_demand' %}?type=2" style="flex:1; text-align:center; padding:8px; border-radius:10px; font-size:13px; font-weight:600; text-decoration:none; background:{% if current_type == '2' %}linear-gradient(135deg,#059669,#34d399); color:#fff{% else %}transparent; color:#666{% endif %};">
+    📥 需求
+  </a>
+</div>
+
+<!-- Tag Filter -->
+{% if my_tags %}
+<div class="scroll-x" style="margin:0 -16px; padding:0 16px 8px;">
+  <div style="display:flex; gap:6px; flex-wrap:nowrap;">
+    <a href="{% url 'supply_demand' %}{% if current_type %}?type={{ current_type }}{% endif %}">
+      <span class="tag {% if not current_tag %}tag-orange{% else %}tag-gray{% endif %}">全部</span>
+    </a>
+    {% for tag in my_tags %}
+    <a href="{% url 'supply_demand' %}?tag={{ tag.id }}{% if current_type %}&type={{ current_type }}{% endif %}">
+      <span class="tag {% if current_tag == tag.id|stringformat:'s' %}tag-orange{% else %}tag-blue{% endif %}">{{ tag.name }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- AI Recommend Card (top) -->
+{% if not current_type and not current_tag %}
+<div class="ai-bar" style="margin-bottom:12px;">
+  <span class="ai-bar-icon">✨</span>
+  <span class="ai-bar-text">AI精选机会 · 精准匹配你的供需</span>
+  <span class="ai-bar-arrow">›</span>
+</div>
+{% endif %}
+
+<!-- Supply List -->
+<div>
+  {% for s in supply_list %}
+  <a href="{% url 'supply_detail' s.uuid %}" style="text-decoration:none; color:inherit;">
+  <div class="card" style="display:flex; gap:10px; align-items:flex-start; margin-bottom:8px;">
+    <div style="width:40px; height:40px; border-radius:10px; background:{% if s.supply_type == 1 %}linear-gradient(135deg,#e86a3a,#f0a06a){% else %}linear-gradient(135deg,#059669,#34d399){% endif %}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+      {% if s.supply_type == 1 %}📤{% else %}📥{% endif %}
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:14px; font-weight:600; color:#1a1a1a; margin-bottom:4px;">{{ s.title|slice:":40" }}</div>
+      <div style="font-size:12px; color:#888; margin-bottom:5px;">
+        {{ s.profile.real_name|default:'' }} · {{ s.profile.company|default:'' }}
+      </div>
+      {% if s.tag_names %}
+      <div style="display:flex; flex-wrap:wrap; gap:3px; margin-bottom:4px;">
+        {% for tname in s.tag_names %}
+        <span class="tag {% if s.supply_type == 1 %}tag-blue{% else %}tag-green{% endif %}" style="font-size:10px; padding:1px 5px;">{{ tname }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div style="font-size:11px; color:#aaa;">{{ s.created_at|date:"Y-m-d H:i" }}</div>
+    </div>
+    <div style="font-size:11px; color:{% if s.supply_type == 1 %}#e86a3a{% else %}#059669{% endif %}; white-space:nowrap; font-weight:600;">
+      {{ s.get_supply_type_display }}
+    </div>
+  </div>
+  </a>
+  {% empty %}
+  <div style="text-align:center; padding:40px 20px; color:#999;">
+    <div style="font-size:40px; margin-bottom:10px;">📭</div>
+    <div>暂无相关供需</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Publish Button -->
+<div style="position:fixed; bottom:70px; right:16px;">
+  <a href="{% url 'publish_supply' %}">
+    <button style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; font-size:24px; cursor:pointer; box-shadow:0 4px 12px rgba(232,106,58,0.4);">+</button>
+  </a>
+</div>
+
+{% endblock %}

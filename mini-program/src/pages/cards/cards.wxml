@@ -1,0 +1,27 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <text class="top-bar-title">我的名片</text>
+    <view class="add-btn" bindtap="createCard">+ 新建</view>
+  </view>
+
+  <view class="card-list">
+    <view wx:if="{{loading}}" class="loading">加载中...</view>
+    <view wx:elif="{{cards.length===0}}" class="empty">
+      <text>还没有名片，创建一个吧</text>
+    </view>
+    <view wx:else>
+      <view wx:for="{{cards}}" wx:key="uuid" class="card-item {{item.is_default?'default':''}}" bindtap="editCard" data-card="{{item}}">
+        <view class="card-default-tag" wx:if="{{item.is_default}}">默认</view>
+        <view class="card-name">{{item.name}}</view>
+        <view class="card-company">{{item.company}}</view>
+        <view class="card-position">{{item.position}}</view>
+        <view class="card-contact">
+          <text wx:if="{{item.phone}}">📱 {{item.phone}}</text>
+          <text wx:if="{{item.wechat}}">💬 {{item.wechat}}</text>
+        </view>
+        <view class="card-actions" catchtap="deleteCard" data-uuid="{{item.uuid}}">删除</view>
+      </view>
+    </view>
+  </view>
+</view>

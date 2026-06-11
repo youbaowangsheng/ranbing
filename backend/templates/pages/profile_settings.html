@@ -1,0 +1,334 @@
+{% extends "pages/base.html" %}
+{% load rb_tags %}
+
+{% block title %}编辑资料 · 燃冰{% endblock %}
+
+{% block extra_css %}
+<style>
+  .settings-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .settings-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a3a5c;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .form-group {
+    margin-bottom: 12px;
+  }
+  .form-label {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    background: #fafafa;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #e86a3a;
+    background: #fff;
+  }
+  .form-textarea {
+    resize: none;
+    height: 80px;
+    line-height: 1.5;
+  }
+  .form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+  .avatar-edit {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .avatar-preview {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#e86a3a,#f0a06a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .avatar-hint {
+    font-size: 11px;
+    color: #aaa;
+    line-height: 1.5;
+  }
+  .tag-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .tag-option {
+    display: inline-block;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 14px;
+    border: 1.5px solid #e0e0e0;
+    background: #fff;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tag-option:hover {
+    border-color: #e86a3a;
+    color: #e86a3a;
+  }
+  .tag-option.selected {
+    background: linear-gradient(135deg,#e86a3a,#f0a06a);
+    border-color: #e86a3a;
+    color: #fff;
+  }
+  .tag-option input {
+    display: none;
+  }
+  .btn-save {
+    width: 100%;
+    height: 46px;
+    background: linear-gradient(135deg,#e86a3a,#f0a06a);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .btn-save:active {
+    transform: scale(0.98);
+  }
+  .error-text {
+    font-size: 11px;
+    color: #cf1322;
+    margin-top: 4px;
+  }
+  .success-text {
+    font-size: 11px;
+    color: #52c41a;
+    margin-top: 4px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'profile_settings' %}" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <!-- Avatar & Basic -->
+  <div class="settings-card">
+    <div class="settings-section-title">👤 基本信息</div>
+
+    <div class="avatar-edit">
+      <label for="avatarInput" style="cursor:pointer;">
+        <div class="avatar-preview" id="avatarPreview">
+          {% if my_profile.avatar %}
+          <img src="{{ my_profile.avatar.url }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+          {% else %}
+          {{ my_profile.real_name|initials }}
+          {% endif %}
+        </div>
+      </label>
+      <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;" onchange="previewAvatar(this)">
+      <div class="avatar-hint">
+        点击头像区域可上传照片<br>
+        <span style="color:#ccc;">建议尺寸 200×200</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">真实姓名 *</label>
+      <input type="text" name="real_name" class="form-input" placeholder="请输入真实姓名"
+             value="{{ my_profile.real_name|default:'' }}" required maxlength="64">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">性别</label>
+        <select name="gender" class="form-select">
+          <option value="0" {% if my_profile.gender == 0 %}selected{% endif %}>未知</option>
+          <option value="1" {% if my_profile.gender == 1 %}selected{% endif %}>男</option>
+          <option value="2" {% if my_profile.gender == 2 %}selected{% endif %}>女</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">生日</label>
+        <input type="date" name="birthday" class="form-input"
+               value="{{ my_profile.birthday|default:'' }}">
+      </div>
+    </div>
+  </div>
+
+  <!-- Work Info -->
+  <div class="settings-card">
+    <div class="settings-section-title">💼 工作信息</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">公司</label>
+        <input type="text" name="company" class="form-input" placeholder="公司名称"
+               value="{{ my_profile.company|default:'' }}" maxlength="128">
+      </div>
+      <div class="form-group">
+        <label class="form-label">职位</label>
+        <input type="text" name="position" class="form-input" placeholder="职位名称"
+               value="{{ my_profile.position|default:'' }}" maxlength="128">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">行业</label>
+        <input type="text" name="industry" class="form-input" placeholder="所属行业"
+               value="{{ my_profile.industry|default:'' }}" maxlength="64">
+      </div>
+      <div class="form-group">
+        <label class="form-label">城市</label>
+        <input type="text" name="city" class="form-input" placeholder="所在城市"
+               value="{{ my_profile.city|default:'' }}" maxlength="64">
+      </div>
+    </div>
+  </div>
+
+  <!-- Education -->
+  <div class="settings-card">
+    <div class="settings-section-title">🎓 教育信息</div>
+
+    <div class="form-group">
+      <label class="form-label">学校</label>
+      <input type="text" name="education_school" class="form-input" placeholder="毕业学校"
+             value="{{ my_profile.education_school|default:'' }}" maxlength="128">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">毕业年份</label>
+        <input type="text" name="education_year" class="form-input" placeholder="如 2015"
+               value="{{ my_profile.education_year|default:'' }}" maxlength="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">专业</label>
+        <input type="text" name="education_major" class="form-input" placeholder="所学专业"
+               value="{{ my_profile.education_major|default:'' }}" maxlength="128">
+      </div>
+    </div>
+  </div>
+
+  <!-- Bio -->
+  <div class="settings-card">
+    <div class="settings-section-title">📝 个人简介</div>
+    <div class="form-group" style="margin-bottom:0;">
+      <label class="form-label">简介</label>
+      <textarea name="bio" class="form-textarea" placeholder="简单介绍一下自己…"
+                maxlength="500">{{ my_profile.bio|default:'' }}</textarea>
+    </div>
+  </div>
+
+  <!-- Supply Tags -->
+  <div class="settings-card">
+    <div class="settings-section-title">🏷️ 供给标签</div>
+    <div style="font-size:11px; color:#aaa; margin-bottom:8px;">选择你能提供的资源或能力（可多选）</div>
+    <div class="tag-grid">
+      {% for tag in all_tags %}
+        {% if tag.tag_type == 1 or tag.tag_type == 3 %}
+        <label class="tag-option {% if tag.id in my_supply_tag_ids %}selected{% endif %}">
+          <input type="checkbox" name="supply_tags" value="{{ tag.id }}"
+                 {% if tag.id in my_supply_tag_ids %}checked{% endif %}>
+          {{ tag.name }}
+        </label>
+        {% endif %}
+      {% empty %}
+      <span style="color:#aaa; font-size:12px;">暂无可选标签</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Demand Tags -->
+  <div class="settings-card">
+    <div class="settings-section-title">🔖 需求标签</div>
+    <div style="font-size:11px; color:#aaa; margin-bottom:8px;">选择你需要的帮助或资源（可多选）</div>
+    <div class="tag-grid">
+      {% for tag in all_tags %}
+        {% if tag.tag_type == 2 or tag.tag_type == 3 %}
+        <label class="tag-option {% if tag.id in my_demand_tag_ids %}selected{% endif %}">
+          <input type="checkbox" name="demand_tags" value="{{ tag.id }}"
+                 {% if tag.id in my_demand_tag_ids %}checked{% endif %}>
+          {{ tag.name }}
+        </label>
+        {% endif %}
+      {% empty %}
+      <span style="color:#aaa; font-size:12px;">暂无可选标签</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if error %}
+  <div class="error-text" style="text-align:center; margin:8px 0;">{{ error }}</div>
+  {% endif %}
+  {% if success %}
+  <div class="success-text" style="text-align:center; margin:8px 0;">{{ success }}</div>
+  {% endif %}
+
+  <button type="submit" class="btn-save">保存修改</button>
+</form>
+
+<script>
+// Avatar preview
+function previewAvatar(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var preview = document.getElementById('avatarPreview');
+      preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Toggle tag selection visual
+document.querySelectorAll('.tag-option').forEach(function(label) {
+  label.addEventListener('click', function() {
+    var cb = this.querySelector('input');
+    // Delay to let checkbox state toggle
+    setTimeout(function() {
+      if (cb.checked) {
+        label.classList.add('selected');
+      } else {
+        label.classList.remove('selected');
+      }
+    }, 0);
+  });
+});
+</script>
+{% endblock %}

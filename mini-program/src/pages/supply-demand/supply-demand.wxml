@@ -1,0 +1,51 @@
+<!-- 供需广场：供给/需求切换 -->
+<view class="container">
+  <view class="top-bar">
+    <view class="search-box" bindtap="toSearch">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" placeholder="搜索机会" disabled />
+    </view>
+    <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
+  </view>
+
+  <!-- 供给/需求切换 -->
+  <view class="type-tabs">
+    <view class="type-tab {{typeTab==='all'?'active':''}}" data-tab="all" bindtap="switchType">全部</view>
+    <view class="type-tab {{typeTab==='supply'?'active':''}}" data-tab="supply" bindtap="switchType">供给</view>
+    <view class="type-tab {{typeTab==='demand'?'active':''}}" data-tab="demand" bindtap="switchType">需求</view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
+  <view class="supply-list" wx:if="{{!loading}}">
+    <view class="supply-card" wx:for="{{items}}" wx:key="uuid" bindtap="toDetail" data-uuid="{{item.uuid}}">
+      <view class="supply-header">
+        <view class="supply-avatar" style="background: {{item.profile.avatar_color || '#1a3a5c'}}">
+          {{item.avatar_char}}
+        </view>
+        <view class="supply-user">
+          <text class="supply-name">{{item.profile.real_name || '匿名'}}</text>
+          <text class="supply-company">{{item.profile.company || ''}} {{item.profile.position ? '· '+item.profile.position : ''}}</text>
+        </view>
+        <view class="supply-type {{item.supply_type===1?'type-supply':'type-demand'}}">
+          {{item.supply_type===1?'供给':'需求'}}
+        </view>
+      </view>
+      <view class="supply-title">{{item.title}}</view>
+      <view class="supply-content">{{item.content}}</view>
+      <view class="supply-tags">
+        <text class="s-tag" wx:for="{{item.tags}}" wx:key="id" wx:for-item="tag">#{{tag.name}}</text>
+      </view>
+      <view class="supply-footer">
+        <text class="supply-time">{{item.created_at_fmt}}</text>
+        <text class="supply-stat">👁 {{item.view_count||0}} · 🤝 {{item.match_count||0}}</text>
+      </view>
+    </view>
+    <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMore"><text>{{loadingMore?'加载中...':'加载更多'}}</text></view>
+    <view class="no-more" wx:if="{{!hasMore && items.length>0}}"><text>— 没有更多了 —</text></view>
+    <view class="empty" wx:if="{{!loading && items.length===0}}">
+      <text style="font-size:48px;">📭</text>
+      <text style="color:#999;font-size:14px;display:block;margin-top:12px;">暂无数据</text>
+    </view>
+  </view>
+  <view class="publish-fab" bindtap="toPublish">+ 发布</view>
+</view>

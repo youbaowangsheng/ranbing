@@ -1,0 +1,38 @@
+<!-- 我的发布 -->
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <text class="top-bar-title">我的发布</text>
+    <view class="top-bar-right"></view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && items.length===0}}">
+    <text style="font-size:56px;">📝</text>
+    <text style="display:block;margin-top:16px;font-size:15px;color:#999;">还没有发布过机会</text>
+    <button class="btn-publish" bindtap="toPublish">发布机会</button>
+  </view>
+
+  <!-- 列表 -->
+  <view class="my-list" wx:if="{{items.length>0}}">
+    <view class="my-card" wx:for="{{items}}" wx:key="uuid">
+      <view class="card-header">
+        <view class="supply-type {{item.supply_type===1?'type-supply':'type-demand'}}">{{item.supply_type===1?'供给':'需求'}}</view>
+        <view class="card-actions">
+          <text class="action-edit" bindtap="toEdit" data-uuid="{{item.uuid}}">编辑</text>
+          <text class="action-delete" bindtap="confirmDelete" data-uuid="{{item.uuid}}">删除</text>
+        </view>
+      </view>
+      <view class="card-title" bindtap="toDetail" data-uuid="{{item.uuid}}">{{item.title}}</view>
+      <view class="card-tags">
+        <text class="s-tag" wx:for="{{item.tags}}" wx:key="id" wx:for-item="tag">#{{tag.name}}</text>
+      </view>
+      <view class="card-footer">
+        <text class="card-time">{{item.created_at}}</text>
+        <text class="card-stat">👁 {{item.view_count||0}} · 🤝 {{item.match_count||0}}</text>
+      </view>
+    </view>
+    <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMore"><text>{{loadingMore?'加载中...':'加载更多'}}</text></view>
+    <view class="no-more" wx:if="{{!hasMore}}"><text>— 没有更多了 —</text></view>
+  </view>
+</view>

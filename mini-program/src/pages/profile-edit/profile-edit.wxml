@@ -1,0 +1,34 @@
+<!-- pages/profile-edit/profile-edit.wxml -->
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <view class="top-bar-title">编辑资料</view>
+    <view class="save-btn" bindtap="doSave">保存</view>
+  </view>
+
+  <view class="form-section" wx:for="{{sections}}" wx:for-item="section">
+    <view class="section-title">{{section.icon}} {{section.name}}</view>
+    <view class="form-row" wx:for="{{section.fields}}" wx:for-item="field" wx:key="key">
+      <label class="form-label">{{field.label}}<text class="required" wx:if="{{field.required}}">*</text></label>
+      <view class="form-value">
+        <input wx:if="{{field.type === 'text'}}" class="form-input" data-key="{{field.key}}" value="{{formData[field.key]}}" bindinput="onFieldInput" placeholder="{{field.placeholder}}" />
+        <textarea wx:if="{{field.type === 'textarea'}}" class="form-textarea" data-key="{{field.key}}" value="{{formData[field.key]}}" bindinput="onFieldInput" placeholder="{{field.placeholder}}" maxlength="{{field.maxlength || 200}}" />
+        <picker wx:if="{{field.type === 'select'}}" mode="selector" range="{{field.options}}" range-key="label" bindchange="onSelectChange" data-key="{{field.key}}">
+          <view class="form-select-display">{{formData[field.key] || field.placeholder || '请选择'}}</view>
+        </picker>
+        <view class="char-count" wx:if="{{field.type === 'textarea'}}">{{formData[field.key] ? formData[field.key].length : 0}}/{{field.maxlength || 200}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签选择 -->
+  <view class="form-section">
+    <view class="section-title">🏷️ 供给标签</view>
+    <view class="tag-selector">
+      <view class="tag-option {{tag.selected ? 'selected' : ''}}" wx:for="{{allTags}}" wx:key="id" data-id="{{item.id}}" bindtap="toggleTag">{{item.name}}</view>
+    </view>
+    <view class="tag-hint">选择你能提供的资源或能力标签（最多10个）</view>
+  </view>
+
+  <view class="bottom-spacer"></view>
+</view>
