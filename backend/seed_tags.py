@@ -6,10 +6,10 @@ import os, sys, django
 os.environ['DB_ENGINE'] = 'django.db.backends.postgresql'
 os.environ['DB_NAME'] = 'fipai'
 os.environ['DB_USER'] = 'fipai'
-os.environ['DB_PASSWORD'] = 'fipai'
+os.environ['DB_PASSWORD'] = os.environ.get('DB_PASSWORD', 'fipai')
 os.environ['DB_HOST'] = 'localhost'
 os.environ['DB_PORT'] = '5432'
-os.environ['JWT_SECRET_KEY'] = 'ranbing-dev-secret-key-2026'
+os.environ['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'ranbing-dev-secret-key-2026')
 os.environ['JWT_ACCESS_TOKEN_LIFETIME'] = '604800'
 os.environ['JWT_REFRESH_TOKEN_LIFETIME'] = '2592000'
 os.environ['SMS_PROVIDER'] = 'mock'
