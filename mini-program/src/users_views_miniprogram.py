@@ -25,7 +25,7 @@ from .authentication import generate_access_token, generate_refresh_token
 
 # 微信小程序凭证
 WX_APPID = 'wx5c3b0ab31ced45fa'
-WX_APPSECRET = 'b8a595334354f2291c51551d485a1ed1'
+WX_APPSECRET = os.environ.get('WX_APPSECRET', '')
 
 
 def get_redis_client():
