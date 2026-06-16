@@ -1,7 +1,7 @@
 // 燃冰小程序 - 入口文件
 // 微信小程序凭证
 const WX_APPID = 'wx5c3b0ab31ced45fa'
-const WX_APPSECRET = 'b8a595334354f2291c51551d485a1ed1'
+const WX_APPSECRET = process.env.WX_APPSECRET || 'YOUR_WX_APPSECRET_HERE' // TODO: set via environment
 
 App({
   globalData: {
