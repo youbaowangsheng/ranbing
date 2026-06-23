@@ -1,0 +1,136 @@
+/* pages/landing/landing.wxss */
+page { background: #f5f7fa; }
+.container { min-height: 100vh; }
+
+/* 顶部 Hero */
+.hero-section {
+  position: relative;
+  background: linear-gradient(150deg, #1a3a5c 0%, #2d6aa6 60%, #3d8fd1 100%);
+  padding: 100px 32px 48px;
+  overflow: hidden;
+}
+.hero-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-content { position: relative; text-align: center; }
+.logo-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  margin: 0 auto 16px;
+  display: block;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.logo-text { font-size: 40px; font-weight: 800; color: #fff; letter-spacing: 2px; }
+.logo-sub { font-size: 14px; color: rgba(255,255,255,0.75); margin-top: 8px; letter-spacing: 1px; }
+
+/* 数据统计 */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 32px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 24px;
+}
+.stat-item { text-align: center; flex: 1; }
+.stat-num { font-size: 20px; font-weight: 700; color: #fff; }
+.stat-label { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+.stat-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.2); }
+
+/* 快速入口 */
+.quick-entry-section { padding: 24px 16px 8px; }
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a3a5c;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+.quick-cards {}
+.quick-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(26,58,92,0.06);
+}
+.quick-icon { font-size: 28px; margin-right: 14px; }
+.quick-info { flex: 1; }
+.quick-title { font-size: 15px; font-weight: 600; color: #1a3a5c; }
+.quick-desc { font-size: 12px; color: #8896a6; margin-top: 3px; }
+.quick-arrow { font-size: 20px; color: #c0ccd8; }
+
+/* 特点区域 */
+.features-section { padding: 16px 16px 8px; }
+.feature-card {
+  display: flex;
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(26,58,92,0.06);
+}
+.feature-icon { font-size: 32px; margin-right: 14px; flex-shrink: 0; }
+.feature-content { flex: 1; }
+.feature-title { font-size: 15px; font-weight: 600; color: #1a3a5c; margin-bottom: 6px; }
+.feature-desc { font-size: 13px; color: #666; line-height: 1.6; }
+
+/* 如何使用 */
+.howitworks-section { padding: 16px 24px 8px; }
+.steps-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 12px;
+  box-shadow: 0 2px 8px rgba(26,58,92,0.06);
+}
+.step-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e86a3a, #f0a06a);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.step-text { font-size: 11px; color: #666; text-align: center; }
+.step-line {
+  flex: 0.6;
+  height: 1px;
+  background: linear-gradient(90deg, #e0e6ec, #e0e6ec);
+  margin: 0 4px;
+  margin-bottom: 18px;
+}
+
+/* 底部按钮 */
+.bottom-section {
+  padding: 20px 24px 48px;
+  background: #f5f7fa;
+}
+.btn-register {
+  background: linear-gradient(135deg, #e86a3a, #f0a06a);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 24px;
+  padding: 14px 0;
+  border: none;
+  width: 100%;
+  box-shadow: 0 4px 16px rgba(232,106,58,0.3);
+}
+.btn-register::after { border: none; }
+.login-hint { text-align: center; font-size: 13px; color: #8896a6; margin-top: 14px; }
+.login-hint text { color: #1a3a5c; font-weight: 600; margin-left: 4px; }

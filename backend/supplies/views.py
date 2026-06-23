@@ -3,7 +3,7 @@ import math
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
 
 from .models import Supply, Match, Connection, Followup, FriendRequest, Card
@@ -27,7 +27,11 @@ def _cosine_similarity(vec_a, vec_b):
 
 class SupplyViewSet(viewsets.GenericViewSet):
     """供需相关API"""
-    permission_classes = [IsAuthenticated]
+    # 列表/详情公开；创建/编辑/删除需要登录
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'feed']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         return Supply.objects.select_related('profile__user').filter(
@@ -62,8 +66,10 @@ class SupplyViewSet(viewsets.GenericViewSet):
             qs = qs.filter(Q(title__icontains=keyword) | Q(content__icontains=keyword))
 
         page = self.paginate_queryset(qs)
+        # 未登录用户 profile 为 None，序列化时会跳过登录用户专属字段
+        profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
         if page is not None:
-            serializer = SupplyListSerializer(page, many=True, context={'request': request, 'profile': request.user.profile})
+            serializer = SupplyListSerializer(page, many=True, context={'request': request, 'profile': profile})
             return self.get_paginated_response(serializer.data)
 
         serializer = SupplyListSerializer(qs, many=True)
@@ -301,6 +307,46 @@ class SupplyViewSet(viewsets.GenericViewSet):
         qs = Supply.objects.filter(profile=profile).order_by('-created_at')
         serializer = SupplyListSerializer(qs, many=True)
         return Response({'code': 0, 'data': serializer.data})
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """全局搜索"""
+        from activities.models import Activity
+        from communities.models import Community
+        from profiles.models import Profile as ProfileModel
+        from profiles.serializers import ProfileListSerializer
+        from activities.serializers import ActivitySerializer
+        from communities.serializers import CommunitySerializer
+
+        q = request.query_params.get('q', '').strip()
+        if not q:
+            return Response({'code': 0, 'data': {'profiles': [], 'supplies': [], 'activities': [], 'communities': []}})
+
+        supplies = Supply.objects.filter(
+            Q(title__icontains=q) | Q(content__icontains=q),
+            audit_status=1, status=1
+        ).select_related('profile__user').order_by('-created_at')[:10]
+        activities = Activity.objects.filter(
+            Q(title__icontains=q) | Q(description__icontains=q),
+            audit_status=1, status__in=[1, 2]
+        ).select_related('organizer__user').order_by('-created_at')[:10]
+        communities = Community.objects.filter(
+            Q(name__icontains=q) | Q(description__icontains=q),
+            status__in=[1, 2]
+        ).select_related('owner__user').order_by('-member_count')[:10]
+        profiles = ProfileModel.objects.filter(
+            Q(real_name__icontains=q) | Q(company__icontains=q) | Q(position__icontains=q)
+        ).order_by('-conn_count')[:10]
+
+        return Response({
+            'code': 0,
+            'data': {
+                'supplies': SupplyListSerializer(supplies, many=True).data,
+                'activities': ActivitySerializer(activities, many=True).data,
+                'communities': CommunitySerializer(communities, many=True).data,
+                'profiles': ProfileListSerializer(profiles, many=True).data,
+            }
+        })
 
 
 class FriendRequestViewSet(viewsets.GenericViewSet):

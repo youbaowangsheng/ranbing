@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .models import Activity, ActivityEnrollment
 from .serializers import ActivitySerializer, ActivityEnrollmentSerializer
@@ -10,7 +10,11 @@ from profiles.models import Profile
 
 
 class ActivityViewSet(viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated]
+    # 列表/详情公开；报名/审核等需要登录
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         return Activity.objects.select_related('organizer__user').filter(
