@@ -1,37 +1,5 @@
 // 认证服务
-const WX_APPID = 'wx5c3b0ab31ced45fa'
-const WX_APPSECRET = 'b8a595334354f2291c51551d485a1ed1'
-const API_BASE = 'https://www.asiamlhk.com/api/v1'
-
-function request(path, method = 'GET', data = null) {
-  return new Promise((resolve, reject) => {
-    const header = { 'Content-Type': 'application/json' }
-    const token = wx.getStorageSync('token')
-    if (token) header['Authorization'] = `Bearer ${token}`
-    wx.request({
-      url: API_BASE + path,
-      method,
-      data,
-      header,
-      timeout: 15000,
-      success: res => {
-        if ((res.statusCode === 200 || res.statusCode === 201) && res.data) {
-          resolve(res.data)
-        } else if (res.statusCode === 401) {
-          wx.removeStorageSync('token')
-          wx.removeStorageSync('userInfo')
-          wx.navigateTo({ url: '/pages/login/login' })
-          reject(new Error('未登录'))
-        } else {
-          const errMsg = res.data && (res.data.message || (res.data.errors && JSON.stringify(res.data.errors)) || (res.data.detail) || res.statusCode)
-          console.error('[请求失败]', path, res.statusCode, res.data)
-          reject(new Error(errMsg || '请求失败'))
-        }
-      },
-      fail: err => reject(new Error(err.errMsg || '网络错误'))
-    })
-  })
-}
+const { request } = require('./api')
 
 function loginByWechat() {
   return new Promise((resolve, reject) => {

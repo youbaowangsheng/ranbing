@@ -12,6 +12,8 @@ Page({
   },
 
   onLoad(query) {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     this.fromPage = query.from || ''
     // 初始欢迎语
     this.setData({

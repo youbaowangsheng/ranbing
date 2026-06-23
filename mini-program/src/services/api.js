@@ -27,7 +27,7 @@ function request(path, method = 'GET', data = null) {
           reject(new Error(errMsg || '请求失败'))
         }
       },
-      fail: err => reject(err)
+      fail: err => reject(new Error(err.errMsg || '网络错误'))
     })
   })
 }
@@ -183,19 +183,19 @@ function getContactTags() {
   return request('/contact-tags/')
 }
 
-// 获取名片列表
+// 获取名片列表（当前用户只有一张名片，用 /cards/me/）
 function getCards() {
-  return request('/cards/')
+  return request('/cards/me/')
 }
 
-// 创建名片
+// 创建名片（使用 /cards/me/ POST）
 function createCard(cardData) {
-  return request('/cards/', 'POST', cardData)
+  return request('/cards/me/', 'POST', cardData)
 }
 
-// 更新名片
+// 更新名片（使用 /cards/me/ PUT）
 function updateCard(uuid, cardData) {
-  return request(`/cards/${uuid}/`, 'PATCH', cardData)
+  return request('/cards/me/', 'PUT', cardData)
 }
 
 // 删除名片
@@ -210,17 +210,17 @@ function setDefaultCard(uuid) {
 
 // 获取某人的联系人标签
 function getContactTagsFor(profileUuid) {
-  return request(`/contacts/${profileUuid}/tags/`)
+  return request(`/contact-tags/contacts/${profileUuid}/tags/`)
 }
 
 // 添加联系人标签
 function addContactTag(profileUuid, tagId) {
-  return request(`/contacts/${profileUuid}/tags/add/`, 'POST', { tag_id: tagId })
+  return request(`/contact-tags/contacts/${profileUuid}/tags/add/`, 'POST', { tag_id: tagId })
 }
 
 // 删除联系人标签
 function removeContactTag(profileUuid, tagId) {
-  return request(`/contacts/${profileUuid}/tags/${tagId}/`, 'DELETE')
+  return request(`/contact-tags/contacts/${profileUuid}/tags/${tagId}/`, 'DELETE')
 }
 
 // 私信
@@ -244,8 +244,27 @@ function sendPrivateMessage(targetUuid, content) {
   return request('/profiles/send_message/', 'POST', { target_uuid: targetUuid, content })
 }
 
+// 统一提取响应数据，处理 DRF 分页和非分页两种格式
+// DRF分页: {results: [...], count: N}  -> 返回 results
+// 非分页: {code: 0, data: {...}} -> 返回 data
+// 两者都不是 -> 返回原始 res
+function extractData(res) {
+  if (Array.isArray(res)) return res
+  if (res.results !== undefined) return res.results
+  if (res.data !== undefined) return res.data
+  return res
+}
+
+// 获取总数（分页响应）
+function extractCount(res) {
+  if (res.count !== undefined) return res.count
+  return null
+}
+
 module.exports = {
   request,
+  extractData,
+  extractCount,
   getSupplies,
   getFeed,
   createSupply,

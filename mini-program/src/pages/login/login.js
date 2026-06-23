@@ -20,7 +20,6 @@ Page({
   onPasswordInput(e) { this.setData({ password: e.detail.value }) },
   onSmsCodeInput(e) { this.setData({ smsCode: e.detail.value }) },
 
-  // 发送验证码
   async doSendCode() {
     const { phone } = this.data
     if (!phone || phone.length !== 11) {
@@ -28,11 +27,14 @@ Page({
       return
     }
     this.setData({ errorMsg: '' })
+    wx.showLoading({ title: '发送中...' })
     try {
       await sendCode(phone, 'login')
+      wx.hideLoading()
       this.startCountdown()
       wx.showToast({ title: '验证码已发送', icon: 'success' })
     } catch (e) {
+      wx.hideLoading()
       this.setData({ errorMsg: e.message || '发送失败' })
     }
   },
@@ -46,46 +48,56 @@ Page({
     }, 1000)
   },
 
-  // 密码登录
   async doPasswordLogin() {
     const { phone, password } = this.data
     if (!phone || phone.length !== 11) { this.setData({ errorMsg: '请输入11位手机号' }); return }
     if (!password) { this.setData({ errorMsg: '请输入密码' }); return }
     this.setData({ errorMsg: '' })
+    wx.showLoading({ title: '登录中...' })
     try {
       const res = await loginByPassword(phone, password)
-      if (res.code === 0) this.saveAndRedirect(res.data)
-      else this.setData({ errorMsg: res.message || '登录失败' })
+      wx.hideLoading()
+      // res = {code: 0, data: {token, user, refresh_token}} from api.js request()
+      if (res && res.code === 0 && res.data && res.data.token) {
+        this.saveAndRedirect(res.data)
+      } else {
+        this.setData({ errorMsg: res && res.message || res && res.data && res.data.message || '登录失败，请稍后重试' })
+      }
     } catch (e) {
-      this.setData({ errorMsg: e.message || '登录失败' })
+      wx.hideLoading()
+      this.setData({ errorMsg: e.message || '网络错误，请检查网络后重试' })
     }
   },
 
-  // 短信登录
   async doSmsLogin() {
     const { phone, smsCode } = this.data
     if (!phone || phone.length !== 11) { this.setData({ errorMsg: '请输入11位手机号' }); return }
     if (!smsCode || smsCode.length < 4) { this.setData({ errorMsg: '请输入验证码' }); return }
     this.setData({ errorMsg: '' })
+    wx.showLoading({ title: '登录中...' })
     try {
       const res = await loginByCode(phone, smsCode)
-      if (res.code === 0) this.saveAndRedirect(res.data)
-      else this.setData({ errorMsg: res.message || '登录失败' })
+      wx.hideLoading()
+      if (res && res.code === 0 && res.data && res.data.token) {
+        this.saveAndRedirect(res.data)
+      } else {
+        this.setData({ errorMsg: res && res.message || res && res.data && res.data.message || '登录失败，请稍后重试' })
+      }
     } catch (e) {
-      this.setData({ errorMsg: e.message || '登录失败' })
+      wx.hideLoading()
+      this.setData({ errorMsg: e.message || '网络错误，请检查网络后重试' })
     }
   },
 
-  // 微信登录
   async doWechatLogin() {
     this.setData({ wechatLoading: true, errorMsg: '' })
     try {
       const res = await loginByWechat()
       this.setData({ wechatLoading: false })
-      if (res.code === 0) {
+      if (res && res.code === 0 && res.data && res.data.token) {
         this.saveAndRedirect(res.data)
       } else {
-        this.setData({ errorMsg: res.message || '微信登录失败' })
+        this.setData({ errorMsg: res && res.message || '微信登录失败' })
       }
     } catch (e) {
       this.setData({ wechatLoading: false, errorMsg: '微信登录失败，请稍后重试' })

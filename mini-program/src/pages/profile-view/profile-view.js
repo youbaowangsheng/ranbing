@@ -1,5 +1,5 @@
 // pages/profile-view/profile-view.js
-const { request, getProfile } = require('../../services/api.js')
+const { request, getProfile, extractData } = require('../../services/api.js')
 
 Page({
   data: {
@@ -13,6 +13,8 @@ Page({
   },
 
   onLoad(options) {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     this._uuid = options.uuid || ''
     this.loadAll()
   },
@@ -21,12 +23,12 @@ Page({
     try {
       // Get my profile uuid to check is_self
       const myProfileRes = await getProfile()
-      const myProfile = myProfileRes.data?.profile || myProfileRes.data || {}
+      const myProfile = extractData(myProfileRes) || {}
       this._myUuid = myProfile.uuid || ''
 
       // Get target profile
       const res = await request(`/profiles/${this._uuid}/`, 'GET')
-      const profile = res.data || {}
+      const profile = extractData(res) || {}
 
       const avatar_char = profile.real_name ? profile.real_name.charAt(0) : '?'
       const colors = ['#1a3a5c', '#e86a3a', '#7c3aed', '#059669', '#dc2626', '#2563eb']

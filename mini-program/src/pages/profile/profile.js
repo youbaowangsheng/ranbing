@@ -40,6 +40,7 @@ Page({
   toMessages() { wx.navigateTo({ url: '/pages/messages/messages' }) },
   toContacts() { wx.navigateTo({ url: '/pages/contacts/contacts' }) },
   toMyConnections() { wx.navigateTo({ url: '/pages/contacts/contacts' }) },
+  toMyMatches() { wx.navigateTo({ url: '/pages/ai-assistant/ai-assistant' }) },
   toCardTags() { wx.navigateTo({ url: '/pages/contact-tags/contact-tags' }) },
   toMyCards() { wx.navigateTo({ url: '/pages/cards/cards' }) },
   toEditProfile() { wx.navigateTo({ url: '/pages/profile-edit/profile-edit' }) },

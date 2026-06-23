@@ -1,5 +1,5 @@
 // pages/my-posts/my-posts.js
-const { getMySupplies, deleteSupply } = require('../../services/api.js')
+const { getMySupplies, deleteSupply, extractData } = require('../../services/api.js')
 
 Page({
   data: { items: [], page: 1, pageSize: 20, hasMore: true, loading: false, loadingMore: false },
@@ -16,7 +16,7 @@ Page({
     this.setData({ loading: !append, loadingMore: append })
     try {
       const res = await getMySupplies({ page: this.data.page, page_size: this.data.pageSize })
-      const items = res.data || []
+      const items = extractData(res) || []
       this.setData({ items: append ? [...this.data.items, ...items] : items, hasMore: items.length >= this.data.pageSize, loading: false, loadingMore: false })
     } catch (e) { this.setData({ loading: false, loadingMore: false }) }
   },

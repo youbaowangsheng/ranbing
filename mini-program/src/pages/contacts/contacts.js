@@ -1,4 +1,4 @@
-const { getConnections, getFriendRequests, acceptFriendRequest, rejectFriendRequest } = require('../../services/api.js');
+const { getConnections, getFriendRequests, acceptFriendRequest, rejectFriendRequest, extractData } = require('../../services/api.js');
 
 Page({
   data: {
@@ -9,6 +9,8 @@ Page({
   },
 
   onLoad() {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     this.loadFriends();
   },
 
@@ -25,8 +27,7 @@ Page({
   loadFriends() {
     this.setData({ loading: true });
     getConnections().then(res => {
-      const code = res.data && res.data.code !== undefined ? res.data.code : (res.code !== undefined ? res.code : 0);
-      const list = code === 0 ? (res.data.data || []) : [];
+      const list = extractData(res) || [];
       const items = list.map(c => ({
         uuid: c.other_profile && c.other_profile.uuid ? c.other_profile.uuid : c.uuid || '',
         real_name: c.other_profile && c.other_profile.real_name ? c.other_profile.real_name : (c.real_name || '未知'),
@@ -41,8 +42,7 @@ Page({
   loadRequests() {
     this.setData({ loading: true });
     getFriendRequests().then(res => {
-      const code = res.data && res.data.code !== undefined ? res.data.code : (res.code !== undefined ? res.code : 0);
-      const list = code === 0 ? (res.data.data || []) : [];
+      const list = extractData(res) || [];
       const requests = list.map(r => {
         const fp = r.from_profile || {};
         return {

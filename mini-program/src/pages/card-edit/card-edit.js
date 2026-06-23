@@ -18,6 +18,8 @@ Page({
   },
 
   onLoad(options) {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     if (options.card) {
       try {
         const card = JSON.parse(decodeURIComponent(options.card));
@@ -64,9 +66,12 @@ Page({
     };
 
     (isEdit ? updateCard(cardUuid, data) : createCard(data)).then(res => {
-      if (res.data && res.data.code === 0) {
+      // 成功后端返回 {'code': 0, 'message': '更新成功'} 或 {'code': 0, 'data': {...}}
+      if (res.code === 0 || (res.data && res.data.code === 0)) {
         wx.showToast({ title: isEdit ? '已保存' : '已创建', icon: 'success' });
         setTimeout(() => wx.navigateBack(), 1000);
+      } else {
+        wx.showToast({ title: res.message || res.data?.message || '操作失败', icon: 'none' });
       }
     }).catch(() => {
       wx.showToast({ title: '操作失败', icon: 'none' });

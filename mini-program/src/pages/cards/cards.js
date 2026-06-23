@@ -7,14 +7,26 @@ Page({
   },
 
   onLoad() {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     this.loadCards();
   },
 
   loadCards() {
     this.setData({ loading: true });
     getCards().then(res => {
-      const code = res.data && res.data.code !== undefined ? res.data.code : (res.code !== undefined ? res.code : 0);
-      const cards = code === 0 ? (res.data.data || []) : [];
+      // /cards/me/ 返回单张名片 {code:0, data:{uuid,...}}
+      // 如果 data 是对象而非数组，则包装成数组
+      let cards = [];
+      if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
+        if (res.data.uuid) {
+          cards = [res.data];
+        }
+      } else if (Array.isArray(res.data)) {
+        cards = res.data;
+      } else if (Array.isArray(res)) {
+        cards = res;
+      }
       this.setData({ cards, loading: false });
     }).catch(() => this.setData({ loading: false }));
   },

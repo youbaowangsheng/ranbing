@@ -1,5 +1,5 @@
 // pages/messages/messages.js
-const api = require('../../services/api.js')
+const { getConversations, extractData } = require('../../services/api.js')
 
 Page({
   data: {
@@ -8,6 +8,8 @@ Page({
   },
 
   onLoad() {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     this.loadConversations()
   },
 
@@ -18,8 +20,11 @@ Page({
   async loadConversations() {
     this.setData({ loading: true })
     try {
-      const res = await api.getConversations()
-      const conversations = (res.data || []).map(item => {
+      const res = await getConversations()
+      // getConversations returns {code:0, data:[...]} which api.js unwraps to {code:0, data:[...]}
+      // So res here is the unwrapped response = {code:0, data:[...]}
+      const list = extractData(res) || []
+      const conversations = list.map(item => {
         const avatar_char = (item.peer_name || '匿名').charAt(0)
         const time_ago = this.computeTimeAgo(item.last_message_time)
         return {

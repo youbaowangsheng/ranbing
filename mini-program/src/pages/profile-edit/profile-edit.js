@@ -38,6 +38,8 @@ Page({
   },
 
   onLoad() {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     this.loadAll()
   },
 
@@ -138,9 +140,13 @@ Page({
       // Update tags separately
       if (this.data.selectedTagIds.length > 0) {
         const { request } = require('../../services/api.js')
-        await request('/profiles/update_tags/', 'POST', {
+        const tagRes = await request('/profiles/update_tags/', 'POST', {
           tags: this.data.selectedTagIds.map(id => ({ id, tag_type: 1 }))
         })
+        // tagRes is already unwrapped by api.js - direct response body
+        if (!tagRes || tagRes.code !== 0) {
+          console.warn('tag update failed:', tagRes)
+        }
       }
 
       wx.showToast({ title: '保存成功', icon: 'success' })

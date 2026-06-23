@@ -1,5 +1,5 @@
 // pages/search/search.js
-const { request } = require('../../services/api.js')
+const { request, extractData } = require('../../services/api.js')
 
 Page({
   data: {
@@ -13,6 +13,8 @@ Page({
   },
 
   onLoad(options) {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     if (options.q) {
       this.setData({ q: options.q })
       this.doSearch()
@@ -40,8 +42,8 @@ Page({
 
   async _search(q) {
     try {
-      const res = await request(`/search/?q=${encodeURIComponent(q)}`, 'GET')
-      const data = res.data || {}
+      const res = await request(`/supplies/search/?q=${encodeURIComponent(q)}`, 'GET')
+      const data = extractData(res) || {}
 
       const profiles = (data.profiles || []).map(p => ({
         ...p,

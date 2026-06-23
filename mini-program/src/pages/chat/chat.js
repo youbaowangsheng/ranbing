@@ -1,5 +1,5 @@
 // pages/chat/chat.js - 私信聊天
-const api = require('../../services/api.js')
+const { getMessagesWith, sendPrivateMessage, extractData } = require('../../services/api.js')
 
 Page({
   data: {
@@ -14,6 +14,8 @@ Page({
   },
 
   onLoad(options) {
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
     const { peer_uuid, peer_name } = options
     this.setData({
       peer_uuid: peer_uuid || '',
@@ -25,8 +27,8 @@ Page({
   async loadMessages() {
     this.setData({ loadingMore: true })
     try {
-      const res = await api.getMessagesWith(this.data.peer_uuid, this.data.page)
-      const msgs = (res.data || []).map(item => ({
+      const res = await getMessagesWith(this.data.peer_uuid, this.data.page)
+      const msgs = (extractData(res) || []).map(item => ({
         id: item.uuid,
         content: item.content,
         is_mine: item.is_mine,
@@ -60,7 +62,7 @@ Page({
     if (!content) return
     this.setData({ inputText: '', loadingMore: false })
     try {
-      await api.sendPrivateMessage(this.data.peer_uuid, content)
+      await sendPrivateMessage(this.data.peer_uuid, content)
       // 发完后直接加一条本地消息
       const newMsg = { id: Date.now(), content, is_mine: true, created_at: new Date().toISOString() }
       this.setData({ messages: [...this.data.messages, newMsg], page: 1 })
