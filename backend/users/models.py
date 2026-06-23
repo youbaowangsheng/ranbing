@@ -7,6 +7,9 @@ class UserManager(BaseUserManager):
     def create_user(self, phone=None, password=None, nickname='', **extra_fields):
         if not phone and not extra_fields.get('email'):
             raise ValueError('手机号或邮箱不能同时为空')
+        # Convert empty wx_openid to None to avoid unique constraint violation
+        if extra_fields.get('wx_openid') == '':
+            extra_fields['wx_openid'] = None
         user = self.model(phone=phone, nickname=nickname, **extra_fields)
         if password:
             user.set_password(password)  # Django 加密存储

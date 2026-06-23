@@ -38,6 +38,7 @@ def login_view(request):
                     error = '密码错误'
                 else:
                     _do_login(request, user)
+                    return redirect('home')
 
             elif login_type == 'sms':
                 code = request.POST.get('code', '').strip()

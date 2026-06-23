@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 
 class UserProfile(models.Model):
@@ -14,7 +14,7 @@ class UserProfile(models.Model):
         ('regular', '普通用户'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='console_profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='console_profile')
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='regular', verbose_name='用户类型')
     phone = models.CharField(max_length=20, blank=True, verbose_name='手机号')
     company = models.CharField(max_length=200, blank=True, verbose_name='公司')
@@ -46,7 +46,7 @@ class AgentConfig(models.Model):
         ('custom', '自定义'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='agent_configs', verbose_name='用户')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='agent_configs', verbose_name='用户')
     fipai_agent_id = models.IntegerField(null=True, blank=True, verbose_name='FIPAI Agent ID')
     agent_name = models.CharField(max_length=200, verbose_name='Agent名称')
     agent_type = models.CharField(max_length=50, choices=AGENT_TYPE_CHOICES, default='custom', verbose_name='Agent类型')
@@ -67,7 +67,7 @@ class AgentConfig(models.Model):
 
 
 class UsageRecord(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usage_records', verbose_name='用户')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='usage_records', verbose_name='用户')
     agent = models.ForeignKey(AgentConfig, on_delete=models.SET_NULL, null=True, related_name='usage_records', verbose_name='Agent')
     tokens = models.BigIntegerField(default=0, verbose_name='Token消耗')
     cost = models.DecimalField(max_digits=10, decimal_places=4, default=0, verbose_name='费用')
@@ -89,7 +89,7 @@ class MatchingRecord(models.Model):
         ('cancelled', '已取消'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='matching_records', verbose_name='用户')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='matching_records', verbose_name='用户')
     agent = models.ForeignKey(AgentConfig, on_delete=models.SET_NULL, null=True, verbose_name='Agent')
     demand_id = models.CharField(max_length=100, blank=True, verbose_name='需求ID')
     supply_id = models.CharField(max_length=100, blank=True, verbose_name='供给ID')
@@ -119,7 +119,7 @@ class PublishTask(models.Model):
         ('custom', '自定义'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='publish_tasks', verbose_name='用户')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='publish_tasks', verbose_name='用户')
     agent = models.ForeignKey(AgentConfig, on_delete=models.SET_NULL, null=True, verbose_name='Agent')
     title = models.CharField(max_length=200, verbose_name='标题')
     content = models.TextField(verbose_name='内容')

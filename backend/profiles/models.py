@@ -124,3 +124,33 @@ class PrivateMessage(models.Model):
 
     def __str__(self):
         return f'PM:{self.from_profile_id}->{self.to_profile_id}'
+
+
+class ContactTag(models.Model):
+    """用户自定义的联系人标签（如：投资人、重要客户等）"""
+    id = models.BigAutoField(primary_key=True)
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='contact_tags')
+    name = models.CharField(max_length=32)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'contact_tags'
+        unique_together = ('owner', 'name')
+
+    def __str__(self):
+        return f'{self.owner_id}:{self.name}'
+
+
+class ContactTagRelation(models.Model):
+    """联系人与标签的关联"""
+    id = models.BigAutoField(primary_key=True)
+    contact_tag = models.ForeignKey(ContactTag, on_delete=models.CASCADE, related_name='relations')
+    contact_profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='tag_relations')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'contact_tag_relations'
+        unique_together = ('contact_tag', 'contact_profile')
+
+    def __str__(self):
+        return f'{self.contact_tag_id}-{self.contact_profile_id}'

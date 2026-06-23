@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     AIRecognizeIntentView, AIExtractTagsView, AIMatchView, AIGenerateScriptView,
-    AIChatProxyView, AIChatProxyV2View, AISupplyMatchesView,
+    AIChatProxyView, AIChatProxyV2View, AISupplyMatchesView, AIActivityRecommendView,
     ai_publish_guide
 )
 
@@ -13,5 +13,6 @@ urlpatterns = [
     path('chat/', AIChatProxyView.as_view(), name='ai-chat'),
     path('chat-v2/', AIChatProxyV2View.as_view(), name='ai-chat-v2'),
     path('supply-matches/', AISupplyMatchesView.as_view(), name='ai-supply-matches'),
+    path('activity-recommend/', AIActivityRecommendView.as_view(), name='ai-activity-recommend'),
     path('publish-guide/', ai_publish_guide, name='ai_publish_guide'),
 ]

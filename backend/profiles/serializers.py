@@ -1,6 +1,6 @@
 """Profile序列化器"""
 from rest_framework import serializers
-from .models import Profile, ProfileTag, Tag, PrivateMessage
+from .models import Profile, ProfileTag, Tag, PrivateMessage, ContactTag, ContactTagRelation
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -91,3 +91,19 @@ class ConversationSerializer(serializers.Serializer):
 
     def get_last_message(self, obj):
         return PrivateMessageSerializer(obj['last_message']).data if obj.get('last_message') else None
+
+
+class ContactTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactTag
+        fields = ['id', 'name', 'created_at']
+
+
+class ContactTagRelationSerializer(serializers.ModelSerializer):
+    tag = ContactTagSerializer(read_only=True)
+    tag_id = serializers.IntegerField(write_only=True)
+    contact_profile = ProfileListSerializer(read_only=True)
+
+    class Meta:
+        model = ContactTagRelation
+        fields = ['id', 'tag', 'tag_id', 'contact_profile']
