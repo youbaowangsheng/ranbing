@@ -5,12 +5,21 @@
     <view class="top-bar-center"><text class="top-bar-title">燃冰</text></view>
     <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
   </view>
-  <view class="user-card">
+  <!-- 登录后用户卡片 -->
+  <view class="user-card" wx:if="{{loggedIn}}">
     <view class="user-info">
       <view class="user-name">{{userInfo.nickname || '用户'}}</view>
       <view class="user-meta">{{userInfo.company || '未填写公司'}} · {{userInfo.position || '未填写职位'}}</view>
     </view>
     <button class="publish-btn" bindtap="toPublish">+ 发布</button>
+  </view>
+  <!-- 未登录引导 -->
+  <view class="user-card" wx:else>
+    <view class="user-info">
+      <view class="user-name">欢迎来到燃冰</view>
+      <view class="user-meta">登录后体验完整功能</view>
+    </view>
+    <button class="publish-btn" bindtap="goLogin">登录 / 注册</button>
   </view>
 
   <!-- 加载中 -->

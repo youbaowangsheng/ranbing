@@ -1,4 +1,4 @@
-const { getCommunityDetail, getCommunityMembers, getCommunityMessages, postCommunityMessage, joinCommunity, leaveCommunity, getProfile } = require('../../services/api');
+const { getCommunityDetail, getCommunityMembers, getCommunityMessages, postCommunityMessage, joinCommunity, leaveCommunity, getProfile, extractData } = require('../../services/api');
 
 Page({
   data: {
@@ -22,33 +22,30 @@ Page({
     }
     this.setData({ uuid });
     this.loadDetail();
-    this.checkJoinStatus();
+    const token = wx.getStorageSync('token')
+    if (token) this.checkJoinStatus()
   },
 
   loadDetail() {
     getCommunityDetail(this.data.uuid).then(res => {
-      const d = res.data || res;
-      if (d.code === 0) {
-        const c = d.data;
+      const d = extractData(res);
+      if (d && d.uuid) {
         const typeMap = {1:'行业社群',2:'地域社群',3:'校友群',4:'兴趣社群'};
-        c.community_type_name = typeMap[c.community_type] || '社群';
-        this.setData({ community: c });
+        d.community_type_name = typeMap[d.community_type] || '社群';
+        this.setData({ community: d });
       }
     }).catch(()=>{});
   },
 
   checkJoinStatus() {
     getCommunityMembers(this.data.uuid).then(res => {
-      const d = res.data || res;
-      if (d.code === 0) {
-        getProfile().then(res => {
-          const me = res.data || res;
-          const myUuid = me.uuid;
-          const members = d.results || d.data || [];
-          const found = members.find(m => m.profile.uuid === myUuid);
-          this.setData({ isJoined: !!found });
-        }).catch(()=>{});
-      }
+      const members = extractData(res) || [];
+      getProfile().then(res => {
+        const me = extractData(res) || {};
+        const myUuid = me.uuid;
+        const found = members.find(m => m.profile && m.profile.uuid === myUuid);
+        this.setData({ isJoined: !!found });
+      }).catch(()=>{});
     }).catch(()=>{});
   },
 
@@ -62,16 +59,16 @@ Page({
   loadMembers() {
     this.setData({ membersLoading: true });
     getCommunityMembers(this.data.uuid).then(res => {
-      const d = res.data || res;
-      this.setData({ members: d.results || d.data || [], membersLoading: false });
+      const members = extractData(res) || [];
+      this.setData({ members, membersLoading: false });
     }).catch(() => this.setData({ membersLoading: false }));
   },
 
   loadMessages() {
     this.setData({ msgLoading: true });
     getCommunityMessages(this.data.uuid).then(res => {
-      const d = res.data || res;
-      const msgs = (d.results || d.data || []).map(m => ({
+      const items = extractData(res) || [];
+      const msgs = items.map(m => ({
         ...m,
         created_at_fmt: this.fmtTime(m.created_at),
       }));
@@ -84,33 +81,35 @@ Page({
   },
 
   doPost() {
+    if (!wx.getStorageSync('token')) { wx.navigateTo({ url: '/pages/login/login' }); return }
     const content = this.data.postContent.trim();
     if (!content) return wx.showToast({ title: '内容不能为空', icon: 'none' });
     this.setData({ posting: true });
     postCommunityMessage({ community_uuid: this.data.uuid, content }).then(res => {
-      const d = res.data || res;
+      const d = extractData(res);
       this.setData({ posting: false, postContent: '' });
-      if (d.code === 0) {
+      if (d && (d.code === 0 || d.uuid)) {
         wx.showToast({ title: '发布成功', icon: 'success' });
         this.setData({ activeTab: 'messages' });
         this.loadMessages();
       } else {
-        wx.showToast({ title: d.message || '发布失败', icon: 'none' });
+        wx.showToast({ title: (d && d.message) || '发布失败', icon: 'none' });
       }
     }).catch(() => this.setData({ posting: false }));
   },
 
   toggleJoin() {
+    if (!wx.getStorageSync('token')) { wx.navigateTo({ url: '/pages/login/login' }); return }
     const wasJoined = this.data.isJoined;
     const action = wasJoined ? leaveCommunity(this.data.uuid) : joinCommunity(this.data.uuid);
     action.then(res => {
-      const d = res.data || res;
-      if (d.code === 0) {
+      const d = extractData(res);
+      if (d && (d.code === 0 || !d.code)) {
         this.setData({ isJoined: !wasJoined });
         wx.showToast({ title: wasJoined ? '已退出' : '已加入', icon: 'success' });
         this.loadDetail();
       } else {
-        wx.showToast({ title: d.message || '操作失败', icon: 'none' });
+        wx.showToast({ title: (d && d.message) || '操作失败', icon: 'none' });
       }
     }).catch(() => wx.showToast({ title: '操作失败', icon: 'none' }));
   },

@@ -3,14 +3,16 @@ import json
 import uuid
 import redis
 import logging
+import asyncio
 
 import httpx
 from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .services.intent import (
     recognize_intent, extract_tags, generate_match_reason,
@@ -287,18 +289,19 @@ class AIGenerateScriptView(APIView):
 
 
 class AIChatProxyView(APIView):
-    """POST /api/v1/ai/chat/ — AI对话代理（解决浏览器跨域调用FIPAI的问题）"""
-    permission_classes = [IsAuthenticated]
+    """POST /api/v1/ai/chat/ — AI对话代理"""
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        import httpx
-
         user_message = request.data.get('message', '')
         if not user_message:
             return Response({'code': 2002, 'message': 'message不能为空'}, status=status.HTTP_400_BAD_REQUEST)
 
+        from django.contrib.auth.models import AnonymousUser
         from profiles.models import Profile, ProfileTag
         try:
+            if isinstance(request.user, AnonymousUser):
+                raise Profile.DoesNotExist()
             profile = Profile.objects.get(user=request.user)
             my_tags = list(ProfileTag.objects.filter(profile=profile, tag_type=1).select_related('tag')[:5])
             tag_context = '、'.join(t.tag.name for t in my_tags) if my_tags else '暂无标签'
@@ -311,30 +314,48 @@ class AIChatProxyView(APIView):
         except Profile.DoesNotExist:
             user_message_with_context = user_message
 
-        fipai_url = 'https://fipai.cn/api/v1/chat/'
-        try:
-            with httpx.Client(timeout=30) as client:
-                resp = client.post(
-                    fipai_url,
-                    json={'message': user_message_with_context},
-                    headers={'Content-Type': 'application/json'}
+        DEEPSEEK_API_KEY = getattr(settings, 'DEEPSEEK_API_KEY', '')
+        DEEPSEEK_BASE_URL = getattr(settings, 'DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
+        DEEPSEEK_MODEL = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
+
+        if DEEPSEEK_API_KEY:
+            try:
+                headers = {
+                    'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
+                    'Content-Type': 'application/json'
+                }
+                ds_payload = {
+                    'model': DEEPSEEK_MODEL,
+                    'messages': [{'role': 'user', 'content': user_message_with_context}],
+                    'max_tokens': 500,
+                    'temperature': 0.7
+                }
+                resp = httpx.post(
+                    f'{DEEPSEEK_BASE_URL}/chat/completions',
+                    json=ds_payload,
+                    headers=headers,
+                    timeout=30
                 )
                 resp.raise_for_status()
                 data = resp.json()
-                return Response({
-                    'code': 0,
-                    'data': {
-                        'content': data.get('content', data.get('reply', '暂无回复')),
-                        'channel': data.get('channel', 'fipai'),
-                        'metadata': data.get('metadata', {})
-                    }
-                })
-        except httpx.TimeoutException:
-            return Response({'code': 5001, 'message': 'AI服务响应超时，请稍后重试'}, status=504)
-        except httpx.HTTPStatusError as e:
-            return Response({'code': 5002, 'message': f'AI服务错误: {e.response.status_code}'}, status=502)
-        except Exception as e:
-            return Response({'code': 5000, 'message': f'请求失败: {str(e)}'}, status=500)
+                content = data.get('choices', [{}])[0].get('message', {}).get('content', '暂无回复')
+                return Response({'code': 0, 'data': {'content': content, 'channel': 'deepseek', 'metadata': {}}})
+            except httpx.TimeoutException:
+                return Response({'code': 5001, 'message': 'AI服务响应超时，请稍后重试'}, status=504)
+            except httpx.HTTPStatusError as e:
+                return Response({'code': 5002, 'message': f'AI服务错误: {e.response.status_code}'}, status=502)
+            except Exception as e:
+                return Response({'code': 5000, 'message': f'AI服务暂时不可用: {str(e)}'}, status=500)
+        else:
+            # No API key: return a helpful demo response
+            return Response({
+                'code': 0,
+                'data': {
+                    'content': f'已收到您的消息「{user_message}」，AI功能正在配置中，请联系管理员配置 DeepSeek API Key。',
+                    'channel': 'demo',
+                    'metadata': {}
+                }
+            })
 
 
 class AISupplyMatchesView(APIView):
@@ -343,7 +364,7 @@ class AISupplyMatchesView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    async def get(self, request):
         user_message = request.query_params.get('message', '')
         session_id = request.query_params.get('session_id', '')
         profile_uuid = request.query_params.get('profile_uuid', '')
@@ -406,8 +427,8 @@ class AISupplyMatchesView(APIView):
         }
 
         try:
-            with httpx.Client(timeout=60) as client:
-                resp = client.post(
+            async with httpx.AsyncClient(timeout=60) as client:
+                resp = await client.post(
                     fipai_url,
                     json=fipai_payload,
                     headers={'Content-Type': 'application/json'}
@@ -546,7 +567,7 @@ class AIChatProxyV2View(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    async def post(self, request):
         user_message = request.data.get('message', '')
         if not user_message:
             return Response({'code': 2002, 'message': 'message不能为空'}, status=status.HTTP_400_BAD_REQUEST)
@@ -599,8 +620,8 @@ class AIChatProxyV2View(APIView):
         }
 
         try:
-            with httpx.Client(timeout=60) as client:
-                resp = client.post(
+            async with httpx.AsyncClient(timeout=60) as client:
+                resp = await client.post(
                     fipai_url,
                     json=fipai_payload,
                     headers={'Content-Type': 'application/json'}
@@ -665,6 +686,81 @@ class AIChatProxyV2View(APIView):
 
 # ===== AI引导发布API =====
 
+class AIActivityRecommendView(APIView):
+    """
+    GET /api/v1/ai/activity-recommend/ — AI活动推荐
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        import logging
+        logger = logging.getLogger()
+        profile_uuid = request.query_params.get('profile_uuid', '')
+
+        user_context = ""
+        try:
+            from profiles.models import Profile, ProfileTag
+            if profile_uuid:
+                profile = Profile.objects.get(uuid=profile_uuid)
+            else:
+                profile = Profile.objects.get(user=request.user)
+
+            my_tags = list(
+                ProfileTag.objects.filter(profile=profile, tag_type=1)
+                .select_related('tag')[:10]
+            )
+            tag_context = '、'.join(t.tag.name for t in my_tags) if my_tags else '暂无标签'
+            user_context = (
+                f"用户名：{profile.real_name}，"
+                f"公司：{profile.company}，"
+                f"职位：{profile.position}，"
+                f"行业：{profile.industry}，"
+                f"城市：{profile.city}，"
+                f"标签：{tag_context}。"
+            )
+        except Exception as e:
+            logger.warning(f"[activity-recommend] load profile error: {e}")
+            user_context = "请推荐最相关的人文创业活动。"
+
+        from activities.models import Activity
+        recent_activities = Activity.objects.filter(status=1).order_by('-created_at')[:5]
+        activity_context = "\n".join([
+            f"- {a.title}（{a.city}）"
+            for a in recent_activities
+        ]) if recent_activities else "暂无活动"
+
+        prompt = (
+            f"根据用户背景，推荐最相关的人文创业活动。\n\n"
+            f"用户信息：\n{user_context}\n\n"
+            f"最近活动：\n{activity_context}\n\n"
+            f"请只推荐最相关的2-3个活动，说明推荐理由。"
+        )
+
+        fipai_url = 'https://fipai.cn/api/v1/chat/'
+        fipai_payload = {
+            'message': prompt,
+            'messages': [{"role": "user", "content": prompt}],
+            'tools': [],
+            'channel_hint': 'single_agent',
+        }
+
+        try:
+            resp = httpx.post(
+                fipai_url,
+                json=fipai_payload,
+                headers={'Content-Type': 'application/json'},
+                timeout=60
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+            reply_content = data.get('content', '') or data.get('reply', '')
+            return Response({'code': 0, 'data': {'recommendation': reply_content}})
+        except Exception as e:
+            logger.error(f"[activity-recommend] error: {e}")
+            return Response({'code': 1, 'message': str(e)}, status=500)
+
+
 GUIDE_QUESTIONS = {
     0: {
         'question': '👋 你好！我是燃冰AI助手，可以帮你写一条高质量的供需发布。\n\n首先，告诉我你想发布的是：',
@@ -723,7 +819,7 @@ def generate_suggestions(collected, user_profile=None):
     }
 
 
-@csrf_exempt
+@login_required
 def ai_publish_guide(request):
     """POST /api/v1/ai/publish-guide/ - Guided AI publish conversation"""
     from django.http import JsonResponse

@@ -8,25 +8,30 @@ from supplies.models import Supply
 from .auth import csrf_exempt
 
 
-class SupplyDemandView(LoginRequiredMixin, TemplateView):
+class SupplyDemandView(TemplateView):
     template_name = 'pages/supply_demand.html'
-    login_url = '/pages/login/'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
 
-        my_profile = Profile.objects.get_or_create(user=user)[0]
+        if user.is_authenticated:
+            my_profile = Profile.objects.get_or_create(user=user)[0]
+        else:
+            my_profile = None
 
         supply_type = self.request.GET.get('type')
         tag_id = self.request.GET.get('tag')
 
         qs = Supply.objects.select_related('profile__user').filter(status=1)
 
-        my_supply_tag_ids = ProfileTag.objects.filter(
-            profile=my_profile, tag_type=1
-        ).values_list('tag_id', flat=True)
-        ctx['my_tags'] = Tag.objects.filter(id__in=my_supply_tag_ids)[:12]
+        if my_profile:
+            my_supply_tag_ids = ProfileTag.objects.filter(
+                profile=my_profile, tag_type=1
+            ).values_list('tag_id', flat=True)
+            ctx['my_tags'] = Tag.objects.filter(id__in=my_supply_tag_ids)[:12]
+        else:
+            ctx['my_tags'] = []
 
         if supply_type:
             qs = qs.filter(supply_type=int(supply_type))
@@ -42,7 +47,7 @@ class SupplyDemandView(LoginRequiredMixin, TemplateView):
         ctx['current_type'] = supply_type or ''
         ctx['current_tag'] = tag_id or ''
         ctx['current_view'] = self.request.GET.get('view', 'opportunity')
-        ctx['profile_uuid'] = str(my_profile.uuid)
+        ctx['profile_uuid'] = str(my_profile.uuid) if my_profile else ''
 
         ctx['all_tags'] = Tag.objects.filter(is_recommend=True).order_by('-hot_score')[:20]
 

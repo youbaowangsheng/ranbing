@@ -13,7 +13,7 @@
     <view class="tab {{activeTab==='recommend'?'active':''}}" data-tab="recommend" bindtap="switchTab">推荐</view>
     <view class="tab {{activeTab==='upcoming'?'active':''}}" data-tab="upcoming" bindtap="switchTab">即将举办</view>
     <view class="tab {{activeTab==='past'?'active':''}}" data-tab="past" bindtap="switchTab">往期回顾</view>
-    <view class="tab {{activeTab==='mine'?'active':''}}" data-tab="mine" bindtap="switchTab">我参与的</view>
+    <view class="tab {{activeTab==='mine'?'active':''}}" data-tab="mine" bindtap="switchTab" wx:if="{{loggedIn}}">我参与的</view>
   </view>
 
   <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>

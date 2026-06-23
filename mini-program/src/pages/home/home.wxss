@@ -1,6 +1,6 @@
 /* 首页瀑布流 */
 page { background: #f0f2f5; }
-.container { padding-bottom: 100px; }
+.container { padding-bottom: 100px; padding-top: calc(var(--status-bar-height) + 10px); }
 
 /* 顶栏：搜索+标题+AI */
 .top-bar { background: #1a3a5c; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }

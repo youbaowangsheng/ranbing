@@ -7,13 +7,15 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key-change-in-production')
+SECRET_KEY=os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("DJANGO_SECRET_KEY environment variable must be set")
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
 AUTH_USER_MODEL = 'users.User'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # ─── Apps ────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -80,6 +82,7 @@ LOGOUT_REDIRECT_URL = '/pages/login/'
 # ─── Auth Backends (allow phone+code login) ─────────────────
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
+    'users.authentication.PhoneBackend',
 ]
 
 # ─── CORS ──────────────────────────────────────────────────
@@ -118,12 +121,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ─── CORS ──────────────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:5175',
     'http://localhost:5177',
+    'https://www.asiamlhk.com',
+    'https://console.asiamlhk.com',
+    'https://admin.asiamlhk.com',
 ]
+CORS_ALLOW_ALL_ORIGINS = False  # never enable in production
 
 # ─── REST Framework ────────────────────────────────────────
 REST_FRAMEWORK = {
@@ -139,7 +145,7 @@ REST_FRAMEWORK = {
 }
 
 # ─── JWT Settings ───────────────────────────────────────────
-JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
+JWT_SECRET_KEY=os.environ.get('JWT_SECRET_KEY') or SECRET_KEY
 JWT_ALGORITHM = 'HS256'
 JWT_ACCESS_TOKEN_LIFETIME = timedelta(days=7)
 JWT_REFRESH_TOKEN_LIFETIME = timedelta(days=30)

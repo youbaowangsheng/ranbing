@@ -2,7 +2,9 @@
 const api = require('../../services/api.js')
 Page({
   data: { item: null, loading: true, uuid: '' },
-  onLoad(opts) { this.setData({ uuid: opts.uuid }); this.loadDetail() },
+  onLoad(opts) {
+    this.setData({ uuid: opts.uuid }); this.loadDetail()
+  },
   async loadDetail() {
     try {
       const res = await api.request(`/supplies/${this.data.uuid}/`)
@@ -14,6 +16,7 @@ Page({
     } catch (e) { this.setData({ loading: false }) }
   },
   connectUser() {
+    if (!wx.getStorageSync('token')) { wx.navigateTo({ url: '/pages/login/login' }); return }
     // 直接跳转私信聊天页
     const profile = this.data.item && this.data.item.profile
     if (!profile) { wx.showToast({ title: '无法获取联系人', icon: 'none' }); return }

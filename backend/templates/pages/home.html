@@ -18,6 +18,7 @@
 </a>
 
 <!-- User Greeting -->
+{% if my_profile %}
 <div class="card" style="margin-bottom:12px;">
   <div style="display:flex; align-items:center; gap:12px;">
     <div style="flex:1;">
@@ -35,6 +36,17 @@
     </a>
   </div>
 </div>
+{% else %}
+<div class="card" style="margin-bottom:12px; text-align:center; padding:20px;">
+  <div style="font-size:16px; font-weight:600; margin-bottom:8px;">欢迎来到燃冰</div>
+  <div style="font-size:13px; color:#888; margin-bottom:12px;">登录后体验完整功能，发现更多商业机会</div>
+  <a href="{% url 'login' %}">
+    <button style="background:linear-gradient(135deg,#e86a3a,#f0a06a); color:#fff; border:none; border-radius:20px; padding:8px 24px; font-size:14px; font-weight:600; cursor:pointer;">
+      登录 / 注册
+    </button>
+  </a>
+</div>
+{% endif %}
 
 <!-- 好友请求通知 -->
 {% if friend_request_count > 0 %}

@@ -13,7 +13,9 @@ Page({
     this.loadData().finally(() => wx.stopPullDownRefresh())
   },
 
-  onShow() { this.loadData() },
+  onShow() {
+    this.loadData()
+  },
 
   onKeywordInput(e) {
     clearTimeout(this._searchTimer)
@@ -46,6 +48,8 @@ Page({
 
   async joinNow(e) {
     e.stopPropagation()
+    const token = wx.getStorageSync('token')
+    if (!token) { wx.navigateTo({ url: '/pages/login/login' }); return }
     const uuid = e.currentTarget.dataset.uuid
     try {
       await joinCommunity(uuid)

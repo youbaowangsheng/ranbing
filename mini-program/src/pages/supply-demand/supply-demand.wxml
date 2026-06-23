@@ -3,7 +3,7 @@
   <view class="top-bar">
     <view class="search-box" bindtap="toSearch">
       <text class="search-icon">🔍</text>
-      <input class="search-input" placeholder="搜索机会" disabled />
+      <input class="search-input" placeholder="搜索机会" bindinput="onKeywordInput" />
     </view>
     <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
   </view>

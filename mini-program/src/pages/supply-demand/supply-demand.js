@@ -1,5 +1,5 @@
 // pages/supply-demand/supply-demand.js
-const { getSupplies } = require('../../services/api.js')
+const { getSupplies, extractData } = require('../../services/api.js')
 
 Page({
   data: { items: [], page: 1, pageSize: 20, hasMore: true, loading: false, loadingMore: false, typeTab: 'all', keyword: '' },
@@ -22,7 +22,7 @@ Page({
       if (this.data.typeTab === 'demand') params.type = 2
       if (this.data.keyword) params.search = this.data.keyword
       const res = await getSupplies(params)
-      const rawItems = res.results || res.items || (typeof res.count === 'number' ? [] : res) || []
+      const rawItems = extractData(res) || []
       const items = rawItems.map(item => ({
         ...item,
         avatar_char: item.profile?.real_name ? item.profile.real_name.charAt(0) : '?',
@@ -45,7 +45,10 @@ Page({
   },
 
   toDetail(e) { wx.navigateTo({ url: `/pages/supply-detail/supply-detail?uuid=${e.currentTarget.dataset.uuid}` }) },
-  toPublish() { wx.navigateTo({ url: '/pages/publish/publish' }) },
+  toPublish() {
+    if (!wx.getStorageSync('token')) { wx.navigateTo({ url: '/pages/login/login' }); return }
+    wx.navigateTo({ url: '/pages/publish/publish' })
+  },
   toAiAssistant() { wx.navigateTo({ url: '/pages/ai-assistant/ai-assistant' }) },
   toSearch() { wx.navigateTo({ url: '/pages/search/search' }) },
   loadMore() {

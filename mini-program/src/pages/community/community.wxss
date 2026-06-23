@@ -1,6 +1,6 @@
 /* 社群列表 */
 page { background: #f0f2f5; }
-.container { min-height: 100vh; background: #f0f2f5; padding-bottom: 80px; }
+.container { min-height: 100vh; background: #f0f2f5; padding-bottom: 80px; padding-top: calc(var(--status-bar-height) + 10px); }
 
 .top-bar { background: #1a3a5c; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
 .search-box { flex: 1; background: rgba(255,255,255,0.15); border-radius: 18px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }

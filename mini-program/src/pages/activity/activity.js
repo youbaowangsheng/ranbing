@@ -5,6 +5,7 @@ Page({
   data: {
     activeTab: 'recommend',
     activeCat: '全部',
+    loggedIn: false,
     // activity_type: 1=沙龙 2=路演 3=培训班 4=社交聚会 5=线上讲座
     categories: ['全部', '沙龙', '路演', '培训班', '社交聚会', '线上讲座'],
     catMap: { '全部': 0, '沙龙': 1, '路演': 2, '培训班': 3, '社交聚会': 4, '线上讲座': 5 },
@@ -26,8 +27,10 @@ Page({
   },
 
   onShow() {
-    this.loadAiRecommend()
+    const token = wx.getStorageSync('token')
+    this.setData({ loggedIn: !!token })
     this.loadData()
+    if (token) this.loadAiRecommend()
   },
 
   async loadAiRecommend() {
@@ -93,6 +96,10 @@ Page({
   },
 
   switchTab(e) {
+    if (e.currentTarget.dataset.tab === 'mine' && !wx.getStorageSync('token')) {
+      wx.navigateTo({ url: '/pages/login/login' })
+      return
+    }
     this.setData({
       activeTab: e.currentTarget.dataset.tab,
       page: 1,

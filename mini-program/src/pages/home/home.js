@@ -4,6 +4,7 @@ const { getMe, getProfile, getSupplies, getActivities, getCommunities } = requir
 Page({
   data: {
     userInfo: {},
+    loggedIn: false,
     items: [],
     leftItems: [],
     rightItems: [],
@@ -16,17 +17,15 @@ Page({
 
   onShow() {
     const token = wx.getStorageSync('token')
-    if (!token) {
-      wx.navigateTo({ url: '/pages/login/login' })
-      return
-    }
-    this.loadUserInfo()
+    this.setData({ loggedIn: !!token })
     this.loadAll()
+    if (token) this.loadUserInfo()
   },
 
   onPullDownRefresh() {
     this.setData({ page: 1, items: [], leftItems: [], rightItems: [], hasMore: true })
-    this.loadUserInfo()
+    const token = wx.getStorageSync('token')
+    if (token) this.loadUserInfo()
     this.loadAll().finally(() => wx.stopPullDownRefresh())
   },
 
@@ -129,7 +128,12 @@ Page({
   },
 
   toPublish() {
+    if (!wx.getStorageSync('token')) { wx.navigateTo({ url: '/pages/login/login' }); return }
     wx.navigateTo({ url: '/pages/publish/publish' })
+  },
+
+  goLogin() {
+    wx.navigateTo({ url: '/pages/login/login' })
   },
 
   loadMore() {

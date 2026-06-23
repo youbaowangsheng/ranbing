@@ -10,34 +10,34 @@ from profiles.models import Profile
 from communities.models import Community, CommunityMember, Message
 
 
-class CommunityView(LoginRequiredMixin, TemplateView):
+class CommunityView(TemplateView):
     template_name = 'pages/community.html'
-    login_url = '/pages/login/'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
-        profile, _ = Profile.objects.get_or_create(user=user)
 
-        my_memberships = CommunityMember.objects.filter(
-            profile=profile, status=1
-        ).select_related('community')
-        ctx['my_communities'] = [m.community for m in my_memberships]
-
-        my_joined_ids = set(CommunityMember.objects.filter(
-            profile=profile, status=1
-        ).values_list('community_id', flat=True))
-        ctx['my_joined_ids'] = my_joined_ids
+        if user.is_authenticated:
+            profile, _ = Profile.objects.get_or_create(user=user)
+            my_memberships = CommunityMember.objects.filter(
+                profile=profile, status=1
+            ).select_related('community')
+            ctx['my_communities'] = [m.community for m in my_memberships]
+            my_joined_ids = set(CommunityMember.objects.filter(
+                profile=profile, status=1
+            ).values_list('community_id', flat=True))
+            ctx['my_joined_ids'] = my_joined_ids
+        else:
+            ctx['my_communities'] = []
+            ctx['my_joined_ids'] = set()
 
         ctx['community_list'] = Community.objects.filter(status=1).order_by('-member_count')[:20]
-
         return ctx
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class CommunityDetailView(LoginRequiredMixin, TemplateView):
+class CommunityDetailView(TemplateView):
     template_name = 'pages/community_detail.html'
-    login_url = '/pages/login/'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -49,11 +49,14 @@ class CommunityDetailView(LoginRequiredMixin, TemplateView):
         ctx['community'] = community
 
         if community:
-            profile, _ = Profile.objects.get_or_create(user=self.request.user)
-            my_membership = CommunityMember.objects.filter(
-                community=community, profile=profile, status=1
-            ).first()
-            ctx['my_membership'] = my_membership
+            if self.request.user.is_authenticated:
+                profile, _ = Profile.objects.get_or_create(user=self.request.user)
+                my_membership = CommunityMember.objects.filter(
+                    community=community, profile=profile, status=1
+                ).first()
+                ctx['my_membership'] = my_membership
+            else:
+                ctx['my_membership'] = None
 
             members = CommunityMember.objects.filter(
                 community=community, status=1
@@ -68,7 +71,6 @@ class CommunityDetailView(LoginRequiredMixin, TemplateView):
             ctx['my_membership'] = None
             ctx['members'] = []
             ctx['messages'] = []
-
         return ctx
 
     def post(self, request, id=None, **kwargs):

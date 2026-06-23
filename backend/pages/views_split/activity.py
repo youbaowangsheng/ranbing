@@ -1,5 +1,6 @@
 """Activity views: list, detail, publish, enrollment."""
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.views.generic import TemplateView, ListView
 from django.views.decorators.csrf import csrf_exempt
@@ -9,9 +10,8 @@ from profiles.models import Profile, Tag
 from activities.models import Activity, ActivityEnrollment
 
 
-class ActivityListView(LoginRequiredMixin, ListView):
+class ActivityListView(ListView):
     template_name = 'pages/activity_list.html'
-    login_url = '/pages/login/'
     context_object_name = 'activity_list'
     paginate_by = 20
 

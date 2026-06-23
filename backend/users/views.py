@@ -12,7 +12,7 @@ from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.auth import login
 from django.utils import timezone
@@ -214,7 +214,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         phone = serializer.validated_data['phone']
         code = serializer.validated_data['code']
         nickname = serializer.validated_data.get('nickname', f'用户{phone[-4:]}')
-        wx_openid = serializer.validated_data.get('wx_openid', '')
+        wx_openid = serializer.validated_data.get('wx_openid') or None
 
         # 验证验证码
         r = get_redis_client()
@@ -275,6 +275,7 @@ class AuthViewSet(viewsets.GenericViewSet):
 
 class UserMeView(APIView):
     """获取当前用户"""
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         return Response({
