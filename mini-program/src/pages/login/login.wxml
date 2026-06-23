@@ -2,7 +2,7 @@
 <view class="container">
   <!-- Logo -->
   <view class="logo-section">
-    <view class="logo-icon">冰</view>
+    <image class="logo-icon" src="/assets/logo.png" mode="aspectFit" />
     <view class="logo-text">燃冰</view>
     <view class="logo-sub">AI商务社交平台</view>
   </view>

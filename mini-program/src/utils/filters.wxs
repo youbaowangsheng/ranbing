@@ -1,6 +1,5 @@
-<wxs module="filters">
-function toPercent(s){if(s==null||s==undefined)return "0";return Math.round(s*100);}
-function num(n){if(n==null||n==undefined)return "0";return n;}
-function firstChar(str){if(!str)return "?";return str.charAt(0);}
-module.exports={toPercent:toPercent,num:num,firstChar:firstChar};
-</wxs>
+module.exports = {
+  toPercent: function(s) { if (s == null || s == undefined) return "0"; return Math.round(s * 100); },
+  num: function(n) { if (n == null || n == undefined) return "0"; return n; },
+  firstChar: function(str) { if (!str) return "?"; return str.charAt(0); }
+};
