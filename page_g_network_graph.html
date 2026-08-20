@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面G · 关系网络图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px 0; }
+  .phone-frame { width: 375px; min-height: 880px; background: #fff; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border-radius: 40px; overflow: hidden; }
+  .status-bar { height: 44px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; }
+  .status-icons { position: absolute; right: 20px; bottom: 8px; font-size: 12px; }
+  .header { height: 44px; background: #fff; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #eee; justify-content: space-between; }
+  .header-back { font-size: 20px; color: #1a3a5c; }
+  .header-title { font-size: 16px; font-weight: 600; color: #333; }
+  .header-export { font-size: 13px; color: #e86a3a; }
+  .network-wrap { background: #f8fafd; padding: 16px; border-bottom: 8px solid #f5f5f5; }
+  .network-svg { width: 100%; height: 200px; }
+  .legend { display: flex; justify-content: center; gap: 16px; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #888; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend-dot.first { background: #1a3a5c; }
+  .legend-dot.second { background: #8ab4d4; }
+  .legend-dot.me { background: #e86a3a; }
+  .section { background: #fff; }
+  .section-title { font-size: 13px; color: #888; padding: 12px 16px 8px; font-weight: 500; border-bottom: 1px solid #f5f5f5; }
+  .conn-item { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid #f5f5f5; gap: 10px; }
+  .conn-item:last-child { border-bottom: none; }
+  .conn-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; font-weight: 600; flex-shrink: 0; }
+  .conn-info { flex: 1; }
+  .conn-name { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 6px; }
+  .conn-tag { font-size: 10px; background: #e8f0f8; color: #1a3a5c; padding: 1px 6px; border-radius: 8px; }
+  .conn-tag.second { background: #f0f4f8; color: #888; }
+  .conn-sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .conn-actions { display: flex; gap: 8px; }
+  .conn-btn { font-size: 11px; padding: 4px 10px; border-radius: 12px; cursor: pointer; }
+  .conn-btn-msg { background: #f0f4f8; color: #1a3a5c; }
+  .conn-btn-view { background: #fff; color: #888; border: 1px solid #ddd; }
+  .insight-item { padding: 12px 16px; border-bottom: 1px solid #f5f5f5; }
+  .insight:last-child { border-bottom: none; }
+  .insight-icon { font-size: 14px; margin-right: 6px; }
+  .insight-text { font-size: 13px; color: #555; line-height: 1.5; }
+  .insight-highlight { color: #1a3a5c; font-weight: 600; }
+  .insight-action { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 12px; color: #e86a3a; cursor: pointer; }
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 56px; background: #fff; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #888; }
+  .nav-icon { font-size: 20px; }
+  .nav-item.active { color: #e86a3a; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar"><span class="time">9:41</span><span class="status-icons">📶  🔋</span></div>
+  <div class="header">
+    <span class="header-back">←</span>
+    <span class="header-title">我的关系网络</span>
+    <span class="header-export">导出</span>
+  </div>
+
+  <div style="height:calc(100% - 44px); overflow-y:auto; padding-bottom:70px;">
+
+  <div class="network-wrap">
+    <svg class="network-svg" viewBox="0 0 343 200">
+      <!-- Edges -->
+      <line x1="171" y1="100" x2="80" y2="55" stroke="#c8d8e8" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <line x1="171" y1="100" x2="263" y2="55" stroke="#c8d8e8" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <line x1="80" y1="55" x2="50" y2="110" stroke="#e0e8f0" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="80" y1="55" x2="171" y2="100" stroke="#c8d8e8" stroke-width="1.5"/>
+      <line x1="263" y1="55" x2="293" y2="110" stroke="#e0e8f0" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="263" y1="55" x2="171" y2="100" stroke="#c8d8e8" stroke-width="1.5"/>
+      <line x1="293" y1="110" x2="171" y2="100" stroke="#e0e8f0" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="50" y1="110" x2="171" y2="100" stroke="#e0e8f0" stroke-width="1" stroke-dasharray="3,2"/>
+
+      <!-- Me node (center) -->
+      <circle cx="171" cy="100" r="22" fill="#e86a3a"/>
+      <text x="171" y="105" text-anchor="middle" font-size="12" fill="white" font-weight="bold">我</text>
+
+      <!-- First degree nodes -->
+      <circle cx="80" cy="55" r="18" fill="#1a3a5c"/>
+      <text x="80" y="59" text-anchor="middle" font-size="10" fill="white" font-weight="bold">王五</text>
+
+      <circle cx="263" cy="55" r="18" fill="#1a3a5c"/>
+      <text x="263" y="59" text-anchor="middle" font-size="10" fill="white" font-weight="bold">李四</text>
+
+      <circle cx="293" cy="110" r="14" fill="#1a3a5c"/>
+      <text x="293" y="114" text-anchor="middle" font-size="9" fill="white" font-weight="bold">陈芳</text>
+
+      <!-- Second degree nodes -->
+      <circle cx="50" cy="110" r="13" fill="#8ab4d4"/>
+      <text x="50" y="114" text-anchor="middle" font-size="9" fill="white">赵六</text>
+
+      <circle cx="160" cy="165" r="13" fill="#8ab4d4"/>
+      <text x="160" y="169" text-anchor="middle" font-size="9" fill="white">吴总</text>
+
+      <!-- Second degree connections (friend of friend) -->
+      <line x1="50" y1="110" x2="160" y2="165" stroke="#e0e8f0" stroke-width="1" stroke-dasharray="3,2"/>
+    </svg>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot first"></div>● 一度人脉（直接连接）3人</div>
+      <div class="legend-item"><div class="legend-dot second"></div>○ 二度人脉（朋友的朋友）2人</div>
+      <div class="legend-item"><div class="legend-dot me"></div>★ 你（中心节点）</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">👤 一度人脉（3人）</div>
+    <div class="conn-item">
+      <div class="conn-avatar" style="background:#1a3a5c;">王</div>
+      <div class="conn-info">
+        <div class="conn-name">王五 <span class="conn-tag">一度</span></div>
+        <div class="conn-sub">某资本 · 合伙人</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">连接方式：共同参加2次活动</div>
+      </div>
+      <div class="conn-actions">
+        <div class="conn-btn conn-btn-msg">发消息</div>
+        <div class="conn-btn conn-btn-view">主页</div>
+      </div>
+    </div>
+    <div class="conn-item">
+      <div class="conn-avatar" style="background:#1a3a5c;">李</div>
+      <div class="conn-info">
+        <div class="conn-name">李四 <span class="conn-tag">一度</span></div>
+        <div class="conn-sub">某产业基金 · VP</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">连接方式：校友群内互动</div>
+      </div>
+      <div class="conn-actions">
+        <div class="conn-btn conn-btn-msg">发消息</div>
+        <div class="conn-btn conn-btn-view">主页</div>
+      </div>
+    </div>
+    <div class="conn-item">
+      <div class="conn-avatar" style="background:#1a3a5c;">陈</div>
+      <div class="conn-info">
+        <div class="conn-name">陈芳 <span class="conn-tag">一度</span></div>
+        <div class="conn-sub">华泰证券 · 投行总监</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">连接方式：合作项目</div>
+      </div>
+      <div class="conn-actions">
+        <div class="conn-btn conn-btn-msg">发消息</div>
+        <div class="conn-btn conn-btn-view">主页</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💡 AI网络洞察</div>
+    <div class="insight-item">
+      <div class="insight-text">
+        <span class="insight-icon">💡</span>
+        您的二度人脉<span class="insight-highlight">"赵六"</span>与您有相同投资方向（智能制造），推荐通过<span class="insight-highlight">王五</span>引荐认识。
+      </div>
+      <div class="insight-action">让AI生成引荐话术 ➤</div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-text">
+        <span class="insight-icon">💡</span>
+        您的二度人脉<span class="insight-highlight">"陈芳"</span>与刘强东有合作记录，可通过陈芳了解更多刘强东的情况。
+      </div>
+      <div class="insight-action">让AI帮忙了解更多 ➤</div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-text">
+        <span class="insight-icon">💡</span>
+        您的二度人脉<span class="insight-highlight">"吴总"</span>刚发布了"渠道合作"供给，与您的供给匹配度<span class="insight-highlight">91%</span>。
+      </div>
+      <div class="insight-action">立即查看 ➤</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">○ 二度人脉（5人，可展开查看）</div>
+    <div class="conn-item">
+      <div class="conn-avatar" style="background:#8ab4d4;">周</div>
+      <div class="conn-info">
+        <div class="conn-name">周明 <span class="conn-tag second">二度</span></div>
+        <div class="conn-sub">某VC · 合伙人</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">中间人：王五（1人）</div>
+      </div>
+      <div class="conn-btn conn-btn-msg" style="font-size:11px;padding:4px 10px;">申请引荐</div>
+    </div>
+    <div class="conn-item">
+      <div class="conn-avatar" style="background:#8ab4d4;">赵</div>
+      <div class="conn-info">
+        <div class="conn-name">赵六 <span class="conn-tag second">二度</span></div>
+        <div class="conn-sub">某制造企业 · CEO</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">中间人：王五（1人）</div>
+      </div>
+      <div class="conn-btn conn-btn-msg" style="font-size:11px;padding:4px 10px;">申请引荐</div>
+    </div>
+    <div style="padding:10px 16px;text-align:center;border-bottom:1px solid #f5f5f5;">
+      <span style="font-size:12px;color:#888;">查看全部5位二度人脉 ▼</span>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item"><span class="nav-icon">🏠</span><span>首页</span></div>
+    <div class="nav-item"><span class="nav-icon">📅</span><span>活动</span></div>
+    <div class="nav-item"><span class="nav-icon">💼</span><span>供需</span></div>
+    <div class="nav-item"><span class="nav-icon">💬</span><span>社群</span></div>
+    <div class="nav-item active"><span class="nav-icon">👤</span><span>我的</span></div>
+  </div>
+</div>
+</body>
+</html>

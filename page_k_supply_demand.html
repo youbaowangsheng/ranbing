@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>供需广场</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-nav { background:#1a3a5c; padding:8px 16px 0; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; margin-right:28px; }
+.top-tabs { display:flex; background:#1a3a5c; padding:12px 16px 0; gap:0; }
+.top-tab { flex:1; text-align:center; padding:8px 0; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; position:relative; }
+.top-tab.active { color:#fff; font-weight:600; }
+.top-tab.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:32px; height:3px; background:#e86a3a; border-radius:2px; }
+
+/* 轮播Banner */
+.banner { background:linear-gradient(135deg,#1a3a5c,#2d5a8a); margin:12px 16px; border-radius:14px; padding:16px; position:relative; overflow:hidden; }
+.banner::before { content:''; position:absolute; right:-20px; top:-20px; width:120px; height:120px; background:rgba(255,255,255,0.05); border-radius:50%; }
+.banner-label { font-size:11px; color:#e86a3a; background:rgba(232,106,58,0.15); display:inline-block; padding:2px 8px; border-radius:8px; margin-bottom:8px; }
+.banner-title { font-size:16px; color:#fff; font-weight:600; margin-bottom:4px; }
+.banner-desc { font-size:12px; color:rgba(255,255,255,0.7); }
+.banner-ai { position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:40px; opacity:0.3; }
+
+/* 自动生成提示条 */
+.auto-gen-bar { background:#fff8f5; margin:0 16px 12px; border-radius:12px; padding:12px 14px; border:1px solid #ffc5a0; display:flex; align-items:center; gap:10px; cursor:pointer; }
+.auto-gen-icon { font-size:24px; }
+.auto-gen-info { flex:1; }
+.auto-gen-title { font-size:14px; color:#c2410c; font-weight:600; }
+.auto-gen-desc { font-size:12px; color:#888; margin-top:2px; }
+.auto-gen-arrow { color:#e86a3a; font-size:18px; }
+
+/* 供需类型切换 */
+.supply-demand-toggle { display:flex; margin:0 16px 12px; background:#f5f5f5; border-radius:12px; padding:3px; }
+.toggle-item { flex:1; text-align:center; padding:8px; border-radius:10px; font-size:14px; color:#666; cursor:pointer; }
+.toggle-item.active { background:#fff; color:#1a3a5c; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+
+/* 分类筛栏 */
+.category-scroll { display:flex; gap:8px; padding:0 16px 12px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.category-chip { padding:5px 12px; border-radius:14px; font-size:12px; white-space:nowrap; cursor:pointer; flex-shrink:0; }
+.chip-inactive { background:#f0f0f0; color:#666; }
+.chip-active { background:#1a3a5c; color:#fff; }
+
+/* 供需卡片 */
+.cards { padding:0 16px 100px; }
+.card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border-left:4px solid; }
+.card-supply { border-left-color:#52c41a; }
+.card-demand { border-left-color:#e86a3a; }
+.card-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.card-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:600; flex-shrink:0; }
+.card-info { flex:1; }
+.card-name { font-size:15px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.card-school { font-size:12px; color:#888; margin-top:2px; }
+.card-type-badge { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:500; }
+.badge-supply { background:#e8fdf5; color:#059669; }
+.badge-demand { background:#fff3e8; color:#c2410c; }
+.card-title { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.card-body { font-size:13px; color:#555; line-height:1.6; margin-bottom:10px; }
+.card-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.mini-tag { padding:2px 8px; border-radius:8px; font-size:11px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+.card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid #f0f0f0; }
+.card-meta { font-size:12px; color:#999; display:flex; align-items:center; gap:12px; }
+.card-action { background:#1a3a5c; color:#fff; border:none; padding:6px 16px; border-radius:14px; font-size:13px; cursor:pointer; }
+.card-action-outline { background:#fff; color:#1a3a5c; border:1px solid #1a3a5c; }
+
+/* AI生成卡片专属样式 */
+.ai-gen-card { background:#faf8ff; border:1px solid #e8d5ff; }
+.ai-gen-badge { display:inline-flex; align-items:center; gap:4px; background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.ai-gen-actions { display:flex; gap:8px; margin-top:10px; }
+.btn-publish { background:#7c3aed; color:#fff; border:none; padding:8px 20px; border-radius:14px; font-size:13px; cursor:pointer; flex:1; }
+.btn-edit { background:#fff; color:#7c3aed; border:1px solid #7c3aed; padding:8px 20px; border-radius:14px; font-size:13px; cursor:pointer; flex:1; }
+.btn-delete { background:#fff; color:#999; border:1px solid #ddd; padding:8px; border-radius:14px; font-size:13px; cursor:pointer; }
+
+/* 空状态 */
+.empty-match { text-align:center; padding:40px 20px; }
+.empty-match-icon { font-size:48px; margin-bottom:12px; }
+.empty-match-title { font-size:15px; color:#333; font-weight:600; margin-bottom:6px; }
+.empty-match-desc { font-size:13px; color:#999; }
+
+/* 底部导航 */
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; display:flex; padding:8px 0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex:1; text-align:center; padding:6px; }
+.nav-icon { font-size:20px; margin-bottom:2px; }
+.nav-label { font-size:10px; color:#999; }
+.nav-item.active .nav-icon { }
+.nav-item.active .nav-label { color:#1a3a5c; font-weight:600; }
+
+/* AI弹窗 */
+.mask { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; display:flex; align-items:flex-end; }
+.ai-popup { background:#fff; width:100%; border-radius:20px 20px 0 0; padding:20px; max-height:80%; overflow-y:auto; }
+.popup-handle { width:36px; height:4px; background:#ddd; border-radius:2px; margin:0 auto 16px; }
+.popup-title { font-size:17px; font-weight:600; text-align:center; margin-bottom:4px; }
+.popup-subtitle { font-size:13px; color:#888; text-align:center; margin-bottom:20px; }
+.gen-item { background:#faf8ff; border:1px solid #e8d5ff; border-radius:14px; padding:14px; margin-bottom:12px; }
+.gen-item-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.gen-type { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.type-supply { background:#e8fdf5; color:#059669; }
+.type-demand { background:#fff3e8; color:#c2410c; }
+.gen-title { font-size:15px; font-weight:600; color:#1a1a1a; }
+.gen-body { font-size:13px; color:#555; line-height:1.6; margin-bottom:8px; }
+.gen-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.popup-actions { display:flex; gap:10px; margin-top:16px; }
+.popup-btn-pub { flex:1; background:#7c3aed; color:#fff; border:none; padding:12px; border-radius:24px; font-size:15px; cursor:pointer; }
+.popup-btn-edit { flex:1; background:#fff; color:#7c3aed; border:1.5px solid #7c3aed; padding:12px; border-radius:24px; font-size:15px; cursor:pointer; }
+.popup-btn-cancel { width:100%; background:#fff; color:#999; border:none; padding:10px; font-size:14px; cursor:pointer; margin-top:4px; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-nav">
+    <div class="back-btn">‹</div>
+    <div class="nav-title">供需广场</div>
+  </div>
+  <div class="top-tabs">
+    <div class="top-tab active">智能推荐</div>
+    <div class="top-tab">供给</div>
+    <div class="top-tab">需求</div>
+    <div class="top-tab">我的发布</div>
+  </div>
+
+  <!-- Banner -->
+  <div class="banner" onclick="showAIPopup()">
+    <div class="banner-label">✨ AI智能</div>
+    <div class="banner-title">根据你的标签，AI正在生成供需</div>
+    <div class="banner-desc">3条供给 + 2条需求 待确认发布</div>
+    <div class="banner-ai">🤖</div>
+  </div>
+
+  <!-- 自动生成提示条 -->
+  <div class="auto-gen-bar" onclick="showAIPopup()">
+    <div class="auto-gen-icon">📝</div>
+    <div class="auto-gen-info">
+      <div class="auto-gen-title">标签已更新，AI重新生成供需</div>
+      <div class="auto-gen-desc">你的新标签"融资需求"已加入，生成1条新供需</div>
+    </div>
+    <div class="auto-gen-arrow">›</div>
+  </div>
+
+  <!-- 供需类型切换 -->
+  <div class="supply-demand-toggle">
+    <div class="toggle-item active">🤝 全部</div>
+    <div class="toggle-item">📤 可提供</div>
+    <div class="toggle-item">📥 我需要的</div>
+  </div>
+
+  <!-- 分类筛栏 -->
+  <div class="category-scroll">
+    <div class="category-chip chip-active">全部</div>
+    <div class="category-chip chip-inactive">企业服务</div>
+    <div class="category-chip chip-inactive">投资融资</div>
+    <div class="category-chip chip-inactive">技术合作</div>
+    <div class="category-chip chip-inactive">客户资源</div>
+    <div class="category-chip chip-inactive">品牌营销</div>
+    <div class="category-chip chip-inactive">人才招聘</div>
+    <div class="category-chip chip-inactive">渠道分销</div>
+  </div>
+
+  <!-- 供需卡片列表 -->
+  <div class="cards">
+
+    <!-- AI生成-待发布-供给 -->
+    <div class="card ai-gen-card">
+      <div class="gen-item-header">
+        <span class="ai-gen-badge">✨ AI生成</span>
+        <span class="gen-type type-supply">📤 可提供</span>
+      </div>
+      <div class="gen-title">企业服务客户资源对接</div>
+      <div class="gen-body">我在企业服务领域有多年积累，拥有关键决策人资源，可为B2B SaaS、咨询类项目对接企业客户资源。</div>
+      <div class="gen-tags">
+        <span class="mini-tag tag-blue">企业服务</span>
+        <span class="mini-tag tag-green">客户资源</span>
+        <span class="mini-tag tag-purple">B2B</span>
+      </div>
+      <div class="ai-gen-actions">
+        <button class="btn-publish" onclick="this.textContent='已发布 ✓'; this.style.background='#ccc'">🚀 发布</button>
+        <button class="btn-edit">✏️ 编辑</button>
+        <button class="btn-delete">🗑</button>
+      </div>
+    </div>
+
+    <!-- AI生成-待发布-需求 -->
+    <div class="card ai-gen-card">
+      <div class="gen-item-header">
+        <span class="ai-gen-badge">✨ AI生成</span>
+        <span class="gen-type type-demand">📥 需求</span>
+      </div>
+      <div class="gen-title">寻求品牌曝光资源</div>
+      <div class="gen-body">产品已打磨完成，现有客户案例3个，急需提升行业知名度，寻找媒体/PR合作机会。</div>
+      <div class="gen-tags">
+        <span class="mini-tag tag-orange">品牌曝光</span>
+        <span class="mini-tag tag-blue">PR</span>
+        <span class="mini-tag tag-purple">营销</span>
+      </div>
+      <div class="ai-gen-actions">
+        <button class="btn-publish" onclick="this.textContent='已发布 ✓'; this.style.background='#ccc'">🚀 发布</button>
+        <button class="btn-edit">✏️ 编辑</button>
+        <button class="btn-delete">🗑</button>
+      </div>
+    </div>
+
+    <!-- 他人发布的供给 -->
+    <div class="card card-supply">
+      <div class="card-header">
+        <div class="card-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">李</div>
+        <div class="card-info">
+          <div class="card-name">李娜 <span style="font-size:12px; color:#888; font-weight:400;">合伙人</span></div>
+          <div class="card-school">🏫 北大 2018届 · 📍 北京</div>
+        </div>
+        <span class="card-type-badge badge-supply">📤 供给</span>
+      </div>
+      <div class="card-title">📊 可提供：消费品牌全渠道增长方案</div>
+      <div class="card-body">操盘过多个千万级消费品牌增长项目，擅长线上+线下全渠道整合，熟悉新零售打法，可为早期消费品牌提供增长咨询和资源对接。</div>
+      <div class="card-tags">
+        <span class="mini-tag tag-blue">消费零售</span>
+        <span class="mini-tag tag-green">渠道分销</span>
+        <span class="mini-tag tag-purple">品牌增长</span>
+      </div>
+      <div class="card-footer">
+        <div class="card-meta">
+          <span>👁 128次浏览</span>
+          <span>💬 3人咨询</span>
+        </div>
+        <button class="card-action card-action-outline">约谈 ›</button>
+      </div>
+    </div>
+
+    <!-- 他人发布的需求 -->
+    <div class="card card-demand">
+      <div class="card-header">
+        <div class="card-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">王</div>
+        <div class="card-info">
+          <div class="card-name">王强 <span style="font-size:12px; color:#888; font-weight:400;">技术VP</span></div>
+          <div class="card-school">🏫 复旦 2020届 · 📍 上海</div>
+        </div>
+        <span class="card-type-badge badge-demand">📥 需求</span>
+      </div>
+      <div class="card-title">🔴 急求：工业品销售渠道合作</div>
+      <div class="card-body">工厂数字化产品已完成研发，已有2家头部客户落地，正在扩展工业品渠道，希望找有工厂/制造业渠道资源的伙伴合作。</div>
+      <div class="card-tags">
+        <span class="mini-tag tag-orange">销售渠道</span>
+        <span class="mini-tag tag-blue">先进制造</span>
+        <span class="mini-tag tag-purple">B2B</span>
+      </div>
+      <div class="card-footer">
+        <div class="card-meta">
+          <span>👁 203次浏览</span>
+          <span>💬 7人咨询</span>
+        </div>
+        <button class="card-action">对接合作 ›</button>
+      </div>
+    </div>
+
+    <!-- 他人发布的供给 -->
+    <div class="card card-supply">
+      <div class="card-header">
+        <div class="card-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">陈</div>
+        <div class="card-info">
+          <div class="card-name">陈思 <span style="font-size:12px; color:#888; font-weight:400;">市场总监</span></div>
+          <div class="card-school">🏫 交大 2019届 · 📍 上海</div>
+        </div>
+        <span class="card-type-badge badge-supply">📤 供给</span>
+      </div>
+      <div class="card-title">🎯 可提供：融资FA服务（企业服务方向）</div>
+      <div class="card-body">专注企业服务赛道，深度理解SaaS指标体系，曾帮助3家SaaS公司完成从天使到B轮融资，对接过多家头部VC机构资源。</div>
+      <div class="card-tags">
+        <span class="mini-tag tag-blue">投资机构</span>
+        <span class="mini-tag tag-green">资本支持</span>
+        <span class="mini-tag tag-purple">融资FA</span>
+      </div>
+      <div class="card-footer">
+        <div class="card-meta">
+          <span>👁 312次浏览</span>
+          <span>💬 15人咨询</span>
+        </div>
+        <button class="card-action card-action-outline">约谈 ›</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">首页</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🤝</div>
+      <div class="nav-label">人脉</div>
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon">🔄</div>
+      <div class="nav-label">供需</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🎪</div>
+      <div class="nav-label">活动</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">我的</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AI生成弹窗 -->
+<div class="mask" id="aiPopup" style="display:none;">
+  <div class="ai-popup">
+    <div class="popup-handle"></div>
+    <div class="popup-title">✨ AI供需生成</div>
+    <div class="popup-subtitle">基于你的标签「企业服务·优质客户·渠道分销·连续创业者」，生成以下供需</div>
+
+    <div class="gen-item">
+      <div class="gen-item-header">
+        <span class="gen-type type-supply">📤 可提供</span>
+      </div>
+      <div class="gen-title">企业服务客户资源对接</div>
+      <div class="gen-body">我在企业服务领域有多年积累，拥有关键决策人资源，可为B2B SaaS、咨询类项目对接企业客户资源。</div>
+      <div class="gen-tags">
+        <span class="mini-tag tag-blue">企业服务</span>
+        <span class="mini-tag tag-green">客户资源</span>
+        <span class="mini-tag tag-purple">B2B</span>
+      </div>
+    </div>
+
+    <div class="gen-item">
+      <div class="gen-item-header">
+        <span class="gen-type type-supply">📤 可提供</span>
+      </div>
+      <div class="gen-title">渠道分销合作资源</div>
+      <div class="gen-body">熟悉企业级渠道体系，可帮助产品型创业公司搭建分销网络，提升市场渗透率。</div>
+      <div class="gen-tags">
+        <span class="mini-tag tag-blue">渠道分销</span>
+        <span class="mini-tag tag-green">企业服务</span>
+      </div>
+    </div>
+
+    <div class="gen-item">
+      <div class="gen-item-header">
+        <span class="gen-type type-demand">📥 需求</span>
+      </div>
+      <div class="gen-title">寻求品牌曝光资源</div>
+      <div class="gen-body">产品已打磨完成，现有客户案例3个，急需提升行业知名度，寻找媒体/PR合作机会。</div>
+      <div class="gen-tags">
+        <span class="mini-tag tag-orange">品牌曝光</span>
+        <span class="mini-tag tag-blue">PR</span>
+      </div>
+    </div>
+
+    <div class="gen-item">
+      <div class="gen-item-header">
+        <span class="gen-type type-demand">📥 需求</span>
+      </div>
+      <div class="gen-title">寻找融资渠道</div>
+      <div class="gen-body">已有收入，正在谈A轮，希望对接有企业服务投资经验的VC或FA。</div>
+      <div class="gen-tags">
+        <span class="mini-tag tag-orange">融资需求</span>
+        <span class="mini-tag tag-purple">企业服务</span>
+      </div>
+    </div>
+
+    <div class="popup-actions">
+      <button class="popup-btn-pub" onclick="closePopup()">全部发布</button>
+      <button class="popup-btn-edit" onclick="closePopup()">编辑后发布</button>
+    </div>
+    <button class="popup-btn-cancel" onclick="closePopup()">稍后再说</button>
+  </div>
+</div>
+
+<script>
+function showAIPopup() {
+  document.getElementById('aiPopup').style.display='flex';
+}
+function closePopup() {
+  document.getElementById('aiPopup').style.display='none';
+}
+</script>
+
+</body>
+</html>

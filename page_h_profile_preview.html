@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面H · 预览主页效果</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .popup-phone { width: 375px; min-height: 850px; background: #f5f5f5; border-radius: 40px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; }
+  .preview-banner { background: linear-gradient(135deg, #1a3a5c, #2a5a8c); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .preview-banner-text { font-size: 12px; color: rgba(255,255,255,0.8); }
+  .preview-banner-close { font-size: 13px; color: rgba(255,255,255,0.8); cursor: pointer; padding: 4px 8px; background: rgba(255,255,255,0.15); border-radius: 12px; }
+  .status-bar { height: 44px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; }
+  .status-icons { position: absolute; right: 20px; bottom: 8px; font-size: 12px; }
+  .header { height: 44px; background: #fff; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #eee; }
+  .header-back { font-size: 20px; color: #1a3a5c; margin-right: 12px; }
+  .header-title { font-size: 16px; font-weight: 600; color: #333; flex: 1; text-align: center; margin-right: 32px; }
+  .profile-top { background: #fff; padding: 20px 20px 18px; text-align: center; border-bottom: 8px solid #f5f5f5; }
+  .avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #1a3a5c, #2a5a8c); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; font-weight: 600; }
+  .name { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+  .badge { display: inline-block; font-size: 10px; color: #fff; background: #c8a951; padding: 2px 8px; border-radius: 10px; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 3px; }
+  .location { font-size: 12px; color: #aaa; }
+  .action-btns { display: flex; gap: 10px; margin-top: 14px; justify-content: center; }
+  .action-btn { flex: 1; max-width: 120px; height: 36px; border-radius: 18px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .action-btn-primary { background: #1a3a5c; color: #fff; }
+  .action-btn-secondary { background: #fff; color: #1a3a5c; border: 1px solid #1a3a5c; }
+  .section { background: #fff; margin-bottom: 8px; }
+  .section-title { font-size: 12px; color: #888; padding: 10px 16px 6px; font-weight: 500; }
+  .info-grid { padding: 0 16px 10px; }
+  .info-row { display: flex; padding: 4px 0; font-size: 13px; }
+  .info-label { color: #888; width: 65px; flex-shrink: 0; }
+  .info-value { color: #333; flex: 1; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+  .tag { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #f0f4f8; color: #1a3a5c; }
+  .tag-orange { background: #fff3ee; color: #e86a3a; }
+  .tag-large { font-size: 12px; padding: 5px 12px; }
+  .intro-text { padding: 0 16px 12px; font-size: 13px; color: #444; line-height: 1.7; }
+  .credit-item { display: flex; align-items: center; padding: 6px 16px; gap: 8px; }
+  .credit-icon { color: #52c41a; font-size: 13px; }
+  .credit-text { font-size: 12px; color: #555; }
+  .conn-text { font-size: 12px; color: #aaa; padding: 10px 16px; text-align: center; border-top: 1px solid #f5f5f5; }
+  .preview-footer { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .preview-footer-text { font-size: 12px; color: rgba(255,255,255,0.7); text-align: center; }
+  .preview-footer-btn { width: 200px; height: 40px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; cursor: pointer; backdrop-filter: blur(10px); }
+</style>
+</head>
+<body>
+<div class="popup-phone">
+  <div class="preview-banner">
+    <span class="preview-banner-text">👁 预览模式 · 仅自己可见</span>
+    <span class="preview-banner-close">关闭 ×</span>
+  </div>
+  <div class="status-bar"><span class="time">9:41</span><span class="status-icons">📶  🔋</span></div>
+  <div class="header">
+    <span class="header-back">←</span>
+    <span class="header-title">档案预览</span>
+  </div>
+
+  <div style="height:calc(100% - 44px - 40px); overflow-y:auto; padding-bottom:100px;">
+
+  <div class="profile-top">
+    <div class="avatar">张</div>
+    <div class="name">张 总</div>
+    <span class="badge">🏅 已深度认证</span>
+    <div class="subtitle">2012级MBA · XX资本 · 合伙人</div>
+    <div class="location">📍 北京 · 上海</div>
+    <div class="action-btns">
+      <div class="action-btn action-btn-primary">💬 发消息</div>
+      <div class="action-btn action-btn-secondary">🤝 约见面</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">基本信息</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="info-label">行业领域</span><span class="info-value">金融服务 / 投资并购</span></div>
+      <div class="info-row"><span class="info-label">职能类型</span><span class="info-value">股权投资 / 资本运作</span></div>
+      <div class="info-row"><span class="info-label">资源城市</span><span class="info-value">北京 · 上海</span></div>
+      <div class="info-row"><span class="info-label">合作偏好</span><span class="info-value">见面详谈 / 线上沟通</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💼 我能提供的</div>
+    <div class="tag-row">
+      <span class="tag tag-large">融资渠道</span>
+      <span class="tag tag-large">投资标的</span>
+      <span class="tag tag-large">FA服务</span>
+      <span class="tag tag-large">产业资本</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔍 我在找的</div>
+    <div class="tag-row">
+      <span class="tag tag-large tag-orange">优质项目</span>
+      <span class="tag tag-large tag-orange">产业资本</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📝 个人简介</div>
+    <div class="intro-text">
+      专注Pre-IPO阶段企业股权投资，主投A-B轮融资。重点关注智能制造、新能源、半导体方向。
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏆 信用背书</div>
+    <div class="credit-item"><span class="credit-icon">✓</span><span class="credit-text">参加校友活动2次</span></div>
+    <div class="credit-item"><span class="credit-icon">✓</span><span class="credit-text">发布供给：融资渠道</span></div>
+    <div class="credit-item"><span class="credit-icon">✓</span><span class="credit-text">被收藏：5次</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">👥 共同连接</div>
+    <div class="conn-text">暂无共同校友</div>
+  </div>
+
+  </div>
+
+  <div class="preview-footer">
+    <div class="preview-footer-text">这是您在其他校友眼中的样子</div>
+    <div class="preview-footer-btn">← 返回编辑</div>
+  </div>
+</div>
+</body>
+</html>

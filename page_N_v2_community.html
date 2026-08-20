@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>校友社群 v2 — AI穿针引线</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-nav { background:#1a3a5c; padding:8px 16px 0; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; margin-right:28px; }
+.add-btn { color:#fff; font-size:20px; }
+
+.top-tabs { display:flex; background:#1a3a5c; padding:10px 16px 0; gap:0; }
+.top-tab { flex:1; text-align:center; padding:8px 0; color:rgba(255,255,255,0.6); font-size:13px; cursor:pointer; position:relative; }
+.top-tab.active { color:#fff; font-weight:600; }
+.top-tab.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:28px; height:3px; background:#e86a3a; border-radius:2px; }
+.signal-badge { background:#e86a3a; color:#fff; font-size:9px; padding:1px 5px; border-radius:8px; font-weight:600; margin-left:3px; }
+
+/* ========== 机会Feed页（新增核心页） ========== */
+.feed-page { padding:12px 16px 100px; }
+
+.feed-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.feed-title { font-size:15px; font-weight:600; color:#1a1a1a; }
+.feed-filter { display:flex; gap:6px; }
+.feed-filter-chip { padding:4px 10px; border-radius:10px; font-size:11px; cursor:pointer; background:#f0f0f0; color:#666; }
+.feed-filter-chip.active { background:#1a3a5c; color:#fff; }
+
+/* AI信号发现卡片 */
+.signal-card { background:#fff; border-radius:16px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border:1px solid #f0f0f0; }
+.signal-card-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.signal-icon-wrap { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.signal-icon.match { background:#fff3e8; }
+.signal-icon.qa { background:#e8f0fe; }
+.signal-icon.opp { background:#f3e8ff; }
+.signal-meta { flex:1; }
+.signal-source { font-size:13px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:5px; }
+.signal-source-name { font-size:12px; color:#888; }
+.signal-time { font-size:10px; color:#bbb; }
+.signal-badge-tag { font-size:10px; padding:2px 7px; border-radius:8px; font-weight:600; flex-shrink:0; }
+.badge-match { background:#fff3e8; color:#c2410c; }
+.badge-qa { background:#e8f0fe; color:#1a3a5c; }
+.badge-opp { background:#f3e8ff; color:#7c3aed; }
+
+/* 原文引用 */
+.signal-quote { background:#f8f9fa; border-left:3px solid #ddd; border-radius:0 8px 8px 0; padding:10px 12px; font-size:13px; color:#555; line-height:1.6; margin-bottom:10px; font-style:italic; }
+.signal-quote.match { border-left-color:#e86a3a; }
+.signal-quote.qa { border-left-color:#1a3a5c; }
+.signal-quote.opp { border-left-color:#7c3aed; }
+
+/* AI识别结果 */
+.ai-recognition { background:#faf8ff; border-radius:10px; padding:10px 12px; margin-bottom:10px; }
+.ai-recog-header { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.ai-recog-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; padding:2px 7px; border-radius:8px; font-weight:600; }
+.ai-recog-label { font-size:12px; color:#7c3aed; font-weight:500; }
+.ai-recog-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+.mini-tag { padding:2px 7px; border-radius:8px; font-size:11px; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.ai-recog-suggest { font-size:12px; color:#555; line-height:1.5; background:#fff; border-radius:8px; padding:8px 10px; }
+
+/* 推荐对接人 */
+.match-section { margin-bottom:10px; }
+.match-section-label { font-size:12px; color:#888; margin-bottom:6px; font-weight:500; }
+.match-person { display:flex; align-items:center; gap:10px; background:#fff; border-radius:12px; padding:10px 12px; border:1px solid #f0f0f0; margin-bottom:6px; }
+.person-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; color:#fff; flex-shrink:0; }
+.person-info { flex:1; }
+.person-name { font-size:14px; font-weight:600; color:#1a1a1a; }
+.person-meta { font-size:12px; color:#888; margin-top:1px; }
+.person-match { font-size:12px; color:#059669; font-weight:500; text-align:right; }
+.person-degree { font-size:11px; color:#888; text-align:right; }
+
+/* 信号操作 */
+.signal-actions { display:flex; gap:8px; }
+.btn-connect { flex:1; background:#1a3a5c; color:#fff; border:none; padding:9px; border-radius:14px; font-size:14px; cursor:pointer; font-weight:500; }
+.btn-connect.orange { background:#e86a3a; }
+.btn-connect.purple { background:#7c3aed; }
+.btn-intro { flex:1; background:#fff; color:#1a3a5c; border:1.5px solid #1a3a5c; padding:9px; border-radius:14px; font-size:14px; cursor:pointer; font-weight:500; }
+.btn-intro.purple { color:#7c3aed; border-color:#7c3aed; }
+.btn-intro:active, .btn-connect:active { opacity:0.85; }
+
+/* Q&A类型专用 */
+.qa-expert { display:flex; align-items:center; gap:10px; background:#fff; border-radius:12px; padding:10px 12px; border:1px solid #f0f0f0; margin-bottom:6px; }
+.qa-badge { background:linear-gradient(135deg,#1a3a5c,#2d5a8a); color:#fff; font-size:10px; padding:2px 7px; border-radius:8px; font-weight:600; margin-left:auto; flex-shrink:0; }
+.ask-btn { flex:1; background:#f0f0f0; color:#666; border:none; padding:9px; border-radius:14px; font-size:14px; cursor:pointer; font-weight:500; }
+
+/* ========== 我的社群 ========== */
+.my-communities { padding:12px 16px; }
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.section-title { font-size:15px; font-weight:600; color:#1a1a1a; }
+.section-more { font-size:12px; color:#888; }
+.community-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); display:flex; gap:12px; cursor:pointer; }
+.community-card:active { background:#fafafa; }
+.comm-icon { width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; position:relative; }
+.comm-info { flex:1; min-width:0; }
+.comm-name { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
+.comm-name-text { flex:1; }
+.unread-badge { background:#e86a3a; color:#fff; font-size:10px; padding:1px 6px; border-radius:8px; font-weight:600; }
+.member-count { font-size:12px; color:#888; margin-bottom:4px; }
+.comm-tags { display:flex; flex-wrap:wrap; gap:3px; }
+.comm-action { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:6px; flex-shrink:0; }
+.msg-count { font-size:12px; color:#999; }
+.msg-time { font-size:10px; color:#bbb; }
+
+/* AI精选推荐区 */
+.ai-recommend-section { padding:12px 16px; background:#faf8ff; border-top:1px solid #f0e8ff; border-bottom:1px solid #f0e8ff; }
+.ai-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.ai-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.ai-title { font-size:14px; font-weight:600; color:#333; }
+.ai-desc { font-size:12px; color:#888; margin-left:auto; }
+.recommended-card { background:#fff; border-radius:14px; padding:14px; border:1px solid #e8d5ff; position:relative; overflow:hidden; margin-bottom:10px; }
+.rec-card-top { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.rec-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.rec-info { flex:1; }
+.rec-name { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:3px; }
+.rec-meta { font-size:12px; color:#888; }
+.rec-reason { font-size:12px; color:#7c3aed; background:#f8f5ff; padding:6px 10px; border-radius:8px; margin-bottom:8px; display:flex; align-items:flex-start; gap:6px; }
+.rec-reason-icon { flex-shrink:0; margin-top:1px; }
+.hot-discuss { background:#fff8f5; border-radius:10px; padding:10px; margin-bottom:10px; }
+.hot-discuss-header { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.hot-icon { font-size:14px; }
+.hot-title { font-size:13px; font-weight:600; color:#c2410c; }
+.hot-meta { font-size:11px; color:#888; margin-left:auto; }
+.hot-excerpt { font-size:12px; color:#555; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.rec-actions { display:flex; gap:8px; }
+.btn-join { flex:1; background:#7c3aed; color:#fff; border:none; padding:8px; border-radius:12px; font-size:14px; cursor:pointer; font-weight:500; text-align:center; }
+.btn-maybe { flex:1; background:#fff; color:#999; border:1px solid #ddd; padding:8px; border-radius:12px; font-size:14px; cursor:pointer; }
+
+/* ========== 发现社群 ========== */
+.category-scroll { display:flex; gap:6px; padding:10px 16px; overflow-x:auto; -webkit-overflow-scrolling:touch; background:#fff; border-bottom:1px solid #eee; }
+.category-chip { padding:5px 12px; border-radius:14px; font-size:12px; white-space:nowrap; cursor:pointer; flex-shrink:0; }
+.chip-active { background:#1a3a5c; color:#fff; }
+.chip-inactive { background:#f0f0f0; color:#666; }
+.more-communities { padding:12px 16px 100px; }
+.more-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); display:flex; gap:12px; cursor:pointer; }
+.more-icon { width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
+.more-info { flex:1; min-width:0; }
+.more-name { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:3px; }
+.more-member { font-size:12px; color:#888; margin-bottom:3px; }
+.more-tags { display:flex; flex-wrap:wrap; gap:3px; }
+.more-right { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:4px; }
+.more-avatars { display:flex; }
+.more-avatars .avatar { width:22px; height:22px; border-radius:50%; border:1.5px solid #fff; margin-left:-6px; font-size:9px; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); }
+.more-avatars .avatar:first-child { margin-left:0; }
+.join-action { background:#1a3a5c; color:#fff; border:none; padding:6px 14px; border-radius:12px; font-size:12px; cursor:pointer; }
+
+/* 底部导航 */
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; display:flex; padding:8px 0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex:1; text-align:center; padding:6px; }
+.nav-icon { font-size:20px; margin-bottom:2px; }
+.nav-label { font-size:10px; color:#999; }
+.nav-item.active .nav-label { color:#1a3a5c; font-weight:600; }
+
+/* 隐藏 */
+.hidden { display:none !important; }
+
+/* AI牵线确认弹窗 */
+.mask { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; display:none; align-items:flex-end; }
+.mask.show { display:flex; }
+.dialog { background:#fff; width:100%; border-radius:20px 20px 0 0; padding:20px; max-height:85%; overflow-y:auto; }
+.dialog-handle { width:36px; height:4px; background:#ddd; border-radius:2px; margin:0 auto 16px; }
+.dialog-title { font-size:17px; font-weight:600; text-align:center; margin-bottom:4px; }
+.dialog-subtitle { font-size:13px; color:#888; text-align:center; margin-bottom:20px; line-height:1.6; }
+.dialog-content { background:#f8f9fa; border-radius:12px; padding:14px; margin-bottom:16px; }
+.dialog-content-label { font-size:12px; color:#888; margin-bottom:6px; }
+.dialog-content-text { font-size:14px; color:#333; line-height:1.6; }
+.dialog-actions { display:flex; gap:10px; }
+.btn-primary { flex:1; background:#7c3aed; color:#fff; border:none; padding:12px; border-radius:24px; font-size:15px; cursor:pointer; font-weight:600; }
+.btn-cancel { flex:1; background:#fff; color:#666; border:1px solid #ddd; padding:12px; border-radius:24px; font-size:15px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-nav">
+    <div class="back-btn">‹</div>
+    <div class="nav-title">校友社群</div>
+    <div class="add-btn">+</div>
+  </div>
+  <div class="top-tabs">
+    <div class="top-tab active" id="tabSignal" onclick="switchTab('signal')">
+      机会<span class="signal-badge" id="signalBadge">2</span>
+    </div>
+    <div class="top-tab" id="tabMy" onclick="switchTab('my')">我的社群</div>
+    <div class="top-tab" id="tabDiscover" onclick="switchTab('discover')">发现</div>
+  </div>
+
+  <!-- ========== 机会Feed页 ========== -->
+  <div id="pageSignal" class="feed-page">
+    <div class="feed-header">
+      <div class="feed-title">🤖 社群AI信号</div>
+      <div class="feed-filter">
+        <div class="feed-filter-chip active" onclick="setFilter(this, 'all')">全部</div>
+        <div class="feed-filter-chip" onclick="setFilter(this, 'match')">供需</div>
+        <div class="feed-filter-chip" onclick="setFilter(this, 'qa')">问答</div>
+      </div>
+    </div>
+
+    <!-- 信号卡片1：供需信号 -->
+    <div class="signal-card">
+      <div class="signal-card-header">
+        <div class="signal-icon-wrap signal-icon match">💡</div>
+        <div class="signal-meta">
+          <div class="signal-source">
+            <span>2015级MBA校友群</span>
+            <span class="signal-source-name">· 王海</span>
+          </div>
+          <div class="signal-time">今天 14:23 在群里说</div>
+        </div>
+        <span class="signal-badge-tag badge-match">供需信号</span>
+      </div>
+
+      <div class="signal-quote match">"我们公司下季度要做数字化转型，正在选供应商，有没有人了解比较好的企业服务SaaS或者IT咨询公司？"</div>
+
+      <div class="ai-recognition">
+        <div class="ai-recog-header">
+          <span class="ai-recog-badge">✨ AI识别</span>
+          <span class="ai-recog-label">潜在需求 · 可能与你的供给匹配</span>
+        </div>
+        <div class="ai-recog-tags">
+          <span class="mini-tag tag-orange">企业服务</span>
+          <span class="mini-tag tag-blue">数字化转型</span>
+          <span class="mini-tag tag-purple">渠道合作</span>
+        </div>
+        <div class="ai-recog-suggest">
+          💡 你的Profile标记了"企业服务客户资源"，而张华（2010级信院）在企业软件领域有10年经验，这个需求正好匹配。是否需要AI帮你穿针引线？
+        </div>
+      </div>
+
+      <div class="match-section">
+        <div class="match-section-label">👤 AI推荐对接人</div>
+        <div class="match-person">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">张</div>
+          <div class="person-info">
+            <div class="person-name">张华</div>
+            <div class="person-meta">2010级信院 · 技术VP · 北京</div>
+          </div>
+          <div>
+            <div class="person-match">匹配度 94%</div>
+            <div class="person-degree">一度连接</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="signal-actions">
+        <button class="btn-connect orange" onclick="showIntroDialog('王海', '张华', '企业服务客户资源')">🤝 AI牵线王海</button>
+        <button class="btn-intro" onclick="showIntroDialog('王海', '张华', '企业服务客户资源')">💬 告知张华</button>
+      </div>
+    </div>
+
+    <!-- 信号卡片2：Q&A信号 -->
+    <div class="signal-card">
+      <div class="signal-card-header">
+        <div class="signal-icon-wrap signal-icon qa">❓</div>
+        <div class="signal-meta">
+          <div class="signal-source">
+            <span>创业融资FA对接群</span>
+            <span class="signal-source-name">· 李明</span>
+          </div>
+          <div class="signal-time">今天 11:05 在群里问</div>
+        </div>
+        <span class="signal-badge-tag badge-qa">问答</span>
+      </div>
+
+      <div class="signal-quote qa">"有没有了解北交所最新政策的同学？我们子公司在考虑要不要上北交所，感觉政策变化很快"</div>
+
+      <div class="ai-recognition">
+        <div class="ai-recog-header">
+          <span class="ai-recog-badge">✨ AI识别</span>
+          <span class="ai-recog-label">专业问题 · 群内有专家</span>
+        </div>
+        <div class="ai-recog-tags">
+          <span class="mini-tag tag-blue">上市</span>
+          <span class="mini-tag tag-orange">北交所</span>
+          <span class="mini-tag tag-purple">资本</span>
+        </div>
+        <div class="ai-recog-suggest">
+          💡 王芳（2015级MBA）在券商投行部工作多年，对北交所政策有深度研究，AI已识别她为该领域专家。
+        </div>
+      </div>
+
+      <div class="match-section">
+        <div class="match-section-label">👤 领域专家</div>
+        <div class="qa-expert">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a);">王</div>
+          <div class="person-info">
+            <div class="person-name">王芳</div>
+            <div class="person-meta">2015级MBA · 券商投行部VP · 上海</div>
+          </div>
+          <span class="qa-badge">🏅 专家</span>
+        </div>
+      </div>
+
+      <div class="signal-actions">
+        <button class="btn-connect" onclick="showQADialog('王芳', '李明')">代为询问</button>
+        <button class="btn-intro purple">查看详情</button>
+      </div>
+    </div>
+
+    <!-- 信号卡片3：间接机会 -->
+    <div class="signal-card">
+      <div class="signal-card-header">
+        <div class="signal-icon-wrap signal-icon opp">🔗</div>
+        <div class="signal-meta">
+          <div class="signal-source">
+            <span>企业服务SaaS群</span>
+            <span class="signal-source-name">· 赵鹏</span>
+          </div>
+          <div class="signal-time">昨天 22:15 在群里分享</div>
+        </div>
+        <span class="signal-badge-tag badge-opp">合作机会</span>
+      </div>
+
+      <div class="signal-quote opp">"我们刚谈下一个头部连锁餐饮客户，他们有很强的扩张计划，需要 ERP+CRM 一体化方案，有没有人能做这块？"</div>
+
+      <div class="ai-recognition">
+        <div class="ai-recog-header">
+          <span class="ai-recog-badge">✨ AI识别</span>
+          <span class="ai-recog-label">合作机会 · 你的客户资源可能匹配</span>
+        </div>
+        <div class="ai-recog-tags">
+          <span class="mini-tag tag-orange">渠道合作</span>
+          <span class="mini-tag tag-blue">餐饮SaaS</span>
+          <span class="mini-tag tag-green">客户资源</span>
+        </div>
+        <div class="ai-recog-suggest">
+          💡 你之前发过供给"餐饮SaaS渠道"，赵鹏提到的头部连锁餐饮客户扩张需求，可能与你的供给高度吻合。你在企业服务领域积累的客户资源正是他需要的。
+        </div>
+      </div>
+
+      <div class="match-section">
+        <div class="match-section-label">👤 共同连接</div>
+        <div class="match-person">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">赵</div>
+          <div class="person-info">
+            <div class="person-name">赵鹏</div>
+            <div class="person-meta">2018级经院 · 创始人 · 北京</div>
+          </div>
+          <div>
+            <div class="person-match">二度连接</div>
+            <div class="person-degree">3位共同好友</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="signal-actions">
+        <button class="btn-connect purple" onclick="contactFromSignal('赵鹏')">联系赵鹏</button>
+        <button class="btn-intro purple" onclick="showIntroDialog('赵鹏', '', '餐饮SaaS渠道')">请AI牵线</button>
+      </div>
+    </div>
+
+    <!-- 空状态（当没有信号时） -->
+    <div style="text-align:center; padding:40px 20px; display:none;" id="emptySignal">
+      <div style="font-size:48px; margin-bottom:12px;">🔔</div>
+      <div style="font-size:15px; font-weight:600; color:#333; margin-bottom:6px;">暂无新信号</div>
+      <div style="font-size:13px; color:#888;">AI正在监听你的社群，有商业机会时会第一时间通知你</div>
+    </div>
+
+  </div>
+
+  <!-- ========== 我的社群 ========== -->
+  <div id="pageMy" class="hidden">
+    <div class="my-communities">
+      <div class="section-header">
+        <div class="section-title">🏠 我的社群 <span style="font-size:12px; color:#888; font-weight:400;">3个</span></div>
+        <div class="section-more">查看全部 ›</div>
+      </div>
+
+      <div id="myCommList"></div>
+      <div id="myCommEmpty" class="hidden" style="padding:16px; color:#999; font-size:13px; text-align:center;">暂无加入的社群</div>
+    </div>
+
+    <!-- AI精选推荐区 -->
+    <div class="ai-recommend-section">
+      <div class="ai-header">
+        <span class="ai-badge">✨ AI精选</span>
+        <span class="ai-title">你可能想加入的社群</span>
+        <span class="ai-desc">基于你的供需标签</span>
+      </div>
+      <div id="aiRecommendList"></div>
+      <div id="aiRecommendEmpty" class="hidden" style="padding:20px; text-align:center; color:#999; font-size:13px;">暂无推荐社群</div>
+    </div>
+  </div>
+
+  <!-- ========== 发现社群 ========== -->
+  <div id="pageDiscover" class="hidden">
+    <div class="category-scroll">
+      <div class="category-chip chip-active">全部</div>
+      <div class="category-chip chip-inactive">企业服务</div>
+      <div class="category-chip chip-inactive">投资融资</div>
+      <div class="category-chip chip-inactive">技术合作</div>
+      <div class="category-chip chip-inactive">消费零售</div>
+    </div>
+
+    <div class="more-communities">
+      <div class="section-header">
+        <div class="section-title">发现更多社群</div>
+      </div>
+
+      <div class="more-card">
+        <div class="more-icon" style="background:#e8fdf5;">🏥</div>
+        <div class="more-info">
+          <div class="more-name">医疗健康创始人群</div>
+          <div class="more-member">👥 76位成员 · 医疗健康</div>
+          <div class="more-tags">
+            <span class="mini-tag" style="background:#e8f0fe; color:#1a3a5c;">医疗健康</span>
+            <span class="mini-tag" style="background:#e8fdf5; color:#059669;">渠道分销</span>
+          </div>
+        </div>
+        <div class="more-right">
+          <div class="more-avatars">
+            <div class="avatar">刘</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">杨</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">朱</div>
+          </div>
+          <button class="join-action">加入</button>
+        </div>
+      </div>
+
+      <div class="more-card">
+        <div class="more-icon" style="background:#fff8f5;">🍜</div>
+        <div class="more-info">
+          <div class="more-name">消费品牌增长实验室</div>
+          <div class="more-member">👥 103位成员 · 消费零售</div>
+          <div class="more-tags">
+            <span class="mini-tag" style="background:#e8f0fe; color:#1a3a5c;">消费零售</span>
+            <span class="mini-tag" style="background:#e8fdf5; color:#059669;">品牌增长</span>
+          </div>
+        </div>
+        <div class="more-right">
+          <div class="more-avatars">
+            <div class="avatar" style="background:linear-gradient(135deg,#059669,#34d399);">许</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a);">何</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">吕</div>
+          </div>
+          <button class="join-action">加入</button>
+        </div>
+      </div>
+
+      <div class="more-card">
+        <div class="more-icon" style="background:#f0f0f0;">🌐</div>
+        <div class="more-info">
+          <div class="more-name">AI技术创业交流群</div>
+          <div class="more-member">👥 142位成员 · 技术合作</div>
+          <div class="more-tags">
+            <span class="mini-tag" style="background:#f3e8ff; color:#7c3aed;">AI</span>
+            <span class="mini-tag" style="background:#e8f0fe; color:#1a3a5c;">技术合作</span>
+          </div>
+        </div>
+        <div class="more-right">
+          <div class="more-avatars">
+            <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">施</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#059669,#34d399);">张</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">姜</div>
+          </div>
+          <button class="join-action">加入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">首页</div></div>
+    <div class="nav-item"><div class="nav-icon">🤝</div><div class="nav-label">人脉</div></div>
+    <div class="nav-item"><div class="nav-icon">🔄</div><div class="nav-label">供需</div></div>
+    <div class="nav-item"><div class="nav-icon">🎪</div><div class="nav-label">活动</div></div>
+    <div class="nav-item active"><div class="nav-icon">👤</div><div class="nav-label">我的</div></div>
+  </div>
+
+</div>
+
+<!-- AI牵线确认弹窗 -->
+<div class="mask" id="introMask">
+  <div class="dialog">
+    <div class="dialog-handle"></div>
+    <div class="dialog-title">🤝 AI牵线请求</div>
+    <div class="dialog-subtitle">AI将把你的合作意向发送给王海，询问他是否有兴趣与你/张华建立连接</div>
+
+    <div class="dialog-content">
+      <div class="dialog-content-label">你的AI牵线话术（可修改）</div>
+      <div class="dialog-content-text">"你好！我是清华2022届王建。我在群里看到你在找企业服务数字化转型供应商，我这边恰好有企业服务客户资源，2010级信院的张华在企业软件领域有10年经验，可能对你有帮助。方便的话，我可以帮你们对接？" —— AI根据你们的标签自动生成</div>
+    </div>
+
+    <div style="background:#f8f9fa; border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:#888; line-height:1.6;">
+      ✅ 王海将看到你的Profile摘要<br>
+      ✅ 张华将收到AI通知<br>
+      ✅ 双方同意后才会交换联系方式
+    </div>
+
+    <div class="dialog-actions">
+      <button class="btn-primary" onclick="sendIntro()">发送牵线请求</button>
+      <button class="btn-cancel" onclick="closeIntro()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 代为询问弹窗 -->
+<div class="mask" id="qaMask">
+  <div class="dialog">
+    <div class="dialog-handle"></div>
+    <div class="dialog-title">❓ AI代为询问</div>
+    <div class="dialog-subtitle">AI将以你的名义向王芳提问，并通知李明你愿意回答这个问题</div>
+
+    <div class="dialog-content">
+      <div class="dialog-content-label">AI代提问内容</div>
+      <div class="dialog-content-text">"王芳（2015级MBA）你好！李明（2018级经院）在创业融资FA对接群问起北交所政策问题，我在券商投行部有多年经验，如果你方便的话，希望可以帮忙解答。请问北交所最新政策对创业公司上市有什么影响？"</div>
+    </div>
+
+    <div class="dialog-actions">
+      <button class="btn-primary" onclick="sendQA()">发送询问</button>
+      <button class="btn-cancel" onclick="closeQA()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.top-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab' + capitalize(tab)).classList.add('active');
+  document.getElementById('pageSignal').classList.add('hidden');
+  document.getElementById('pageMy').classList.add('hidden');
+  document.getElementById('pageDiscover').classList.add('hidden');
+  document.getElementById('page' + capitalize(tab)).classList.remove('hidden');
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function setFilter(el, type) {
+  document.querySelectorAll('.feed-filter-chip').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+}
+
+function showIntroDialog(fromPerson, toPerson, reason) {
+  document.getElementById('introMask').classList.add('show');
+}
+
+function closeIntro() {
+  document.getElementById('introMask').classList.remove('show');
+}
+
+function sendIntro() {
+  closeIntro();
+  // Visual feedback
+}
+
+function showQADialog(expert, asker) {
+  document.getElementById('qaMask').classList.add('show');
+}
+
+function closeQA() {
+  document.getElementById('qaMask').classList.remove('show');
+}
+
+function sendQA() {
+  closeQA();
+}
+
+function contactFromSignal(name) {
+  // simulate contact
+}
+
+// ─── 社群数据加载 ───
+window.API_BASE = 'http://localhost:8899/api/v1';
+window.AUTH_TOKEN = localStorage.getItem('ranbing_token') || '';
+
+function api(path) {
+  var h = { 'Content-Type': 'application/json' };
+  if (window.AUTH_TOKEN) h['Authorization'] = 'Bearer ' + window.AUTH_TOKEN;
+  return fetch(window.API_BASE + path, { headers: h });
+}
+
+function initials(name) { return name ? name.slice(0, 1) : '?'; }
+function avatarColor(seed) {
+  var colors = ['#e8fdf5','#fff3e8','#f3e8ff','#e8f0fe','#fff8f5','#f0f0f0'];
+  return colors[(seed || 'x').charCodeAt(0) % colors.length];
+}
+function tagStyle(name) {
+  if (!name) return { bg:'#f0f0f0', color:'#666' };
+  var L = name.toLowerCase();
+  if (L.includes('创业')||L.includes('企业')) return { bg:'#e8f0fe', color:'#1a3a5c' };
+  if (L.includes('投资')||L.includes('融资')||L.includes('FA')) return { bg:'#f3e8ff', color:'#7c3aed' };
+  if (L.includes('SaaS')||L.includes('B2B')) return { bg:'#e8fdf5', color:'#059669' };
+  return { bg:'#f0f0f0', color:'#666' };
+}
+
+function renderCommunityCard(c) {
+  var color = avatarColor(c.name || 'c');
+  var tags = (c.tags || []).slice(0, 2).map(function(t) {
+    var s = tagStyle(t.name || '');
+    return '<span class="mini-tag" style="background:' + s.bg + '; color:' + s.color + ';">' + (t.name || '') + '</span>';
+  }).join('');
+  return '<div class="community-card">' +
+    '<div class="comm-icon" style="background:' + color + ';">' + (c.icon_emoji || '🤝') + '</div>' +
+    '<div class="comm-info">' +
+      '<div class="comm-name">' +
+        '<span class="comm-name-text">' + (c.name || '未命名社群') + '</span>' +
+        (c.unread_count ? '<span class="unread-badge">' + c.unread_count + '</span>' : '') +
+      '</div>' +
+      '<div class="member-count">👥 ' + (c.member_count || 0) + '位成员</div>' +
+      (tags ? '<div class="comm-tags">' + tags + '</div>' : '') +
+    '</div>' +
+    '<div class="comm-action">' +
+      '<span class="msg-count">' + (c.last_msg || '暂无新消息') + '</span>' +
+      '<span class="msg-time">' + (c.updated_at ? new Date(c.updated_at).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '') + '</span>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderRecommendedCard(c) {
+  var color = avatarColor(c.name || 'c');
+  var s = tagStyle((c.category || ''));
+  return '<div class="recommended-card">' +
+    '<div class="rec-card-top">' +
+      '<div class="rec-icon" style="background:' + color + ';">' + (c.icon_emoji || '💼') + '</div>' +
+      '<div class="rec-info">' +
+        '<div class="rec-name">' + (c.name || '未命名社群') + '</div>' +
+        '<div class="rec-meta">👥 ' + (c.member_count || 0) + '位成员 · ' + (c.category || '综合') + '</div>' +
+      '</div>' +
+    '</div>' +
+    (c.ai_reason ? '<div class="rec-reason"><span class="rec-reason-icon">💡</span><span>' + c.ai_reason + '</span></div>' : '') +
+    '<div class="rec-actions">' +
+      '<button class="btn-join" onclick="alert(\'加入社群：' + (c.name || '') + '\')">加入群聊</button>' +
+      '<button class="btn-maybe" onclick="alert(\'先看看：' + (c.name || '') + '\')">先看看</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function loadCommunities() {
+  api('/communities/').then(function(r) { return r.json(); }).then(function(data) {
+    var myEl = document.getElementById('myCommList');
+    var myEmpty = document.getElementById('myCommEmpty');
+    var aiEl = document.getElementById('aiRecommendList');
+    var aiEmpty = document.getElementById('aiRecommendEmpty');
+    var items = data.results || [];
+    if (items.length === 0) {
+      if (myEl) myEl.style.display = 'none';
+      if (myEmpty) myEmpty.classList.remove('hidden');
+      if (aiEl) aiEl.innerHTML = '<div style="padding:20px; text-align:center; color:#999; font-size:13px;">暂无社群数据</div>';
+      return;
+    }
+    // 第一个做"我的"，其余做AI推荐
+    if (items.length >= 1) {
+      if (myEl) myEl.innerHTML = renderCommunityCard(items[0]);
+    }
+    if (items.length > 1) {
+      if (aiEl) aiEl.innerHTML = items.slice(1).map(renderRecommendedCard).join('');
+    }
+  }).catch(function() {
+    var aiEl = document.getElementById('aiRecommendList');
+    if (aiEl) aiEl.innerHTML = '<div style="padding:20px; text-align:center; color:#999; font-size:13px;">加载失败</div>';
+  });
+}
+
+loadCommunities();
+</script>
+
+</body>
+</html>

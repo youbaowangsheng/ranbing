@@ -1,0 +1,31 @@
+\documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$book$endif$]{article}
+\usepackage{xeCJK}
+\setmainfont{PingFang SC}
+\setCJKmainfont{PingFang SC}
+\usepackage{geometry}
+\geometry{verbose,a4paper,margin=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{zhnumber}
+\usepackage{indentfirst}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.5em}
+\linespread{1.5}
+$if(verbatim-in-note)$
+\usepackage{fancyvrb}
+$endif$
+$if(lists)$
+$endif$
+$for(header-includes)$
+$header-includes$
+$endfor$
+$if(title)$
+\title{$title$}
+$endif$
+$if(author)$
+\author{$author$}
+$endif$
+$if(date)$
+\date{$date$}
+$endif$
+\begin{document}
+$body$
+\end{document}

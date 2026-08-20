@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>供需广场 v2 — 智能机会推送</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-nav { background:#1a3a5c; padding:8px 16px 0; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; margin-right:28px; }
+
+/* Tab栏 */
+.top-tabs { display:flex; background:#1a3a5c; padding:10px 16px 0; gap:0; }
+.top-tab { flex:1; text-align:center; padding:8px 0; color:rgba(255,255,255,0.6); font-size:13px; cursor:pointer; position:relative; white-space:nowrap; }
+.top-tab.active { color:#fff; font-weight:600; }
+.top-tab.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:28px; height:3px; background:#e86a3a; border-radius:2px; }
+.tab-badge { background:#e86a3a; color:#fff; font-size:9px; padding:1px 5px; border-radius:8px; font-weight:600; margin-left:3px; }
+
+/* ========== 机会Feed页 ========== */
+
+/* AI帮你找入口 */
+.ai-search-bar { margin:12px 16px 0; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); border-radius:14px; padding:14px; display:flex; align-items:center; gap:10px; cursor:pointer; }
+.ai-search-icon { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.ai-search-info { flex:1; }
+.ai-search-title { font-size:14px; color:#fff; font-weight:600; }
+.ai-search-desc { font-size:11px; color:rgba(255,255,255,0.7); margin-top:2px; }
+.ai-search-arrow { color:#fff; font-size:20px; opacity:0.6; }
+
+/* 机会section header */
+.feed-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 8px; }
+.feed-title { font-size:15px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.feed-count { font-size:12px; color:#888; font-weight:400; }
+.feed-more { font-size:12px; color:#1a3a5c; cursor:pointer; }
+
+/* 机会卡片 */
+.opportunity-card { background:#fff; border-radius:16px; margin:0 16px 10px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border:1px solid #f0f0f0; }
+.opp-card-top { display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; }
+.opp-match-ring { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; position:relative; }
+.ring-high { background:#fff0eb; color:#c2410c; border:2px solid #ffcab0; }
+.ring-mid { background:#f0f8ff; color:#1a3a5c; border:2px solid #b8d4f0; }
+.ring-low { background:#f5f5f5; color:#888; border:2px solid #ddd; }
+.opp-info { flex:1; min-width:0; }
+.opp-name { font-size:15px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:5px; }
+.opp-school { font-size:12px; color:#888; margin-top:2px; }
+.opp-type { font-size:11px; padding:2px 7px; border-radius:7px; font-weight:500; margin-left:auto; flex-shrink:0; }
+.type-supply { background:#e8fdf5; color:#059669; }
+.type-demand { background:#fff3e8; color:#c2410c; }
+
+/* 匹配理由 */
+.match-reason { background:#f8f9ff; border-radius:10px; padding:8px 10px; margin-bottom:10px; font-size:12px; color:#555; line-height:1.5; display:flex; align-items:flex-start; gap:6px; }
+.match-reason-icon { font-size:13px; flex-shrink:0; margin-top:1px; }
+.match-highlight { color:#7c3aed; font-weight:500; }
+
+/* 供需内容 */
+.opp-content { font-size:13px; color:#333; line-height:1.6; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.opp-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.mini-tag { padding:2px 7px; border-radius:8px; font-size:11px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+
+/* 共同连接 */
+.mutual-connection { display:flex; align-items:center; gap:6px; padding:8px 0; border-top:1px solid #f5f5f5; margin-bottom:8px; }
+.mutual-avatars { display:flex; }
+.mutual-avatar { width:22px; height:22px; border-radius:50%; border:1.5px solid #fff; margin-left:-6px; font-size:9px; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); }
+.mutual-avatar:first-child { margin-left:0; }
+.mutual-text { font-size:12px; color:#888; flex:1; }
+.mutual-degree { font-size:11px; color:#059669; font-weight:500; }
+
+/* 操作按钮 */
+.opp-actions { display:flex; gap:8px; }
+.btn-reach { flex:1; background:#1a3a5c; color:#fff; border:none; padding:9px; border-radius:14px; font-size:14px; cursor:pointer; font-weight:500; }
+.btn-intro { flex:1; background:#fff; color:#1a3a5c; border:1.5px solid #1a3a5c; padding:9px; border-radius:14px; font-size:14px; cursor:pointer; font-weight:500; }
+.btn-intro.can-intro { background:#f8f5ff; border-color:#7c3aed; color:#7c3aed; }
+.btn-reach:active { background:#14304e; }
+.btn-intro:active { background:#f0f0f0; }
+
+/* ========== 供给/需求列表页 ========== */
+.category-scroll { display:flex; gap:8px; padding:10px 16px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.category-chip { padding:5px 12px; border-radius:14px; font-size:12px; white-space:nowrap; cursor:pointer; flex-shrink:0; }
+.chip-inactive { background:#f0f0f0; color:#666; }
+.chip-active { background:#1a3a5c; color:#fff; }
+
+/* 供需卡片 */
+.cards { padding:0 16px 100px; }
+.card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border-left:4px solid; }
+.card-supply { border-left-color:#52c41a; }
+.card-demand { border-left-color:#e86a3a; }
+.card-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.card-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:600; flex-shrink:0; }
+.card-info { flex:1; }
+.card-name { font-size:15px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.card-school { font-size:12px; color:#888; margin-top:2px; }
+.card-type-badge { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:500; }
+.badge-supply { background:#e8fdf5; color:#059669; }
+.badge-demand { background:#fff3e8; color:#c2410c; }
+.card-title { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:6px; }
+.card-body { font-size:13px; color:#555; line-height:1.6; margin-bottom:10px; }
+.card-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid #f0f0f0; }
+.card-meta { font-size:12px; color:#999; display:flex; align-items:center; gap:12px; }
+.card-action { background:#1a3a5c; color:#fff; border:none; padding:6px 16px; border-radius:14px; font-size:13px; cursor:pointer; }
+.card-action-outline { background:#fff; color:#1a3a5c; border:1px solid #1a3a5c; }
+
+/* ========== AI帮你找弹窗 ========== */
+.mask { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; display:none; align-items:flex-end; }
+.mask.show { display:flex; }
+.ai-dialog { background:#fff; width:100%; border-radius:20px 20px 0 0; padding:20px; max-height:85%; overflow-y:auto; }
+.dialog-handle { width:36px; height:4px; background:#ddd; border-radius:2px; margin:0 auto 16px; }
+.dialog-title { font-size:17px; font-weight:600; text-align:center; margin-bottom:4px; }
+.dialog-subtitle { font-size:13px; color:#888; text-align:center; margin-bottom:20px; }
+.dialog-input-wrap { background:#f8f9fa; border:1.5px solid #e0e0e0; border-radius:16px; padding:14px; margin-bottom:12px; display:flex; gap:10px; align-items:flex-end; }
+.dialog-input { flex:1; border:none; outline:none; font-size:14px; color:#1a1a1a; background:transparent; line-height:1.6; resize:none; max-height:120px; }
+.dialog-input::placeholder { color:#bbb; }
+.dialog-send { width:40px; height:40px; border-radius:50%; background:#1a3a5c; color:#fff; border:none; font-size:18px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.quick-qs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+.quick-q { background:#f0f0f0; color:#666; border:none; padding:6px 12px; border-radius:12px; font-size:12px; cursor:pointer; }
+.quick-q:active { background:#ddd; }
+.dialog-result { background:#faf8ff; border:1px solid #e8d5ff; border-radius:14px; padding:14px; margin-bottom:12px; }
+.result-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.result-match-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.result-type { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.result-name { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:4px; }
+.result-school { font-size:12px; color:#888; margin-bottom:8px; }
+.result-reason { font-size:12px; color:#7c3aed; background:#f5f0ff; padding:8px 10px; border-radius:8px; margin-bottom:8px; line-height:1.5; }
+.result-actions { display:flex; gap:8px; }
+.btn-contact { flex:1; background:#7c3aed; color:#fff; border:none; padding:9px; border-radius:14px; font-size:14px; cursor:pointer; font-weight:500; }
+.btn-save { flex:1; background:#fff; color:#7c3aed; border:1.5px solid #7c3aed; padding:9px; border-radius:14px; font-size:14px; cursor:pointer; font-weight:500; }
+
+/* ========== 底部导航 ========== */
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; display:flex; padding:8px 0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex:1; text-align:center; padding:6px; }
+.nav-icon { font-size:20px; margin-bottom:2px; }
+.nav-label { font-size:10px; color:#999; }
+.nav-item.active .nav-label { color:#1a3a5c; font-weight:600; }
+
+/* 隐藏 */
+.hidden { display:none !important; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-nav">
+    <div class="back-btn">‹</div>
+    <div class="nav-title">供需广场</div>
+  </div>
+  <div class="top-tabs">
+    <div class="top-tab active" id="tabOpportunity" onclick="switchTab('opportunity')">
+      机会<span class="tab-badge" id="oppBadge">3</span>
+    </div>
+    <div class="top-tab" id="tabSupply" onclick="switchTab('supply')">供给</div>
+    <div class="top-tab" id="tabDemand" onclick="switchTab('demand')">需求</div>
+    <div class="top-tab" id="tabMine" onclick="switchTab('mine')">我的发布</div>
+  </div>
+
+  <!-- ========== 机会Feed页 ========== -->
+  <div id="pageOpportunity">
+    <!-- AI帮你找入口 -->
+    <div class="ai-search-bar" onclick="showAIDialog()">
+      <div class="ai-search-icon">🔍</div>
+      <div class="ai-search-info">
+        <div class="ai-search-title">AI帮你找供需匹配</div>
+        <div class="ai-search-desc">描述你在找什么，AI为你精准对接</div>
+      </div>
+      <div class="ai-search-arrow">›</div>
+    </div>
+
+    <!-- AI机会推送 -->
+    <div class="feed-header">
+      <div class="feed-title">🤖 AI为你匹配 <span class="feed-count" id="oppCount">3条</span></div>
+      <div class="feed-more">查看全部 ›</div>
+    </div>
+
+    <!-- 动态机会卡片区 -->
+    <div id="oppList"></div>
+    <!-- 加载中 / 空状态 -->
+    <div id="oppLoading" style="padding:20px; text-align:center; color:#999; font-size:13px;">加载中...</div>
+    <div id="oppEmpty" class="hidden" style="padding:40px 20px; text-align:center; color:#999;">
+      <div style="font-size:40px; margin-bottom:12px;">🔍</div>
+      <div style="font-size:15px; color:#666; margin-bottom:4px;">暂无匹配机会</div>
+      <div style="font-size:13px;">试试调整你的供需标签</div>
+    </div>
+    <!-- 空状态占位 -->
+    <div style="height:80px;"></div>
+  </div>
+
+  <!-- ========== 供给列表页 ========== -->
+  <div id="pageSupply" class="hidden">
+    <div class="category-scroll">
+      <div class="category-chip chip-active">全部</div>
+      <div class="category-chip chip-inactive">企业服务</div>
+      <div class="category-chip chip-inactive">投资融资</div>
+      <div class="category-chip chip-inactive">技术合作</div>
+      <div class="category-chip chip-inactive">客户资源</div>
+    </div>
+    <div class="cards" id="supplyList"></div>
+    <div id="supplyLoading" style="padding:20px; text-align:center; color:#999; font-size:13px;">加载中...</div>
+    <div id="supplyEmpty" class="hidden" style="padding:40px 20px; text-align:center; color:#999;">
+      <div style="font-size:40px; margin-bottom:12px;">📦</div>
+      <div style="font-size:15px; color:#666; margin-bottom:4px;">暂无供给</div>
+    </div>
+  </div>
+
+  <!-- ========== 需求列表页 ========== -->
+  <div id="pageDemand" class="hidden">
+    <div class="category-scroll">
+      <div class="category-chip chip-active">全部</div>
+      <div class="category-chip chip-inactive">企业服务</div>
+      <div class="category-chip chip-inactive">投资融资</div>
+      <div class="category-chip chip-inactive">渠道分销</div>
+      <div class="category-chip chip-inactive">品牌曝光</div>
+    </div>
+    <div class="cards" id="demandList"></div>
+    <div id="demandLoading" style="padding:20px; text-align:center; color:#999; font-size:13px;">加载中...</div>
+    <div id="demandEmpty" class="hidden" style="padding:40px 20px; text-align:center; color:#999;">
+      <div style="font-size:40px; margin-bottom:12px;">📥</div>
+      <div style="font-size:15px; color:#666; margin-bottom:4px;">暂无需求</div>
+    </div>
+  </div>
+
+  <!-- ========== 我的发布页 ========== -->
+  <div id="pageMine" class="hidden">
+    <div class="category-scroll">
+      <div class="category-chip chip-active">全部</div>
+      <div class="category-chip chip-inactive">供给</div>
+      <div class="category-chip chip-inactive">需求</div>
+    </div>
+    <div class="cards" id="mineList"></div>
+    <div id="mineLoading" style="padding:20px; text-align:center; color:#999; font-size:13px;">加载中...</div>
+    <div id="mineEmpty" class="hidden" style="padding:40px 20px; text-align:center; color:#999;">
+      <div style="font-size:40px; margin-bottom:12px;">📝</div>
+      <div style="font-size:15px; color:#666; margin-bottom:4px;">你还没有发布供需</div>
+      <div style="font-size:13px;">去发布第一条供需吧</div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-label">首页</div></div>
+    <div class="nav-item"><div class="nav-icon">🤝</div><div class="nav-label">人脉</div></div>
+    <div class="nav-item active"><div class="nav-icon">🔄</div><div class="nav-label">供需</div></div>
+    <div class="nav-item"><div class="nav-icon">🎪</div><div class="nav-label">活动</div></div>
+    <div class="nav-item"><div class="nav-icon">👤</div><div class="nav-label">我的</div></div>
+  </div>
+
+</div>
+
+<!-- AI帮你找弹窗 -->
+<div class="mask" id="aiDialog">
+  <div class="ai-dialog">
+    <div class="dialog-handle"></div>
+    <div class="dialog-title">🔍 AI精准匹配</div>
+    <div class="dialog-subtitle">描述你需要的资源或能力，AI帮你找最匹配的人</div>
+
+    <div class="quick-qs">
+      <button class="quick-q" onclick="fillQuery('我需要融资帮助，SaaS方向')">💰 融资帮助</button>
+      <button class="quick-q" onclick="fillQuery('想找企业服务方向的客户资源')">🏢 客户资源</button>
+      <button class="quick-q" onclick="fillQuery('需要制造业渠道合作')">🏭 渠道合作</button>
+      <button class="quick-q" onclick="fillQuery('寻找品牌曝光资源')">📣 品牌曝光</button>
+    </div>
+
+    <div class="dialog-input-wrap">
+      <textarea class="dialog-input" id="queryInput" placeholder="例如：我正在做一个B2B SaaS产品，需要找企业服务方向的渠道合作..." rows="3"></textarea>
+      <button class="dialog-send" onclick="runAIQuery()">↗</button>
+    </div>
+
+    <!-- AI匹配结果 -->
+    <div id="queryResults" class="hidden">
+      <div style="font-size:13px; color:#888; margin-bottom:12px; text-align:center;">为你找到1条高匹配供给</div>
+
+      <div class="dialog-result">
+        <div class="result-header">
+          <span class="result-match-badge">92% 匹配</span>
+          <span class="result-type type-supply" style="background:#e8fdf5; color:#059669;">📤 供给</span>
+        </div>
+        <div class="result-name">陈思（交大 2019届）</div>
+        <div class="result-school">市场总监 · 融资FA · 上海</div>
+        <div class="result-reason">💡 陈思专注企业服务赛道融资，曾帮3家SaaS完成从天使到B轮融资，与你的"SaaS融资需求"高度吻合</div>
+        <div class="result-actions">
+          <button class="btn-contact" onclick="closeAIDialog()">联系她</button>
+          <button class="btn-save" onclick="closeAIDialog()">先收藏</button>
+        </div>
+      </div>
+
+      <div class="dialog-result">
+        <div class="result-header">
+          <span class="result-match-badge">78% 匹配</span>
+          <span class="result-type type-supply" style="background:#e8fdf5; color:#059669;">📤 供给</span>
+        </div>
+        <div class="result-name">张华（清华 2017届）</div>
+        <div class="result-school">合伙人 · 企业服务投资 · 北京</div>
+        <div class="result-reason">💡 张华在一家专注企业服务的VC担任合伙人，与你"找融资"的需求间接相关，可以先了解投资偏好</div>
+        <div class="result-actions">
+          <button class="btn-contact" onclick="closeAIDialog()">了解他</button>
+          <button class="btn-save" onclick="closeAIDialog()">先收藏</button>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="closeAIDialog()" style="width:100%; background:#fff; color:#999; border:none; padding:10px; font-size:14px; cursor:pointer; margin-top:8px;">关闭</button>
+  </div>
+</div>
+
+<!-- AI牵线确认弹窗 -->
+<div class="mask" id="introConfirm">
+  <div class="ai-dialog" style="padding:24px 20px;">
+    <div class="dialog-handle"></div>
+    <div style="text-align:center; margin-bottom:16px;">
+      <div style="font-size:40px; margin-bottom:12px;">🤝</div>
+      <div style="font-size:17px; font-weight:600; color:#1a1a1a; margin-bottom:6px;">AI牵线请求</div>
+      <div style="font-size:13px; color:#888; line-height:1.6;">AI将把你的「供需意向 + 个人标签」发送给王强，并询问他是否有兴趣与你建立连接。王强可以看到你的Profile，但不会强制双方联系。</div>
+    </div>
+    <div style="background:#f8f9fa; border-radius:12px; padding:12px; margin-bottom:16px;">
+      <div style="font-size:12px; color:#888; margin-bottom:6px;">你的AI牵线话术（可修改）</div>
+      <div style="font-size:13px; color:#333; line-height:1.6;">"你好！我在供需广场看到你在找工业品销售渠道，我这边有企业服务客户资源，可能对你有帮助。方便的话可以聊聊？" —— AI根据你们的标签自动生成</div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button onclick="sendIntro()" style="flex:1; background:#7c3aed; color:#fff; border:none; padding:12px; border-radius:24px; font-size:15px; cursor:pointer; font-weight:600;">发送牵线请求</button>
+      <button onclick="closeIntroConfirm()" style="flex:1; background:#fff; color:#666; border:1px solid #ddd; padding:12px; border-radius:24px; font-size:15px; cursor:pointer;">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentTab = 'opportunity';
+
+function switchTab(tab) {
+  currentTab = tab;
+  // tabs
+  document.querySelectorAll('.top-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab' + capitalize(tab)).classList.add('active');
+  // pages
+  document.getElementById('pageOpportunity').classList.add('hidden');
+  document.getElementById('pageSupply').classList.add('hidden');
+  document.getElementById('pageDemand').classList.add('hidden');
+  document.getElementById('pageMine').classList.add('hidden');
+  document.getElementById('page' + capitalize(tab)).classList.remove('hidden');
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function showAIDialog() {
+  document.getElementById('aiDialog').classList.add('show');
+  document.getElementById('queryResults').classList.add('hidden');
+  document.getElementById('queryInput').value = '';
+}
+
+function closeAIDialog() {
+  document.getElementById('aiDialog').classList.remove('show');
+}
+
+function fillQuery(text) {
+  document.getElementById('queryInput').value = text;
+}
+
+function runAIQuery() {
+  var input = document.getElementById('queryInput').value.trim();
+  if (!input) return;
+  document.getElementById('queryResults').classList.remove('hidden');
+}
+
+function showIntroConfirm(btn) {
+  document.getElementById('introConfirm').classList.add('show');
+}
+
+function closeIntroConfirm() {
+  document.getElementById('introConfirm').classList.remove('show');
+}
+
+function sendIntro() {
+  closeIntroConfirm();
+  // Visual feedback would go here
+}
+</script>
+
+<script>
+// =====================================================
+// 统一 API 配置 + 认证工具
+// =====================================================
+window.API_BASE = 'http://localhost:8899/api/v1';
+window.AUTH_TOKEN = localStorage.getItem('ranbing_token') || '';
+window.MY_PROFILE = JSON.parse(localStorage.getItem('ranbing_profile') || 'null');
+window.TAGS_MAP = {};
+
+function getHeaders() {
+  var h = { 'Content-Type': 'application/json' };
+  if (window.AUTH_TOKEN) h['Authorization'] = 'Bearer ' + window.AUTH_TOKEN;
+  return h;
+}
+
+function api(path, opts) {
+  return fetch(window.API_BASE + path, Object.assign({
+    headers: getHeaders()
+  }, opts || {}));
+}
+
+// 自动恢复登录（demo: 用本地存储的 token）
+function restoreSession() {
+  var stored = localStorage.getItem('ranbing_user');
+  if (stored) {
+    try { window.MY_PROFILE = JSON.parse(stored); } catch(e) {}
+  }
+}
+
+// =====================================================
+// 渲染辅助
+// =====================================================
+function avatarColor(seed) {
+  var colors = [
+    'linear-gradient(135deg,#e86a3a,#f0a06a)',
+    'linear-gradient(135deg,#7c3aed,#a855f7)',
+    'linear-gradient(135deg,#059669,#34d399)',
+    'linear-gradient(135deg,#1a3a5c,#2d5a8a)',
+    'linear-gradient(135deg,#c8a951,#e8c84a)',
+    'linear-gradient(135deg,#e74c3c,#ff7675)',
+  ];
+  var idx = (seed || 'x').charCodeAt(0) % colors.length;
+  return colors[idx];
+}
+
+function initials(name) {
+  if (!name) return '?';
+  return name.slice(0, 1);
+}
+
+function tagBadge(name) {
+  if (!name) return '';
+  var LOWER = name.toLowerCase();
+  if (LOWER.includes('投资') || LOWER.includes('融资') || LOWER.includes('FA'))
+    return 'tag-purple';
+  if (LOWER.includes('渠道') || LOWER.includes('销售') || LOWER.includes('客户'))
+    return 'tag-blue';
+  if (LOWER.includes('品牌') || LOWER.includes('增长') || LOWER.includes('消费'))
+    return 'tag-green';
+  if (LOWER.includes('技术') || LOWER.includes('开发') || LOWER.includes('SaaS'))
+    return 'tag-orange';
+  return 'tag-blue';
+}
+
+function timeAgo(str) {
+  if (!str) return '';
+  var d = new Date(str);
+  var now = new Date();
+  var diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return '刚刚';
+  if (diff < 3600) return Math.floor(diff/60) + '分钟前';
+  if (diff < 86400) return Math.floor(diff/3600) + '小时前';
+  if (diff < 2592000) return Math.floor(diff/86400) + '天前';
+  return d.toLocaleDateString('zh-CN');
+}
+
+// =====================================================
+// 机会卡片（Opportunity）
+// =====================================================
+function renderOpportunity(supply) {
+  var p = supply.profile || {};
+  var typeLabel = supply.supply_type == 1 ? '📤 供给' : '📥 需求';
+  var typeClass = supply.supply_type == 1 ? 'type-supply' : 'type-demand';
+  var tags = supply.tags || [];
+  var tagsHtml = tags.slice(0, 3).map(function(t) {
+    return '<span class="mini-tag ' + tagBadge(t.name || '') + '">' + (t.name || '') + '</span>';
+  }).join('');
+
+  return '<div class="opportunity-card">' +
+    '<div class="opp-card-top">' +
+      '<div class="opp-match-ring ring-high">' + (supply.quality_score || Math.floor(Math.random() * 20 + 75)) + '%</div>' +
+      '<div class="opp-info">' +
+        '<div class="opp-name">' + (p.real_name || '未知') + ' <span style="font-size:12px; color:#888; font-weight:400;">' + (p.position || '') + '</span></div>' +
+        '<div class="opp-school">🏫 ' + (p.education_school || '') + ' · 📍 ' + (p.city || '') + '</div>' +
+      '</div>' +
+      '<span class="opp-type ' + typeClass + '">' + typeLabel + '</span>' +
+    '</div>' +
+    '<div class="match-reason">' +
+      '<span class="match-reason-icon">💡</span>' +
+      '<span>根据供需标签智能匹配，AI驱动精准对接</span>' +
+    '</div>' +
+    '<div class="opp-content">' + (supply.content || '') + '</div>' +
+    (tagsHtml ? '<div class="opp-tags">' + tagsHtml + '</div>' : '') +
+    '<div class="mutual-connection">' +
+      '<span class="mutual-text">🔥 AI精准匹配</span>' +
+      '<span class="mutual-degree">匹配度 ' + (supply.quality_score || '?') + '%</span>' +
+    '</div>' +
+    '<div class="opp-actions">' +
+      '<button class="btn-reach" onclick="contactSupply(\'' + supply.uuid + '\')">主动联系</button>' +
+      '<button class="btn-intro can-intro" onclick="showIntroFromSupply(\'' + supply.uuid + '\')">请AI牵线</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function loadOpportunity() {
+  var el = document.getElementById('oppList');
+  var loading = document.getElementById('oppLoading');
+  var empty = document.getElementById('oppEmpty');
+  if (!el) return;
+
+  // 先展示所有供给（实际项目中应由 AI 计算匹配度并排序）
+  api('/supplies/').then(function(r) { return r.json(); }).then(function(data) {
+    loading.style.display = 'none';
+    if (data.results && data.results.length > 0) {
+      // 取前6条展示为机会
+      var html = data.results.slice(0, 6).map(renderOpportunity).join('');
+      el.innerHTML = html;
+      document.getElementById('oppBadge').textContent = data.results.length;
+    } else {
+      el.innerHTML = '';
+      empty.classList.remove('hidden');
+    }
+  }).catch(function() {
+    loading.textContent = '加载失败，请刷新';
+  });
+}
+
+// =====================================================
+// 供给/需求列表卡片
+// =====================================================
+function renderSupplyCard(supply) {
+  var p = supply.profile || {};
+  var typeClass = supply.supply_type == 1 ? 'card-supply' : 'card-demand';
+  var typeBadge = supply.supply_type == 1 ? 'badge-supply' : 'badge-demand';
+  var typeLabel = supply.supply_type == 1 ? '📤 供给' : '📥 需求';
+  var tags = supply.tags || [];
+  var tagsHtml = tags.slice(0, 3).map(function(t) {
+    return '<span class="mini-tag ' + tagBadge(t.name || '') + '">' + (t.name || '') + '</span>';
+  }).join('');
+
+  return '<div class="card ' + typeClass + '">' +
+    '<div class="card-header">' +
+      '<div class="card-avatar" style="background:' + avatarColor(p.real_name) + ';">' + initials(p.real_name) + '</div>' +
+      '<div class="card-info">' +
+        '<div class="card-name">' + (p.real_name || '未知') + ' <span style="font-size:12px; color:#888; font-weight:400;">' + (p.position || '') + '</span></div>' +
+        '<div class="card-school">🏫 ' + (p.education_school || '') + ' · 📍 ' + (p.city || '') + '</div>' +
+      '</div>' +
+      '<span class="card-type-badge ' + typeBadge + '">' + typeLabel + '</span>' +
+    '</div>' +
+    '<div class="card-title">' + (supply.supply_type == 1 ? '📤 ' : '📥 ') + (supply.title || '') + '</div>' +
+    '<div class="card-body">' + (supply.content || '') + '</div>' +
+    (tagsHtml ? '<div class="card-tags">' + tagsHtml + '</div>' : '') +
+    '<div class="card-footer">' +
+      '<div class="card-meta"><span>👁 ' + (supply.view_count || 0) + '次浏览</span><span>🤝 ' + (supply.match_count || 0) + '人匹配</span></div>' +
+      '<button class="card-action ' + (supply.supply_type == 1 ? 'card-action-outline' : '') + '" onclick="contactSupply(\'' + supply.uuid + '\')">' + (supply.supply_type == 1 ? '约谈 ›' : '对接合作 ›') + '</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function loadSupplyList(type) {
+  var elId = type === 'supply' ? 'supplyList' : (type === 'demand' ? 'demandList' : 'mineList');
+  var loadingId = type === 'supply' ? 'supplyLoading' : (type === 'demand' ? 'demandLoading' : 'mineLoading');
+  var emptyId = type === 'supply' ? 'supplyEmpty' : (type === 'demand' ? 'demandEmpty' : 'mineEmpty');
+  var el = document.getElementById(elId);
+  var loading = document.getElementById(loadingId);
+  var empty = document.getElementById(emptyId);
+  if (!el) return;
+
+  var path = '/supplies/';
+  if (type === 'supply') path += '?type=1';
+  else if (type === 'demand') path += '?type=2';
+  // is_mine 过滤在前端做
+  api(path).then(function(r) { return r.json(); }).then(function(data) {
+    loading.style.display = 'none';
+    var results = data.results || [];
+    if (type === 'mine') results = results.filter(function(s) { return s.is_mine; });
+    if (results.length > 0) {
+      el.innerHTML = results.map(renderSupplyCard).join('');
+    } else {
+      el.innerHTML = '';
+      empty.classList.remove('hidden');
+    }
+  }).catch(function() {
+    loading.textContent = '加载失败，请刷新';
+  });
+}
+
+// =====================================================
+// 交互动作
+// =====================================================
+function contactSupply(uuid) {
+  // 找这条supply，发起联系（目前打印，后续跳转详情页）
+  api('/supplies/' + uuid + '/').then(function(r) { return r.json(); }).then(function(data) {
+    var s = data.data || data;
+    var p = s.profile || {};
+    alert('即将联系 ' + (p.real_name || '该用户') + '\n供需：「' + s.title + '」');
+  }).catch(function() {
+    alert('系统繁忙，请稍后重试');
+  });
+}
+
+function showIntroFromSupply(uuid) {
+  // 弹AI牵线确认（复用已有弹窗）
+  showIntroConfirm();
+}
+
+// =====================================================
+// Tab 切换增强（加载对应数据）
+// =====================================================
+var _origSwitchTab = switchTab;
+switchTab = function(tab) {
+  _origSwitchTab(tab);
+  tab = tab.toLowerCase();
+  if (tab === 'opportunity' && document.getElementById('oppList').innerHTML === '') loadOpportunity();
+  if (tab === 'supply') loadSupplyList('supply');
+  if (tab === 'demand') loadSupplyList('demand');
+  if (tab === 'mine') loadSupplyList('mine');
+};
+
+// =====================================================
+// 页面初始化
+// =====================================================
+restoreSession();
+
+// 先加载机会列表（默认显示的 Tab）
+loadOpportunity();
+
+// 顺便预加载其他 Tab 数据
+loadSupplyList('supply');
+loadSupplyList('demand');
+loadSupplyList('mine');
+</script>
+
+</body>
+</html>

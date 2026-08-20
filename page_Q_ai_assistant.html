@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI人脉助手</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-bar { background:#1a3a5c; padding:8px 16px; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; cursor:pointer; }
+.ai-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#a855f7); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; flex-shrink:0; }
+.ai-info { flex:1; }
+.ai-name { font-size:16px; color:#fff; font-weight:600; }
+.ai-desc { font-size:11px; color:rgba(255,255,255,0.6); }
+.top-actions { display:flex; gap:8px; }
+.top-icon-btn { width:34px; height:34px; background:rgba(255,255,255,0.12); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:15px; cursor:pointer; }
+
+/* 快捷问题 */
+.quick-asks { padding:10px 16px; display:flex; flex-wrap:wrap; gap:6px; }
+.quick-btn { background:#f0f0f0; color:#333; border:none; padding:6px 12px; border-radius:14px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; }
+.quick-btn:active { background:#1a3a5c; color:#fff; }
+.quick-btn.active { background:#1a3a5c; color:#fff; }
+
+/* 对话区 */
+.chat-area { padding:12px 16px; padding-bottom:80px; }
+
+.ai-msg { display:flex; gap:10px; margin-bottom:14px; align-items:flex-start; }
+.ai-avatar-sm { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#a855f7); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; flex-shrink:0; }
+.ai-bubble-wrap { flex:1; }
+.ai-name-row { font-size:12px; color:#7c3aed; font-weight:600; margin-bottom:4px; }
+.ai-bubble { background:#f3e8ff; border-radius:2px 14px 14px 14px; padding:10px 14px; font-size:14px; color:#333; line-height:1.6; max-width:90%; }
+.ai-bubble p { margin-bottom:6px; }
+.ai-bubble p:last-child { margin-bottom:0; }
+
+/* 推荐卡片 */
+.rec-cards-wrap { margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+.rec-card { background:#fff; border-radius:14px; padding:12px; border:1px solid #e8d5ff; cursor:pointer; }
+.rec-card:active { background:#fafafa; }
+.rec-card-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.person-avatar { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:600; flex-shrink:0; }
+.rec-info { flex:1; }
+.rec-name { font-size:14px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.rec-title { font-size:12px; color:#888; margin-top:2px; }
+.cert-dot { width:10px; height:10px; background:#52c41a; border-radius:50%; flex-shrink:0; }
+.rec-tags { display:flex; flex-wrap:wrap; gap:3px; margin-bottom:8px; }
+.mini-tag { padding:1px 6px; border-radius:6px; font-size:10px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+.rec-reason { font-size:12px; color:#7c3aed; background:#faf8ff; padding:6px 10px; border-radius:8px; margin-bottom:8px; }
+.rec-footer { display:flex; gap:8px; }
+.btn-primary-sm { flex:1; background:#7c3aed; color:#fff; border:none; padding:7px; border-radius:10px; font-size:13px; cursor:pointer; text-align:center; font-weight:500; }
+.btn-secondary-sm { flex:1; background:#fff; color:#999; border:1px solid #eee; padding:7px; border-radius:10px; font-size:13px; cursor:pointer; text-align:center; }
+
+/* 供需卡片 */
+.supply-card { background:#fff; border-radius:14px; padding:12px; border-left:4px solid #52c41a; margin-top:8px; }
+.demand-card { background:#fff; border-radius:14px; padding:12px; border-left:4px solid #e86a3a; margin-top:8px; }
+.card-type-row { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.type-badge { font-size:11px; padding:2px 7px; border-radius:7px; font-weight:600; }
+.type-supply { background:#e8fdf5; color:#059669; }
+.type-demand { background:#fff3e8; color:#c2410c; }
+.card-person { font-size:12px; color:#888; }
+.card-title { font-size:14px; font-weight:600; color:#1a1a1a; margin-bottom:4px; }
+.card-body { font-size:13px; color:#555; line-height:1.5; margin-bottom:8px; }
+.card-footer { display:flex; align-items:center; justify-content:space-between; }
+.card-match { font-size:12px; color:#e86a3a; font-weight:600; }
+.card-cta { background:#1a3a5c; color:#fff; border:none; padding:5px 14px; border-radius:10px; font-size:12px; cursor:pointer; }
+
+/* 用户消息 */
+.user-msg { display:flex; gap:10px; margin-bottom:14px; justify-content:flex-end; }
+.user-bubble { background:#1a3a5c; color:#fff; border-radius:14px 2px 14px 14px; padding:10px 14px; font-size:14px; max-width:80%; line-height:1.5; }
+.user-time { font-size:11px; color:#bbb; text-align:right; margin-top:4px; }
+
+/* 底部输入栏 */
+.input-bar { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; padding:10px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom)); display:flex; gap:10px; align-items:flex-end; }
+.input-box { flex:1; background:#f5f5f5; border-radius:20px; padding:10px 14px; display:flex; align-items:center; gap:8px; }
+.input-icon { font-size:16px; opacity:0.5; }
+.input-field { background:none; border:none; font-size:14px; color:#333; width:100%; outline:none; flex:1; }
+.input-field::placeholder { color:#aaa; }
+.send-btn { width:40px; height:40px; background:#1a3a5c; color:#fff; border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; flex-shrink:0; }
+.send-btn.disabled { background:#ccc; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-bar">
+    <div class="back-btn">‹</div>
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-info">
+      <div class="ai-name">人脉助手</div>
+      <div class="ai-desc">基于你的标签和需求，智能匹配人脉</div>
+    </div>
+    <div class="top-actions">
+      <div class="top-icon-btn">📋</div>
+      <div class="top-icon-btn">⋯</div>
+    </div>
+  </div>
+
+  <!-- 快捷问题 -->
+  <div class="quick-asks">
+    <button class="quick-btn active">找企业服务创始人</button>
+    <button class="quick-btn">帮我对接投资资源</button>
+    <button class="quick-btn">推荐能提供客户资源的</button>
+    <button class="quick-btn">找技术合伙人</button>
+  </div>
+
+  <!-- 对话区 -->
+  <div class="chat-area">
+
+    <!-- AI回复 -->
+    <div class="ai-msg">
+      <div class="ai-avatar-sm">🤖</div>
+      <div class="ai-bubble-wrap">
+        <div class="ai-name-row">AI人脉助手</div>
+        <div class="ai-bubble">
+          <p>根据你的Profile标签「企业服务 · 渠道分销 · 优质客户」，我找到了3个高度匹配的人脉机会：</p>
+          <p>💡 <strong>张伟</strong>（清华2022届）与你供需高度互补——他有多余的客户资源但缺渠道，你正好相反，互补率87%。</p>
+        </div>
+
+        <!-- 推荐人脉卡片 -->
+        <div class="rec-cards-wrap">
+          <div class="rec-card">
+            <div class="rec-card-header">
+              <div class="person-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">张</div>
+              <div class="rec-info">
+                <div class="rec-name">
+                  张伟
+                  <div class="cert-dot"></div>
+                  <span style="font-size:11px; color:#888; font-weight:400;">创始人</span>
+                </div>
+                <div class="rec-title">企业服务 · B2B SaaS · 清华2022届</div>
+              </div>
+            </div>
+            <div class="rec-tags">
+              <span class="mini-tag tag-green">可提供：客户资源</span>
+              <span class="mini-tag tag-orange">需求：品牌曝光</span>
+            </div>
+            <div class="rec-reason">💡 同届校友，供需互补率87%，他在SaaS有200+企业客户，你在品牌渠道有积累，合作空间大</div>
+            <div class="rec-footer">
+              <button class="btn-primary-sm">找合作</button>
+              <button class="btn-secondary-sm">先聊聊</button>
+            </div>
+          </div>
+
+          <div class="rec-card">
+            <div class="rec-card-header">
+              <div class="person-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">李</div>
+              <div class="rec-info">
+                <div class="rec-name">
+                  李娜
+                  <div class="cert-dot"></div>
+                  <span style="font-size:11px; color:#888; font-weight:400;">合伙人</span>
+                </div>
+                <div class="rec-title">投资机构 · VC · 北大2018届</div>
+              </div>
+            </div>
+            <div class="rec-tags">
+              <span class="mini-tag tag-green">可提供：投资资源</span>
+              <span class="mini-tag tag-orange">需求：优质SaaS项目</span>
+            </div>
+            <div class="rec-reason">💡 她专注企业服务赛道，正在看B2B方向，与你的融资需求匹配，且可以互相背书</div>
+            <div class="rec-footer">
+              <button class="btn-primary-sm">约见面</button>
+              <button class="btn-secondary-sm">先聊聊</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 供需推荐 -->
+    <div class="ai-msg">
+      <div class="ai-avatar-sm">🤖</div>
+      <div class="ai-bubble-wrap">
+        <div class="ai-name-row">AI人脉助手</div>
+        <div class="ai-bubble">
+          <p>同时发现2条与你标签匹配供需：</p>
+        </div>
+
+        <div class="supply-card">
+          <div class="card-type-row">
+            <span class="type-badge type-supply">📤 供给</span>
+            <span class="card-person">李娜 · 北大2018届</span>
+          </div>
+          <div class="card-title">消费品牌全渠道增长方案</div>
+          <div class="card-body">操盘过多个千万级消费品牌增长，熟悉线上+线下全渠道整合</div>
+          <div class="card-footer">
+            <span class="card-match">85%匹配</span>
+            <button class="card-cta">约谈 ›</button>
+          </div>
+        </div>
+
+        <div class="demand-card">
+          <div class="card-type-row">
+            <span class="type-badge type-demand">📥 需求</span>
+            <span class="card-person">王强 · 复旦2020届</span>
+          </div>
+          <div class="card-title">急求：工业品销售渠道合作</div>
+          <div class="card-body">工厂数字化产品已完成研发，寻找有制造业渠道资源的伙伴</div>
+          <div class="card-footer">
+            <span class="card-match">78%匹配</span>
+            <button class="card-cta">对接合作 ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 用户消息 -->
+    <div class="user-msg">
+      <div>
+        <div class="user-bubble">帮我找能提供企业客户资源的创始人</div>
+        <div class="user-time">刚刚</div>
+      </div>
+    </div>
+
+    <!-- AI回复 -->
+    <div class="ai-msg">
+      <div class="ai-avatar-sm">🤖</div>
+      <div class="ai-bubble-wrap">
+        <div class="ai-name-row">AI人脉助手</div>
+        <div class="ai-bubble">
+          <p>已为你筛选标签「企业服务 + 客户资源」，找到 <strong>5位</strong> 符合条件的校友：</p>
+          <p>综合匹配度、活跃度、认证等级为你推荐前3位：</p>
+        </div>
+        <!-- 简短人脉卡片 -->
+        <div class="rec-cards-wrap">
+          <div class="rec-card">
+            <div class="rec-card-header">
+              <div class="person-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">张</div>
+              <div class="rec-info">
+                <div class="rec-name">
+                  张伟 <span style="font-size:11px; color:#888; font-weight:400;">创始人</span>
+                  <div class="cert-dot"></div>
+                </div>
+                <div class="rec-title">企业服务 · 清华2022届</div>
+              </div>
+              <span style="font-size:14px; color:#e86a3a; font-weight:700;">92%</span>
+            </div>
+            <div class="rec-footer">
+              <button class="btn-primary-sm">找合作</button>
+              <button class="btn-secondary-sm">先聊聊</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部输入栏 -->
+  <div class="input-bar">
+    <div class="input-box">
+      <span class="input-icon">😊</span>
+      <input class="input-field" placeholder="描述你的需求，或问任何问题…" value="">
+      <span class="input-icon">🎤</span>
+    </div>
+    <button class="send-btn disabled">➤</button>
+  </div>
+
+</div>
+</body>
+</html>

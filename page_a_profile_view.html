@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面A · 校友Profile主页</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px 0; }
+  .phone-frame { width: 375px; min-height: 812px; background: #f5f5f5; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border-radius: 40px; overflow: hidden; }
+  .status-bar { height: 44px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; }
+  .status-icons { position: absolute; right: 20px; bottom: 8px; font-size: 12px; }
+  .header { height: 44px; background: #fff; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #eee; }
+  .header-back { font-size: 20px; color: #1a3a5c; margin-right: 12px; }
+  .header-title { font-size: 16px; font-weight: 600; color: #333; flex: 1; text-align: center; margin-right: 32px; }
+  .header-more { font-size: 20px; color: #888; }
+  .profile-top { background: #fff; padding: 24px 20px 20px; text-align: center; border-bottom: 8px solid #f5f5f5; }
+  .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1a3a5c, #2a5a8c); margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; font-weight: 600; }
+  .name { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+  .badge { display: inline-block; font-size: 11px; color: #fff; background: #e86a3a; padding: 2px 8px; border-radius: 10px; margin-bottom: 8px; }
+  .badge-gold { background: #c8a951; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 4px; }
+  .location { font-size: 12px; color: #aaa; }
+  .action-btns { display: flex; gap: 12px; margin-top: 18px; justify-content: center; }
+  .action-btn { flex: 1; max-width: 130px; height: 38px; border-radius: 20px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .action-btn-primary { background: #1a3a5c; color: #fff; }
+  .action-btn-secondary { background: #fff; color: #1a3a5c; border: 1px solid #1a3a5c; }
+  .section { background: #fff; margin-bottom: 8px; }
+  .section-title { font-size: 13px; color: #888; padding: 12px 16px 8px; font-weight: 500; }
+  .section-title span { font-size: 11px; color: #ccc; margin-left: 4px; }
+  .info-grid { padding: 0 16px 12px; }
+  .info-row { display: flex; padding: 5px 0; font-size: 14px; }
+  .info-label { color: #888; width: 70px; flex-shrink: 0; }
+  .info-value { color: #333; flex: 1; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 14px; }
+  .tag { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #f0f4f8; color: #1a3a5c; }
+  .tag-orange { background: #fff3ee; color: #e86a3a; }
+  .tag-large { font-size: 13px; padding: 5px 12px; }
+  .intro-text { padding: 0 16px 14px; font-size: 14px; color: #444; line-height: 1.7; }
+  .credit-item { display: flex; align-items: flex-start; padding: 8px 16px; gap: 10px; }
+  .credit-icon { font-size: 14px; margin-top: 1px; }
+  .credit-text { font-size: 13px; color: #555; flex: 1; line-height: 1.5; }
+  .credit-num { font-size: 12px; color: #e86a3a; }
+  .connection-item { display: flex; align-items: center; padding: 10px 16px; gap: 10px; border-top: 1px solid #f5f5f5; }
+  .connection-item:first-of-type { border-top: none; }
+  .conn-avatar { width: 40px; height: 40px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .conn-info { flex: 1; }
+  .conn-name { font-size: 14px; font-weight: 600; color: #333; }
+  .conn-sub { font-size: 12px; color: #888; }
+  .conn-tag { font-size: 11px; color: #1a3a5c; background: #eef3f8; padding: 2px 8px; border-radius: 8px; }
+  .conn-action { font-size: 12px; color: #e86a3a; white-space: nowrap; }
+  .view-more { text-align: center; padding: 12px; font-size: 13px; color: #888; border-top: 1px solid #f5f5f5; }
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 56px; background: #fff; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #888; }
+  .nav-icon { font-size: 20px; }
+  .nav-item.active { color: #e86a3a; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <span class="status-icons">📶  🔋</span>
+  </div>
+  <div class="header">
+    <span class="header-back">←</span>
+    <span class="header-title">校友主页</span>
+    <span class="header-more">⋯</span>
+  </div>
+
+  <div class="profile-top" id="profileTop">
+    <div class="avatar" id="pAvatar">?</div>
+    <div class="name" id="pName">加载中...</div>
+    <span class="badge" id="pBadge" style="display:none;"></span>
+    <div class="subtitle" id="pSubtitle">—</div>
+    <div class="location" id="pLocation" style="display:none;">📍 —</div>
+    <div class="action-btns" id="pActions">
+      <div class="action-btn action-btn-primary">💬 发消息</div>
+      <div class="action-btn action-btn-secondary">🤝 约见面</div>
+    </div>
+  </div>
+
+  <div style="height:8px;background:#f5f5f5;"></div>
+
+  <div class="section">
+    <div class="section-title">基本信息</div>
+    <div class="info-grid">
+      <div class="info-row"><span class="info-label">行业领域</span><span class="info-value" id="pIndustry">—</span></div>
+      <div class="info-row"><span class="info-label">职能类型</span><span class="info-value" id="pPosition">—</span></div>
+      <div class="info-row"><span class="info-label">资源城市</span><span class="info-value" id="pCity">—</span></div>
+      <div class="info-row"><span class="info-label">公司</span><span class="info-value" id="pCompany">—</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💼 我能提供的（供给标签）</div>
+    <div class="tag-row" id="pSupplyTags"><span style="color:#999;font-size:13px;">加载中...</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔍 我在找的（需求标签）</div>
+    <div class="tag-row" id="pDemandTags"><span style="color:#999;font-size:13px;">加载中...</span></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📝 个人简介</div>
+    <div class="intro-text" id="pBio">—</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏆 信用背书</div>
+    <div id="pCreditSection">
+      <div class="credit-item"><span class="credit-icon">✓</span><span class="credit-text">完成校友身份认证</span></div>
+      <div class="credit-item"><span class="credit-icon">✓</span><span class="credit-text">发布供需信息</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">👥 共同连接</div>
+    <div id="pConnections">
+      <div style="padding:10px 0; color:#999; font-size:13px;">暂无共同连接</div>
+    </div>
+  </div>
+
+  <div style="height:56px;"></div>
+
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span>首页</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">📅</span>
+      <span>活动</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">💼</span>
+      <span>供需</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">💬</span>
+      <span>社群</span>
+    </div>
+    <div class="nav-item active">
+      <span class="nav-icon">👤</span>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+<script>
+window.API_BASE = 'http://localhost:8899/api/v1';
+window.AUTH_TOKEN = localStorage.getItem('ranbing_token') || '';
+
+function api(path) {
+  var h = { 'Content-Type': 'application/json' };
+  if (window.AUTH_TOKEN) h['Authorization'] = 'Bearer ' + window.AUTH_TOKEN;
+  return fetch(window.API_BASE + path, { headers: h });
+}
+
+function initials(name) { return name ? name.slice(0, 1) : '?'; }
+function avatarColor(seed) {
+  var colors = [
+    'linear-gradient(135deg,#e86a3a,#f0a06a)',
+    'linear-gradient(135deg,#7c3aed,#a855f7)',
+    'linear-gradient(135deg,#059669,#34d399)',
+    'linear-gradient(135deg,#1a3a5c,#2d5a8a)',
+  ];
+  return colors[(seed || 'x').charCodeAt(0) % colors.length];
+}
+
+function tagBadge(name) {
+  if (!name) return '';
+  var L = name.toLowerCase();
+  if (L.includes('投资') || L.includes('融资') || L.includes('FA')) return 'tag-orange';
+  if (L.includes('渠道') || L.includes('客户')) return 'tag-blue';
+  if (L.includes('品牌') || L.includes('增长')) return 'tag-green';
+  return 'tag-blue';
+}
+
+// 从 URL 读取 uuid 参数，没有则默认加载"我的"profile
+var profileUuid = new URLSearchParams(location.search).get('uuid');
+
+function loadProfile(uuid) {
+  var path = uuid ? '/profiles/' + uuid + '/' : '/profiles/me/';
+  api(path).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.code !== 0) { document.getElementById('pName').textContent = '加载失败'; return; }
+    var p = data.data;
+    document.getElementById('pAvatar').textContent = initials(p.real_name);
+    document.getElementById('pAvatar').style.background = avatarColor(p.real_name);
+    document.getElementById('pName').textContent = p.real_name || '未知';
+    var badge = document.getElementById('pBadge');
+    if (p.cert_level && p.cert_level >= 3) {
+      badge.textContent = '🏅 已深度认证';
+      badge.className = 'badge badge-gold';
+      badge.style.display = 'inline-block';
+    } else if (p.cert_level && p.cert_level >= 1) {
+      badge.textContent = '✓ 已认证';
+      badge.className = 'badge';
+      badge.style.display = 'inline-block';
+    }
+    document.getElementById('pSubtitle').textContent =
+      (p.education_school || '') + (p.education_year ? p.education_year + '届' : '') +
+      ' · ' + (p.company || '') + ' · ' + (p.position || '');
+    var loc = document.getElementById('pLocation');
+    if (p.city) { loc.textContent = '📍 ' + p.city; loc.style.display = 'block'; }
+    document.getElementById('pIndustry').textContent = p.industry || '—';
+    document.getElementById('pPosition').textContent = p.position || '—';
+    document.getElementById('pCity').textContent = p.city || '—';
+    document.getElementById('pCompany').textContent = p.company || '—';
+    document.getElementById('pBio').textContent = p.bio || '暂无简介';
+
+    var tags = p.tags || [];
+    var supplyTags = tags.filter(function(t) { return t.tag_type === 1; });
+    var demandTags = tags.filter(function(t) { return t.tag_type === 2; });
+    document.getElementById('pSupplyTags').innerHTML = supplyTags.length > 0
+      ? supplyTags.map(function(t) { return '<span class="tag tag-large">' + (t.name || '') + '</span>'; }).join('')
+      : '<span style="color:#999;font-size:13px;">暂无供给标签</span>';
+    document.getElementById('pDemandTags').innerHTML = demandTags.length > 0
+      ? demandTags.map(function(t) { return '<span class="tag tag-large tag-orange">' + (t.name || '') + '</span>'; }).join('')
+      : '<span style="color:#999;font-size:13px;">暂无需求标签</span>';
+  }).catch(function() {
+    document.getElementById('pName').textContent = '加载失败';
+  });
+}
+
+loadProfile(profileUuid);
+</script>
+
+</body>
+</html>

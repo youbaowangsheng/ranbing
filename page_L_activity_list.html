@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>活动列表</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-nav { background:#1a3a5c; padding:8px 16px 0; }
+.top-nav-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; margin-right:28px; }
+.publish-btn { background:#e86a3a; color:#fff; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; }
+.top-tabs { display:flex; gap:0; }
+.top-tab { flex:1; text-align:center; padding:10px 0; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; position:relative; }
+.top-tab.active { color:#fff; font-weight:600; }
+.top-tab.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:28px; height:3px; background:#e86a3a; border-radius:2px; }
+
+/* 搜索栏 */
+.search-bar { background:#fff; padding:10px 16px; border-bottom:1px solid #eee; display:flex; gap:10px; }
+.search-box { flex:1; background:#f5f5f5; border-radius:18px; padding:8px 14px; display:flex; align-items:center; gap:8px; }
+.search-icon { font-size:14px; opacity:0.5; }
+.search-input { background:none; border:none; font-size:14px; color:#333; width:100%; outline:none; }
+.search-input::placeholder { color:#aaa; }
+.filter-icon-btn { background:#f5f5f5; border-radius:18px; padding:8px 12px; font-size:14px; color:#666; cursor:pointer; display:flex; align-items:center; gap:4px; font-size:13px; }
+
+/* AI推荐区 */
+.ai-recommend-section { padding:12px 16px; }
+.section-label { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.ai-label { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.section-title { font-size:15px; font-weight:600; color:#1a1a1a; }
+.section-hint { font-size:11px; color:#999; margin-left:auto; }
+
+.ai-event-card { background:linear-gradient(135deg,#1a3a5c,#2d5a8a); border-radius:16px; padding:14px; position:relative; overflow:hidden; margin-bottom:10px; }
+.ai-event-card::before { content:''; position:absolute; right:-20px; top:-20px; width:100px; height:100px; background:rgba(255,255,255,0.04); border-radius:50%; }
+.ai-match-badge { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.match-pill { background:rgba(232,106,58,0.2); color:#ff9a7a; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.match-score { font-size:11px; color:rgba(255,255,255,0.6); }
+.ai-event-title { font-size:16px; color:#fff; font-weight:600; margin-bottom:6px; line-height:1.4; }
+.ai-event-meta { display:flex; align-items:center; gap:12px; font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:10px; }
+.ai-event-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.ai-event-tag { background:rgba(255,255,255,0.12); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; }
+.ai-event-footer { display:flex; align-items:center; justify-content:space-between; }
+.alumni-avatars { display:flex; }
+.alumni-avatars .avatar { width:26px; height:26px; border-radius:50%; border:2px solid #1a3a5c; margin-left:-8px; font-size:10px; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; }
+.alumni-avatars .avatar:first-child { margin-left:0; }
+.alumni-extra { font-size:11px; color:rgba(255,255,255,0.5); margin-left:8px; }
+.ai-match-reason { font-size:12px; color:rgba(255,255,255,0.6); background:rgba(255,255,255,0.08); padding:6px 10px; border-radius:8px; margin-top:8px; }
+
+/* 活动分类 */
+.category-scroll { display:flex; gap:6px; padding:0 16px 12px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.category-chip { padding:5px 12px; border-radius:14px; font-size:12px; white-space:nowrap; cursor:pointer; flex-shrink:0; }
+.chip-active { background:#1a3a5c; color:#fff; }
+.chip-inactive { background:#f0f0f0; color:#666; }
+
+/* 活动列表 */
+.event-list { padding:0 16px 100px; }
+.event-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); display:flex; gap:12px; cursor:pointer; }
+.event-card:active { background:#fafafa; }
+.event-thumb { width:80px; height:80px; border-radius:10px; background:linear-gradient(135deg,#e86a3a,#f0a06a); display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; position:relative; overflow:hidden; }
+.event-thumb img { width:100%; height:100%; object-fit:cover; }
+.event-thumb-cover { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.4)); height:24px; }
+.event-thumb-label { position:absolute; top:4px; left:4px; background:#e86a3a; color:#fff; font-size:9px; padding:1px 4px; border-radius:4px; font-weight:600; }
+.event-info { flex:1; min-width:0; }
+.event-title { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:4px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.event-meta { font-size:12px; color:#888; margin-bottom:6px; display:flex; flex-direction:column; gap:2px; }
+.event-meta-row { display:flex; align-items:center; gap:4px; }
+.event-tags { display:flex; flex-wrap:wrap; gap:3px; margin-bottom:6px; }
+.mini-tag { padding:1px 6px; border-radius:6px; font-size:10px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+.event-footer { display:flex; align-items:center; justify-content:space-between; }
+.event-avatars { display:flex; }
+.event-avatars .avatar { width:20px; height:20px; border-radius:50%; border:1.5px solid #fff; margin-left:-6px; font-size:8px; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); }
+.event-avatars .avatar:first-child { margin-left:0; }
+.event-count { font-size:11px; color:#999; margin-left:4px; }
+.event-match { font-size:12px; color:#e86a3a; font-weight:600; }
+
+/* 历史回顾 */
+.history-section { padding:12px 16px; border-top:8px solid #f0f0f0; margin-top:4px; }
+.history-label { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.history-icon { font-size:16px; }
+.history-title { font-size:14px; font-weight:600; color:#1a1a1a; }
+
+/* 底部导航 */
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; display:flex; padding:8px 0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex:1; text-align:center; padding:6px; }
+.nav-icon { font-size:20px; margin-bottom:2px; }
+.nav-label { font-size:10px; color:#999; }
+.nav-item.active .nav-label { color:#1a3a5c; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部导航 -->
+  <div class="top-nav">
+    <div class="top-nav-row">
+      <div class="back-btn">‹</div>
+      <div class="nav-title">社交活动</div>
+      <button class="publish-btn">+ 发布活动</button>
+    </div>
+    <div class="top-tabs">
+      <div class="top-tab active">推荐</div>
+      <div class="top-tab">即将举办</div>
+      <div class="top-tab">往期回顾</div>
+      <div class="top-tab">我参与的</div>
+    </div>
+  </div>
+
+  <!-- 搜索栏 -->
+  <div class="search-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" placeholder="搜索活动名称或主题">
+    </div>
+    <div class="filter-icon-btn">筛选</div>
+  </div>
+
+  <!-- AI推荐区 -->
+  <div class="ai-recommend-section">
+    <div class="section-label">
+      <span class="ai-label">✨ AI精选</span>
+      <span class="section-title">为你推荐</span>
+      <span class="section-hint">基于你的人脉网络</span>
+    </div>
+
+    <!-- AI推荐大卡片 -->
+    <div class="ai-event-card">
+      <div class="ai-match-badge">
+        <span class="match-pill">🔥 92%匹配</span>
+        <span class="match-score">清华系 · 企业服务</span>
+      </div>
+      <div class="ai-event-title">SaaS企业服务闭门会：增长方法论与资源对接</div>
+      <div class="ai-event-meta">
+        <span>📅 5月18日 14:00</span>
+        <span>📍 北京·望京</span>
+      </div>
+      <div class="ai-event-tags">
+        <span class="ai-event-tag">企业服务</span>
+        <span class="ai-event-tag">B2B</span>
+        <span class="ai-event-tag">资源对接</span>
+      </div>
+      <div class="ai-event-footer">
+        <div style="display:flex; align-items:center;">
+          <div class="alumni-avatars">
+            <div class="avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">张</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#059669,#34d399);">王</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">陈</div>
+            <div class="avatar" style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a);">李</div>
+            <div class="avatar" style="background:#555;">+8</div>
+          </div>
+          <span class="alumni-extra">12人已报名</span>
+        </div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.7);">含4位二度校友</div>
+      </div>
+      <div class="ai-match-reason">💡 你关注企业服务赛道，现场有3位可提供客户资源的校友，适合拓展B2B合作</div>
+    </div>
+  </div>
+
+  <!-- 分类筛栏 -->
+  <div class="category-scroll">
+    <div class="category-chip chip-active">全部</div>
+    <div class="category-chip chip-inactive">企业服务</div>
+    <div class="category-chip chip-inactive">投资融资</div>
+    <div class="category-chip chip-inactive">技术合作</div>
+    <div class="category-chip chip-inactive">消费零售</div>
+    <div class="category-chip chip-inactive">医疗健康</div>
+    <div class="category-chip chip-inactive">品牌营销</div>
+  </div>
+
+  <!-- 活动列表 -->
+  <div class="event-list" id="eventList"></div>
+  <div id="eventLoading" style="padding:20px; text-align:center; color:#999; font-size:13px;">加载中...</div>
+  <div id="eventEmpty" class="hidden" style="padding:40px 20px; text-align:center; color:#999; font-size:13px;">
+    <div style="font-size:40px; margin-bottom:12px;">🎪</div>
+    <div>暂无活动</div>
+  </div>
+
+    <!-- 历史回顾区 -->
+    <div class="history-section">
+      <div class="history-label">
+        <span class="history-icon">📎</span>
+        <span class="history-title">往期精彩回顾</span>
+      </div>
+    </div>
+
+    <!-- 历史卡片1 -->
+    <div class="event-card" style="opacity:0.85;">
+      <div class="event-thumb" style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a);filter:brightness(0.9);">
+        📊
+        <div class="event-thumb-cover"></div>
+        <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:24px;">📊</span>
+        </div>
+        <div class="event-thumb-label" style="background:#999;">回顾</div>
+      </div>
+      <div class="event-info">
+        <div class="event-title">Q1企业服务复盘会：活下去的SaaS怎么做</div>
+        <div class="event-meta">
+          <div class="event-meta-row"><span>📅</span> 4月28日 · 线下·北京</div>
+          <div class="event-meta-row"><span>👥</span> 参与 103 人 · 查看回顾 ›</div>
+        </div>
+        <div class="event-tags">
+          <span class="mini-tag tag-blue">企业服务</span>
+          <span class="mini-tag tag-green">经验交流</span>
+        </div>
+        <div class="event-footer">
+          <span style="font-size:12px; color:#888;">📝 生成了23条会后跟进清单</span>
+          <span style="font-size:12px; color:#e86a3a; font-weight:600;">查看回顾 ›</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">首页</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🤝</div>
+      <div class="nav-label">人脉</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🔄</div>
+      <div class="nav-label">供需</div>
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon">🎪</div>
+      <div class="nav-label">活动</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">我的</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+window.API_BASE = 'http://localhost:8899/api/v1';
+window.AUTH_TOKEN = localStorage.getItem('ranbing_token') || '';
+
+function api(path) {
+  var h = { 'Content-Type': 'application/json' };
+  if (window.AUTH_TOKEN) h['Authorization'] = 'Bearer ' + window.AUTH_TOKEN;
+  return fetch(window.API_BASE + path, { headers: h });
+}
+
+function initials(name) { return name ? name.slice(0, 1) : '?'; }
+function avatarColor(seed) {
+  var colors = ['#e86a3a','#7c3aed','#059669','#1a3a5c','#c8a951'];
+  return colors[(seed || 'x').charCodeAt(0) % colors.length];
+}
+
+function tagBadge(name) {
+  if (!name) return 'tag-blue';
+  var L = name.toLowerCase();
+  if (L.includes('投资') || L.includes('融资') || L.includes('FA')) return 'tag-purple';
+  if (L.includes('渠道') || L.includes('销售') || L.includes('客户')) return 'tag-blue';
+  if (L.includes('品牌') || L.includes('增长') || L.includes('消费')) return 'tag-green';
+  if (L.includes('技术') || L.includes('开发')) return 'tag-orange';
+  return 'tag-blue';
+}
+
+function renderActivityCard(a) {
+  var color = avatarColor(a.title || 'a');
+  var emoji = '🎯';
+  var tags = (a.tags || []).slice(0, 2).map(function(t) {
+    return '<span class="mini-tag ' + tagBadge(t.name || '') + '">' + (t.name || '') + '</span>';
+  }).join('');
+  return '<div class="event-card" onclick="alert(\'活动详情：' + (a.title || '') + '\')">' +
+    '<div class="event-thumb" style="background:linear-gradient(135deg,' + color + ',#888);">' +
+      '<span style="font-size:28px;">' + emoji + '</span>' +
+      '<div class="event-thumb-cover"></div>' +
+    '</div>' +
+    '<div class="event-info">' +
+      '<div class="event-title">' + (a.title || '暂无标题') + '</div>' +
+      '<div class="event-meta">' +
+        '<div class="event-meta-row"><span>📅</span> ' + (a.start_time ? new Date(a.start_time).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '时间待定') + ' · ' + (a.location || '待定') + '</div>' +
+        '<div class="event-meta-row"><span>👥</span> ' + (a.attendee_count || 0) + ' 人报名</div>' +
+      '</div>' +
+      (tags ? '<div class="event-tags">' + tags + '</div>' : '') +
+      '<div class="event-footer">' +
+        '<span class="event-match">查看详情 ›</span>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function loadActivities() {
+  api('/activities/').then(function(r) { return r.json(); }).then(function(data) {
+    var el = document.getElementById('eventList');
+    var loading = document.getElementById('eventLoading');
+    var empty = document.getElementById('eventEmpty');
+    if (!el) return;
+    loading.style.display = 'none';
+    var items = data.results || [];
+    if (items.length === 0) { empty.classList.remove('hidden'); return; }
+    el.innerHTML = items.map(renderActivityCard).join('');
+  }).catch(function() {
+    var loading = document.getElementById('eventLoading');
+    if (loading) loading.textContent = '加载失败';
+  });
+}
+
+loadActivities();
+</script>
+
+</body>
+</html>

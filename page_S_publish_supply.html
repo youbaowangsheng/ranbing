@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>发布供需</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-nav { background:#1a3a5c; padding:8px 16px; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; cursor:pointer; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; }
+.save-btn { color:#e86a3a; font-size:15px; font-weight:500; cursor:pointer; }
+
+/* 表单 */
+.form { padding:16px; padding-bottom:90px; }
+
+/* 类型切换 */
+.type-toggle { display:flex; background:#f5f5f5; border-radius:12px; padding:3px; margin-bottom:16px; }
+.type-item { flex:1; text-align:center; padding:10px; border-radius:10px; font-size:14px; color:#666; cursor:pointer; font-weight:500; display:flex; align-items:center; justify-content:center; gap:6px; }
+.type-item.active { background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+.type-item.active.supply { color:#059669; }
+.type-item.active.demand { color:#c2410c; }
+.type-item.inactive { color:#999; }
+
+/* 表单项 */
+.form-item { margin-bottom:14px; }
+.form-label { font-size:13px; color:#888; font-weight:500; margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+.form-label-required { color:#e86a3a; }
+.form-input { width:100%; background:#f8f9fa; border:1px solid #e8e8e8; border-radius:10px; padding:12px 14px; font-size:14px; color:#1a1a1a; outline:none; transition:border-color 0.2s; }
+.form-input:focus { border-color:#1a3a5c; background:#fff; }
+.form-input::placeholder { color:#bbb; }
+.form-textarea { width:100%; background:#f8f9fa; border:1px solid #e8e8e8; border-radius:10px; padding:12px 14px; font-size:14px; color:#1a1a1a; outline:none; resize:none; min-height:110px; line-height:1.6; }
+.form-textarea:focus { border-color:#1a3a5c; background:#fff; }
+
+/* AI推荐标签 */
+.ai-tags-box { background:#faf8ff; border:1px solid #e8d5ff; border-radius:12px; padding:12px; }
+.ai-tags-header { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.ai-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.ai-tags-title { font-size:13px; color:#7c3aed; font-weight:500; }
+.ai-tags-row { display:flex; flex-wrap:wrap; gap:6px; }
+.ai-tag { padding:5px 10px; border-radius:10px; font-size:12px; cursor:pointer; border:1px solid; transition:all 0.2s; user-select:none; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; border-color:#e0c5ff; }
+.tag-purple.selected { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; border-color:#c5d5f5; }
+.tag-blue.selected { background:#1a3a5c; color:#fff; border-color:#1a3a5c; }
+.tag-orange { background:#fff3e8; color:#c2410c; border-color:#ffc5a0; }
+.tag-orange.selected { background:#c2410c; color:#fff; border-color:#c2410c; }
+.tag-green { background:#e8fdf5; color:#059669; border-color:#a7f3d0; }
+.tag-green.selected { background:#059669; color:#fff; border-color:#059669; }
+.ai-tags-hint { font-size:11px; color:#7c3aed; margin-top:8px; display:flex; align-items:center; gap:4px; }
+
+/* AI优化建议 */
+.ai-suggestion { background:linear-gradient(135deg,#fff8f5,#fff0eb); border:1px solid #ffc5a0; border-radius:12px; padding:12px; margin-top:10px; }
+.ai-suggestion-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.ai-suggestion-icon { font-size:16px; }
+.ai-suggestion-title { font-size:13px; color:#c2410c; font-weight:600; }
+.score-bar { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.score-label { font-size:12px; color:#888; white-space:nowrap; }
+.score-track { flex:1; height:6px; background:#f0e0d5; border-radius:3px; overflow:hidden; }
+.score-fill { height:100%; background:linear-gradient(90deg,#e86a3a,#f0a06a); border-radius:3px; transition:width 0.3s; }
+.score-num { font-size:12px; color:#e86a3a; font-weight:600; white-space:nowrap; }
+.suggestion-list { font-size:12px; color:#666; line-height:1.7; }
+.suggestion-list li { margin-bottom:3px; }
+.suggestion-list li::marker { color:#e86a3a; }
+
+/* 隐私设置 */
+.privacy-row { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#f8f9fa; border-radius:10px; cursor:pointer; }
+.privacy-left { display:flex; align-items:center; gap:8px; }
+.privacy-icon { font-size:16px; }
+.privacy-label { font-size:14px; color:#333; }
+.privacy-value { font-size:13px; color:#888; }
+.privacy-arrow { font-size:14px; color:#999; margin-left:6px; }
+
+/* 有效期 */
+.validity-row { display:flex; gap:8px; }
+.validity-chip { flex:1; text-align:center; padding:8px; border-radius:10px; font-size:13px; cursor:pointer; background:#f5f5f5; color:#666; border:1px solid transparent; }
+.validity-chip.active { background:#e8f0fe; color:#1a3a5c; border-color:#1a3a5c; font-weight:500; }
+
+/* 关联标签（AI从Profile读取） */
+.linked-tags { background:#f8f9fa; border-radius:10px; padding:10px 12px; margin-bottom:14px; }
+.linked-tags-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.linked-tags-label { font-size:12px; color:#888; }
+.linked-tags-edit { font-size:12px; color:#1a3a5c; cursor:pointer; }
+.linked-tags-row { display:flex; flex-wrap:wrap; gap:5px; }
+.linked-tag { padding:3px 8px; border-radius:8px; font-size:12px; background:#e8f0fe; color:#1a3a5c; }
+
+/* 底部发布栏 */
+.bottom-bar { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; padding:12px 16px; padding-bottom:calc(12px + env(safe-area-inset-bottom)); display:flex; gap:10px; }
+.btn-preview { width:44px; height:44px; background:#f5f5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; flex-shrink:0; }
+.publish-btn { flex:1; background:#e86a3a; color:#fff; border:none; padding:12px; border-radius:22px; font-size:16px; font-weight:600; cursor:pointer; text-align:center; }
+.publish-btn.supply-active { background:#059669; }
+
+/* 预览遮罩 */
+.mask { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; display:none; align-items:center; justify-content:center; }
+.mask.show { display:flex; }
+.preview-box { background:#fff; border-radius:16px; padding:20px; margin:20px; max-width:335px; }
+.preview-handle { width:36px; height:4px; background:#ddd; border-radius:2px; margin:0 auto 16px; }
+.preview-title { font-size:16px; font-weight:600; text-align:center; margin-bottom:16px; }
+.preview-card { border-radius:12px; padding:14px; margin-bottom:12px; border-left:4px solid; }
+.preview-card.supply { background:#f8fdf8; border-left-color:#52c41a; }
+.preview-card.demand { background:#fff8f5; border-left-color:#e86a3a; }
+.preview-type { font-size:11px; padding:2px 8px; border-radius:7px; font-weight:600; margin-bottom:6px; display:inline-block; }
+.preview-type.supply { background:#e8fdf5; color:#059669; }
+.preview-type.demand { background:#fff3e8; color:#c2410c; }
+.preview-name { font-size:14px; font-weight:600; color:#1a1a1a; margin-bottom:4px; }
+.preview-school { font-size:12px; color:#888; margin-bottom:8px; }
+.preview-desc { font-size:13px; color:#555; line-height:1.5; margin-bottom:8px; }
+.preview-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.mini-tag { padding:1px 7px; border-radius:6px; font-size:11px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+.preview-footer { display:flex; gap:10px; margin-top:16px; }
+.preview-btn-cancel { flex:1; padding:10px; border-radius:20px; border:1px solid #ddd; background:#fff; color:#666; font-size:14px; cursor:pointer; }
+.preview-btn-confirm { flex:1; padding:10px; border-radius:20px; border:none; background:#e86a3a; color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-nav">
+    <div class="back-btn">‹</div>
+    <div class="nav-title">发布供需</div>
+    <div class="save-btn">存草稿</div>
+  </div>
+
+  <!-- 表单 -->
+  <div class="form">
+
+    <!-- 类型切换 -->
+    <div class="type-toggle">
+      <div class="type-item active supply" id="supplyTab" onclick="switchType('supply')">
+        📤 我可提供
+      </div>
+      <div class="type-item inactive demand" id="demandTab" onclick="switchType('demand')">
+        📥 我需要
+      </div>
+    </div>
+
+    <!-- 关联Profile标签 -->
+    <div class="linked-tags">
+      <div class="linked-tags-header">
+        <span class="linked-tags-label">📌 将关联你的Profile标签</span>
+        <span class="linked-tags-edit">管理 ›</span>
+      </div>
+      <div class="linked-tags-row">
+        <span class="linked-tag">企业服务</span>
+        <span class="linked-tag">优质客户</span>
+        <span class="linked-tag">渠道分销</span>
+        <span class="linked-tag">连续创业者</span>
+      </div>
+    </div>
+
+    <!-- 标题 -->
+    <div class="form-item">
+      <div class="form-label">
+        <span class="form-label-required">*</span>供需标题
+      </div>
+      <input class="form-input" placeholder="简洁明确，让人一眼看懂价值" value="可提供：企业服务客户资源对接">
+    </div>
+
+    <!-- 详细描述 -->
+    <div class="form-item">
+      <div class="form-label">
+        <span class="form-label-required">*</span>详细描述
+      </div>
+      <textarea class="form-textarea" placeholder="说明你的具体资源、能力或需求，越详细越容易获得精准匹配">在企业服务领域深耕8年，曾在用友、金蝶等公司担任销售总监，积累了大量企业级客户资源。尤其熟悉制造业、连锁零售的CTO/CIO决策链，可为B2B SaaS、咨询类项目对接关键决策人。
+
+目前重点关注：SaaS产品、数字化转型咨询、工业软件三个方向。</textarea>
+    </div>
+
+    <!-- AI推荐标签 -->
+    <div class="form-item">
+      <div class="form-label">
+        <span class="form-label-required">*</span>标签
+        <span style="font-size:11px; color:#aaa; font-weight:400; margin-left:4px;">AI根据内容推荐</span>
+      </div>
+      <div class="ai-tags-box">
+        <div class="ai-tags-header">
+          <span class="ai-badge">✨ AI推荐</span>
+          <span class="ai-tags-title">选择1-4个标签，越精准匹配率越高</span>
+        </div>
+        <div class="ai-tags-row">
+          <span class="ai-tag tag-purple selected" onclick="toggleTag(this)">企业服务 ✓</span>
+          <span class="ai-tag tag-blue selected" onclick="toggleTag(this)">客户资源 ✓</span>
+          <span class="ai-tag tag-green" onclick="toggleTag(this)">B2B</span>
+          <span class="ai-tag tag-orange" onclick="toggleTag(this)">渠道分销</span>
+          <span class="ai-tag tag-purple" onclick="toggleTag(this)">连续创业者</span>
+          <span class="ai-tag tag-blue" onclick="toggleTag(this)">技术合作</span>
+          <span class="ai-tag tag-green" onclick="toggleTag(this)">资本支持</span>
+          <span class="ai-tag tag-orange" onclick="toggleTag(this)">品牌曝光</span>
+        </div>
+        <div class="ai-tags-hint">
+          💡 标签越精准，AI匹配越准，曝光转化率提升50%+
+        </div>
+      </div>
+    </div>
+
+    <!-- AI优化建议 -->
+    <div class="ai-suggestion">
+      <div class="ai-suggestion-header">
+        <span class="ai-suggestion-icon">📝</span>
+        <span class="ai-suggestion-title">✨ AI曝光优化建议</span>
+      </div>
+      <div class="score-bar">
+        <span class="score-label">曝光转化预估</span>
+        <div class="score-track">
+          <div class="score-fill" style="width:72%;"></div>
+        </div>
+        <span class="score-num">72分</span>
+      </div>
+      <ol class="suggestion-list">
+        <li>建议在标题中加入"可提供"字样，阅读率提升23%</li>
+        <li>补充"曾服务过哪些行业"能增加22%精准咨询</li>
+        <li>加入"可先发资料看看"等低门槛邀约，响应率提升35%</li>
+      </ol>
+    </div>
+
+    <!-- 有效期 -->
+    <div class="form-item">
+      <div class="form-label">有效期</div>
+      <div class="validity-row">
+        <div class="validity-chip active">7天</div>
+        <div class="validity-chip">30天</div>
+        <div class="validity-chip">长期有效</div>
+      </div>
+    </div>
+
+    <!-- 隐私设置 -->
+    <div class="form-item">
+      <div class="form-label">可见范围</div>
+      <div class="privacy-row">
+        <div class="privacy-left">
+          <span class="privacy-icon">🌐</span>
+          <span class="privacy-label">公开</span>
+        </div>
+        <div>
+          <span class="privacy-value">所有认证校友可见</span>
+          <span class="privacy-arrow">›</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部发布栏 -->
+  <div class="bottom-bar">
+    <div class="btn-preview" onclick="showPreview()">👁</div>
+    <div class="publish-btn" id="publishBtn" onclick="showPreview()">发布供需</div>
+  </div>
+
+</div>
+
+<!-- 预览弹窗 -->
+<div class="mask" id="previewMask">
+  <div class="preview-box">
+    <div class="preview-handle"></div>
+    <div class="preview-title">📋 供需预览</div>
+
+    <div class="preview-card supply" id="previewCard">
+      <span class="preview-type supply">📤 可提供</span>
+      <div class="preview-name">可提供：企业服务客户资源对接</div>
+      <div class="preview-school">👤 王建 · 清华2022届 · 连续创业者</div>
+      <div class="preview-desc">在企业服务领域深耕8年，积累了大量企业级客户资源，可为B2B SaaS、咨询类项目对接关键决策人。</div>
+      <div class="preview-tags">
+        <span class="mini-tag tag-purple">企业服务</span>
+        <span class="mini-tag tag-blue">客户资源</span>
+        <span class="mini-tag tag-green">B2B</span>
+      </div>
+    </div>
+
+    <div class="preview-footer">
+      <button class="preview-btn-cancel" onclick="hidePreview()">返回修改</button>
+      <button class="preview-btn-confirm" onclick="hidePreview(); confirmPublish()">确认发布</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentType = 'supply';
+
+function switchType(type) {
+  currentType = type;
+  var supplyTab = document.getElementById('supplyTab');
+  var demandTab = document.getElementById('demandTab');
+  var publishBtn = document.getElementById('publishBtn');
+  var previewCard = document.getElementById('previewCard');
+
+  if (type === 'supply') {
+    supplyTab.className = 'type-item active supply';
+    demandTab.className = 'type-item inactive demand';
+    publishBtn.className = 'publish-btn supply-active';
+    publishBtn.textContent = '发布供给';
+    previewCard.className = 'preview-card supply';
+    document.querySelector('.preview-type').className = 'preview-type supply';
+  } else {
+    supplyTab.className = 'type-item inactive supply';
+    demandTab.className = 'type-item active demand';
+    publishBtn.className = 'publish-btn';
+    publishBtn.textContent = '发布需求';
+    previewCard.className = 'preview-card demand';
+    document.querySelector('.preview-type').className = 'preview-type demand';
+  }
+}
+
+function toggleTag(el) {
+  el.classList.toggle('selected');
+}
+
+function showPreview() {
+  document.getElementById('previewMask').classList.add('show');
+}
+
+function hidePreview() {
+  document.getElementById('previewMask').classList.remove('show');
+}
+
+function confirmPublish() {
+  var btn = document.getElementById('publishBtn');
+  btn.textContent = '✓ 已发布';
+  btn.style.background = '#ccc';
+}
+</script>
+
+</body>
+</html>

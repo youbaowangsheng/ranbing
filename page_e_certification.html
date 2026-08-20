@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面E · 认证中心</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px 0; }
+  .phone-frame { width: 375px; min-height: 850px; background: #f5f5f5; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border-radius: 40px; overflow: hidden; }
+  .status-bar { height: 44px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; }
+  .status-icons { position: absolute; right: 20px; bottom: 8px; font-size: 12px; }
+  .header { height: 44px; background: #fff; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #eee; }
+  .header-back { font-size: 20px; color: #1a3a5c; margin-right: 12px; }
+  .header-title { font-size: 16px; font-weight: 600; color: #333; flex: 1; text-align: center; margin-right: 32px; }
+  .header-more { font-size: 20px; color: #888; }
+  .page-title { text-align: center; padding: 20px 0 16px; font-size: 18px; font-weight: 700; color: #1a3a5c; background: #fff; }
+  .page-title-icon { font-size: 24px; margin-bottom: 6px; }
+  .section { background: #fff; margin-bottom: 8px; }
+  .cert-card { margin: 0 16px 10px; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
+  .cert-card-header { padding: 14px 16px 12px; display: flex; align-items: flex-start; gap: 12px; }
+  .cert-card-header.pending { background: #fff9f0; }
+  .cert-level { font-size: 11px; color: #fff; background: #bbb; border-radius: 10px; padding: 2px 8px; flex-shrink: 0; margin-top: 2px; }
+  .cert-level.done { background: #52c41a; }
+  .cert-level.pending { background: #fa8c16; }
+  .cert-header-info { flex: 1; }
+  .cert-header-title { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 6px; }
+  .cert-header-title .check { color: #52c41a; font-size: 13px; }
+  .cert-header-title .pending { font-size: 10px; color: #fa8c16; }
+  .cert-body { padding: 0 16px 14px; }
+  .cert-row { display: flex; padding: 4px 0; font-size: 13px; }
+  .cert-row-label { color: #888; width: 80px; flex-shrink: 0; }
+  .cert-row-value { color: #333; flex: 1; }
+  .cert-tag { display: inline-block; font-size: 11px; color: #52c41a; background: #f0fff0; padding: 1px 6px; border-radius: 8px; margin-right: 4px; }
+  .cert-tag.orange { color: #fa8c16; background: #fff9f0; }
+  .cert-tag.pending-text { color: #888; background: #f5f5f5; }
+  .cert-perm { margin-top: 8px; font-size: 11px; color: #888; padding: 8px 10px; background: #f8f8f8; border-radius: 6px; line-height: 1.6; }
+  .cert-action { display: flex; gap: 8px; margin-top: 10px; }
+  .cert-btn { flex: 1; height: 34px; border-radius: 17px; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .cert-btn-outline { background: #fff; color: #888; border: 1px solid #ddd; }
+  .cert-btn-fill { background: #1a3a5c; color: #fff; }
+  .benefit-section { background: #fff; margin: 0 16px 16px; border-radius: 12px; padding: 16px; }
+  .benefit-title { font-size: 13px; color: #888; margin-bottom: 12px; }
+  .benefit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .benefit-item { text-align: center; padding: 12px 8px; background: #f8f9fc; border-radius: 10px; }
+  .benefit-icon { font-size: 22px; margin-bottom: 4px; }
+  .benefit-name { font-size: 12px; font-weight: 600; color: #333; }
+  .benefit-desc { font-size: 10px; color: #888; margin-top: 2px; }
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 56px; background: #fff; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #888; }
+  .nav-icon { font-size: 20px; }
+  .nav-item.active { color: #e86a3a; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar"><span class="time">9:41</span><span class="status-icons">📶  🔋</span></div>
+  <div class="header">
+    <span class="header-back">←</span>
+    <span class="header-title">认证中心</span>
+    <span class="header-more">⋯</span>
+  </div>
+
+  <div style="height:calc(100% - 44px); overflow-y:auto; padding-bottom:70px;">
+
+  <div class="page-title">
+    <div class="page-title-icon">🔐</div>
+    <div>校友认证体系</div>
+  </div>
+
+  <div style="padding:0 16px 8px;">
+    <div style="font-size:12px;color:#888;margin-bottom:4px;">认证等级越高，信任度和合作机会越多</div>
+  </div>
+
+  <div class="section" style="padding:0 16px 8px;">
+    <div class="cert-card">
+      <div class="cert-card-header">
+        <span class="cert-level done">Lv.1</span>
+        <div class="cert-header-info">
+          <div class="cert-header-title"><span class="check">✓</span> 基础认证 <span style="font-size:10px;color:#888;font-weight:400;">已完成</span></div>
+        </div>
+      </div>
+      <div class="cert-body">
+        <div class="cert-row"><span class="cert-row-label">手机号</span><span class="cert-row-value">138****8888（已验证）</span></div>
+        <div class="cert-row"><span class="cert-row-label">姓名</span><span class="cert-row-value">张总（已确认）</span></div>
+        <div class="cert-row"><span class="cert-row-label">院校</span><span class="cert-row-value">XX商学院（已确认）</span></div>
+        <div class="cert-row"><span class="cert-row-label">届别</span><span class="cert-row-value">2012级MBA（已确认）</span></div>
+        <div style="margin-top:8px;">
+          <span class="cert-tag">浏览校友</span>
+          <span class="cert-tag">发布供需</span>
+          <span class="cert-tag">报名活动</span>
+        </div>
+        <div class="cert-perm">标识：⚪ 基础认证 · 可浏览所有认证校友，发布供需，报名活动</div>
+      </div>
+    </div>
+
+    <div class="cert-card">
+      <div class="cert-card-header">
+        <span class="cert-level done">Lv.2</span>
+        <div class="cert-header-info">
+          <div class="cert-header-title"><span class="check">✓</span> 身份认证 <span style="font-size:10px;color:#888;font-weight:400;">已完成</span></div>
+        </div>
+      </div>
+      <div class="cert-body">
+        <div class="cert-row"><span class="cert-row-label">认证方式</span><span class="cert-row-value">2位认证校友担保</span></div>
+        <div class="cert-row"><span class="cert-row-label">担保人</span><span class="cert-row-value">李四（2012级MBA）、王五（2012级MBA）</span></div>
+        <div style="margin-top:8px;">
+          <span class="cert-tag">解锁私信</span>
+          <span class="cert-tag">查看联系方式</span>
+          <span class="cert-tag">加入高端社群</span>
+        </div>
+        <div class="cert-perm">标识：🔵 校友认证 · 解锁私信功能，可查看对方联系方式</div>
+      </div>
+    </div>
+
+    <div class="cert-card">
+      <div class="cert-card-header pending">
+        <span class="cert-level pending">Lv.3</span>
+        <div class="cert-header-info">
+          <div class="cert-header-title">🏅 深度认证 <span class="pending">审核中</span></div>
+        </div>
+      </div>
+      <div class="cert-body">
+        <div class="cert-row"><span class="cert-row-label">认证材料</span><span class="cert-row-value">学历证书（已上传）</span></div>
+        <div class="cert-row"><span class="cert-row-label">审核状态</span><span class="cert-row-value" style="color:#fa8c16;">审核中（预计1-3个工作日）</span></div>
+        <div style="margin-top:8px;">
+          <span class="cert-tag pending-text">高端闭门活动</span>
+          <span class="cert-tag pending-text">合作优先推荐</span>
+          <span class="cert-tag pending-text">金色信任标识</span>
+        </div>
+        <div class="cert-perm">标识：🏅 深度认证（待生效）· 审核通过后解锁高端活动报名资格</div>
+        <div class="cert-action">
+          <div class="cert-btn cert-btn-outline">🔄 重新上传</div>
+          <div class="cert-btn cert-btn-fill">查看材料</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="benefit-section">
+    <div class="benefit-title">认证有什么用？</div>
+    <div class="benefit-grid">
+      <div class="benefit-item">
+        <div class="benefit-icon">🏅</div>
+        <div class="benefit-name">信任背书</div>
+        <div class="benefit-desc">认证标识更醒目</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">💬</div>
+        <div class="benefit-name">私信解锁</div>
+        <div class="benefit-desc">可主动联系校友</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">🤝</div>
+        <div class="benefit-name">合作优先</div>
+        <div class="benefit-desc">AI推荐加权</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">🎯</div>
+        <div class="benefit-name">高端活动</div>
+        <div class="benefit-desc">闭门活动资格</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:#666;text-align:center;line-height:1.6;">
+      认证等级越高，其他校友对您的信任度越高<br>合作匹配和推荐机会也越多
+    </div>
+  </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item"><span class="nav-icon">🏠</span><span>首页</span></div>
+    <div class="nav-item"><span class="nav-icon">📅</span><span>活动</span></div>
+    <div class="nav-item"><span class="nav-icon">💼</span><span>供需</span></div>
+    <div class="nav-item"><span class="nav-icon">💬</span><span>社群</span></div>
+    <div class="nav-item active"><span class="nav-icon">👤</span><span>我的</span></div>
+  </div>
+</div>
+</body>
+</html>

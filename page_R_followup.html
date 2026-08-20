@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI跟进提醒</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-bar { background:#1a3a5c; padding:8px 16px; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; cursor:pointer; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; margin-right:28px; }
+.top-badge { background:#e86a3a; color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+
+/* Tab切换 */
+.tab-row { display:flex; background:#fff; border-bottom:1px solid #eee; }
+.tab { flex:1; text-align:center; padding:12px 0; font-size:14px; color:#666; position:relative; cursor:pointer; }
+.tab.active { color:#1a3a5c; font-weight:600; }
+.tab.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:28px; height:3px; background:#1a3a5c; border-radius:2px; }
+.tab-count { font-size:10px; background:#ffe8e0; color:#e86a3a; padding:1px 5px; border-radius:8px; margin-left:3px; }
+
+/* 主内容 */
+.content { padding:12px 16px 100px; }
+
+/* AI统计摘要 */
+.ai-summary { background:linear-gradient(135deg,#1a3a5c,#2d5a8a); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; gap:16px; }
+.summary-item { flex:1; text-align:center; }
+.summary-num { font-size:24px; font-weight:700; color:#fff; }
+.summary-label { font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px; }
+.summary-divider { width:1px; background:rgba(255,255,255,0.2); }
+
+/* 待跟进区块 */
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.section-title { font-size:15px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.section-count { font-size:12px; color:#888; }
+.section-more { font-size:12px; color:#888; cursor:pointer; }
+
+/* 待跟进卡片 */
+.followup-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border-left:4px solid; }
+.card-urgent { border-left-color:#e86a3a; }
+.card-normal { border-left-color:#1a3a5c; }
+.card-done { border-left-color:#52c41a; }
+.card-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.card-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:600; flex-shrink:0; }
+.card-info { flex:1; }
+.card-name { font-size:15px; font-weight:600; color:#1a1a1a; }
+.card-context { font-size:12px; color:#888; margin-top:2px; }
+.card-type-tag { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:500; }
+.type-urgent { background:#fff3e8; color:#c2410c; }
+.type-normal { background:#e8f0fe; color:#1a3a5c; }
+.card-title { font-size:14px; font-weight:600; color:#1a1a1a; margin-bottom:6px; }
+.card-reason { font-size:13px; color:#555; line-height:1.5; margin-bottom:10px; background:#f8f9fa; padding:10px; border-radius:10px; }
+
+/* AI话术 */
+.ai-speech { background:linear-gradient(135deg,#f8f5ff,#f0e8ff); border-radius:10px; padding:12px; margin-bottom:10px; border:1px solid #e8d5ff; }
+.ai-speech-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.ai-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; padding:2px 6px; border-radius:6px; font-weight:600; }
+.ai-speech-title { font-size:12px; color:#7c3aed; font-weight:500; }
+.ai-speech-text { font-size:13px; color:#333; line-height:1.6; font-style:italic; }
+
+/* 操作按钮 */
+.card-actions { display:flex; gap:8px; }
+.btn-send { flex:1; background:#e86a3a; color:#fff; border:none; padding:10px; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; text-align:center; display:flex; align-items:center; justify-content:center; gap:6px; }
+.btn-edit { flex:1; background:#fff; color:#1a3a5c; border:1.5px solid #1a3a5c; padding:10px; border-radius:12px; font-size:14px; cursor:pointer; text-align:center; }
+.btn-complete { flex:1; background:#52c41a; color:#fff; border:none; padding:10px; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; text-align:center; }
+
+/* 时间戳 */
+.card-time { font-size:11px; color:#999; margin-bottom:8px; display:flex; align-items:center; gap:4px; }
+
+/* 已完成区块 */
+.done-section { margin-top:20px; }
+.done-header { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.done-icon { font-size:16px; }
+.done-title { font-size:14px; font-weight:600; color:#888; }
+.done-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:8px; opacity:0.7; border-left:4px solid #52c41a; }
+.done-card .card-title { color:#888; }
+.done-card .card-reason { color:#aaa; }
+.done-result { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.done-badge { background:#e8fdf5; color:#059669; font-size:11px; padding:2px 8px; border-radius:8px; }
+.done-meta { font-size:12px; color:#888; }
+
+/* 历史记录Tab */
+.history-item { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); display:flex; gap:12px; }
+.history-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:600; flex-shrink:0; }
+.history-info { flex:1; }
+.history-name { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:3px; }
+.history-action { font-size:13px; color:#555; margin-bottom:4px; }
+.history-result { font-size:12px; color:#52c41a; background:#e8fdf5; padding:2px 8px; border-radius:6px; display:inline-block; margin-bottom:4px; }
+.history-time { font-size:11px; color:#bbb; }
+.history-tags { display:flex; flex-wrap:wrap; gap:3px; margin-top:4px; }
+.mini-tag { padding:1px 6px; border-radius:6px; font-size:10px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+
+/* 空状态 */
+.empty-state { text-align:center; padding:60px 20px; }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+.empty-title { font-size:16px; color:#333; font-weight:600; margin-bottom:6px; }
+.empty-desc { font-size:13px; color:#999; }
+
+/* 底部导航 */
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; display:flex; padding:8px 0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex:1; text-align:center; padding:6px; }
+.nav-icon { font-size:20px; margin-bottom:2px; }
+.nav-label { font-size:10px; color:#999; }
+.nav-item.active .nav-label { color:#1a3a5c; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-bar">
+    <div class="back-btn">‹</div>
+    <div class="nav-title">AI跟进提醒</div>
+    <div class="top-badge">5待处理</div>
+  </div>
+
+  <!-- Tab -->
+  <div class="tab-row">
+    <div class="tab active">待跟进 <span class="tab-count">5</span></div>
+    <div class="tab">已完成</div>
+    <div class="tab">全部记录</div>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="content">
+
+    <!-- AI统计摘要 -->
+    <div class="ai-summary">
+      <div class="summary-item">
+        <div class="summary-num">12</div>
+        <div class="summary-label">本月跟进次数</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <div class="summary-num">8</div>
+        <div class="summary-label">成功对接</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <div class="summary-num">67%</div>
+        <div class="summary-label">对接成功率</div>
+      </div>
+    </div>
+
+    <!-- 待跟进区块 -->
+    <div class="section-header">
+      <div class="section-title">📋 今日待跟进 <span class="section-count">3项</span></div>
+      <div class="section-more">智能排序 ›</div>
+    </div>
+
+    <!-- 待跟进卡片1：紧急 -->
+    <div class="followup-card card-urgent">
+      <div class="card-time">⚡ 活动结束后 2h 内跟进效果最佳</div>
+      <div class="card-header">
+        <div class="card-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">张</div>
+        <div class="card-info">
+          <div class="card-name">张伟</div>
+          <div class="card-context">SaaS企业服务闭门会 · 清华2022届</div>
+        </div>
+        <span class="card-type-tag type-urgent">⚡ 紧急</span>
+      </div>
+      <div class="card-title">活动结束，趁热打铁发跟进消息</div>
+      <div class="card-reason">
+        在"企业服务闭门会"上与张伟交换了名片，他提到"正好在找有渠道资源的人"，与你互补，建议当天发消息，24小时内跟进率最高。
+      </div>
+
+      <!-- AI生成话术 -->
+      <div class="ai-speech">
+        <div class="ai-speech-header">
+          <span class="ai-badge">✨ AI推荐话术</span>
+          <span class="ai-speech-title">点击复制或直接发送</span>
+        </div>
+        <div class="ai-speech-text">
+          "张伟好！今天会上你提到的渠道问题我印象深刻——我这边正好在推一个企业服务的项目，团队有制造业的渠道积累，有机会可以深度聊聊，看看有没有合作空间。下周方便约个时间吗？"
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-send" onclick="this.innerHTML='✓ 已发送'; this.style.background='#ccc'">
+          💬 直接发送
+        </button>
+        <button class="btn-edit">✏️ 修改</button>
+      </div>
+    </div>
+
+    <!-- 待跟进卡片2：正常 -->
+    <div class="followup-card card-normal">
+      <div class="card-time">📅 活动结束后 3 天内跟进</div>
+      <div class="card-header">
+        <div class="card-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">李</div>
+        <div class="card-info">
+          <div class="card-name">李娜</div>
+          <div class="card-context">消费品牌融资路演专场 · 北大2018届</div>
+        </div>
+        <span class="card-type-tag type-normal">📅 提醒</span>
+      </div>
+      <div class="card-title">活动后3天，发送合作资料加深印象</div>
+      <div class="card-reason">
+        你在融资路演活动上与李娜有过简短交流，她对SaaS赛道感兴趣，建议发送一份简短的公司介绍和关键数据，建立持续联系。
+      </div>
+
+      <div class="ai-speech">
+        <div class="ai-speech-header">
+          <span class="ai-badge">✨ AI推荐话术</span>
+          <span class="ai-speech-title">点击复制或直接发送</span>
+        </div>
+        <div class="ai-speech-text">
+          "李娜好！上次路演活动聊得很愉快，这是我司的一个简要介绍——ARR年增150%，客户LTV 3.5倍，目前在谈A轮。如果有合适的时机，欢迎多交流！"
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-send" onclick="this.innerHTML='✓ 已发送'; this.style.background='#ccc'">
+          💬 直接发送
+        </button>
+        <button class="btn-edit">✏️ 修改</button>
+      </div>
+    </div>
+
+    <!-- 待跟进卡片3：正常 -->
+    <div class="followup-card card-normal">
+      <div class="card-time">📅 上次联系已7天，需重新激活</div>
+      <div class="card-header">
+        <div class="card-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">王</div>
+        <div class="card-info">
+          <div class="card-name">王强</div>
+          <div class="card-context">复旦2020届 · 先进制造</div>
+        </div>
+        <span class="card-type-tag type-normal">🔔 激活</span>
+      </div>
+      <div class="card-title">供需匹配后7天未响应，发送激活消息</div>
+      <div class="card-reason">
+        你的"渠道分销"标签与王强的"销售渠道需求"高度匹配，AI曾发送匹配通知但未得到响应，建议发一条不具压迫感的激活消息。
+      </div>
+
+      <div class="ai-speech">
+        <div class="ai-speech-header">
+          <span class="ai-badge">✨ AI推荐话术</span>
+          <span class="ai-speech-title">点击复制或直接发送</span>
+        </div>
+        <div class="ai-speech-text">
+          "王强好！看到你在找制造业渠道资源，我这边团队有珠三角的工厂渠道积累，不知道现在推进情况如何？如需要可以发个简要方案给你参考，祝顺利！"
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-send" onclick="this.innerHTML='✓ 已发送'; this.style.background='#ccc'">
+          💬 直接发送
+        </button>
+        <button class="btn-edit">✏️ 修改</button>
+      </div>
+    </div>
+
+    <!-- 已完成区块 -->
+    <div class="done-section">
+      <div class="done-header">
+        <span class="done-icon">✅</span>
+        <span class="done-title">最近已完成</span>
+      </div>
+
+      <div class="done-card">
+        <div class="card-header">
+          <div class="card-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">陈</div>
+          <div class="card-info">
+            <div class="card-name">陈思</div>
+            <div class="card-context">Q1企业服务复盘会 · 交大2019届</div>
+          </div>
+        </div>
+        <div class="card-title">会后跟进，成功建立合作关系</div>
+        <div class="done-result">
+          <span class="done-badge">✅ 对接成功</span>
+          <span class="done-meta">双方互评：⭐⭐⭐⭐⭐</span>
+        </div>
+        <div class="done-meta">跟进时间：4月28日 20:30 · 耗时1天完成对接</div>
+      </div>
+
+      <div class="done-card">
+        <div class="card-header">
+          <div class="card-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">周</div>
+          <div class="card-info">
+            <div class="card-name">周洋</div>
+            <div class="card-context">清华创业圈 · 清华2021届</div>
+          </div>
+        </div>
+        <div class="card-title">发送公司介绍，建立初步联系</div>
+        <div class="done-result">
+          <span class="done-badge">✅ 已建立联系</span>
+          <span class="done-meta">等待进一步合作</span>
+        </div>
+        <div class="done-meta">跟进时间：4月25日 10:15 · 耗时2天</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">首页</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🤝</div>
+      <div class="nav-label">人脉</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🔄</div>
+      <div class="nav-label">供需</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🎪</div>
+      <div class="nav-label">活动</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">我的</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

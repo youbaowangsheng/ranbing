@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面C · AI标签推荐弹窗</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .popup { width: 340px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .popup-header { background: linear-gradient(135deg, #1a3a5c, #2a5a8c); padding: 20px; text-align: center; }
+  .popup-header-icon { font-size: 32px; margin-bottom: 8px; }
+  .popup-header-title { font-size: 16px; font-weight: 700; color: #fff; }
+  .popup-body { padding: 20px; max-height: 65vh; overflow-y: auto; }
+  .label-group { margin-bottom: 20px; }
+  .label-group-title { font-size: 12px; color: #888; margin-bottom: 10px; padding-left: 4px; }
+  .label-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .tag { display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 16px; font-size: 13px; cursor: pointer; border: 1px solid transparent; }
+  .tag-high { background: #e8f4e8; color: #2a7a2a; border-color: #b8d8b8; }
+  .tag-high.selected { background: #2a7a2a; color: #fff; }
+  .tag-mid { background: #fff3ee; color: #a05030; border-color: #f0d8c0; }
+  .tag-mid.selected { background: #a05030; color: #fff; }
+  .tag-check { font-size: 10px; opacity: 0.6; }
+  .tag-high.selected .tag-check,
+  .tag-mid.selected .tag-check { opacity: 1; }
+  .divider { height: 1px; background: #f0f0f0; margin: 16px 0; }
+  .legend { display: flex; gap: 16px; padding: 10px 14px; background: #f8f8f8; border-radius: 8px; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-dot.high { background: #2a7a2a; }
+  .legend-dot.mid { background: #a05030; }
+  .ai-note { font-size: 11px; color: #999; padding: 10px; background: #f9f9f9; border-radius: 8px; line-height: 1.5; }
+  .ai-note-icon { font-size: 12px; margin-right: 4px; }
+  .popup-footer { display: flex; gap: 10px; padding: 16px 20px; border-top: 1px solid #f0f0f0; }
+  .btn { flex: 1; height: 42px; border-radius: 21px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .btn-secondary { background: #fff; color: #888; border: 1px solid #ddd; }
+  .btn-primary { background: #1a3a5c; color: #fff; }
+</style>
+</head>
+<body>
+<div class="popup">
+  <div class="popup-header">
+    <div class="popup-header-icon">✨</div>
+    <div class="popup-header-title">AI智能标签推荐</div>
+  </div>
+  <div class="popup-body">
+    <div style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.6;">
+      根据您填写的个人简介，AI生成了以下标签建议：
+    </div>
+
+    <div class="label-group">
+      <div class="label-group-title">供给标签（高置信度 — 直接提取）</div>
+      <div class="label-row">
+        <div class="tag tag-high selected" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">✓</span>融资渠道
+        </div>
+        <div class="tag tag-high selected" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">✓</span>投资标的
+        </div>
+        <div class="tag tag-high selected" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">✓</span>FA服务
+        </div>
+        <div class="tag tag-high selected" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">✓</span>产业资本
+        </div>
+      </div>
+    </div>
+
+    <div class="label-group">
+      <div class="label-group-title">供给标签（建议确认 — 语义推断）</div>
+      <div class="label-row">
+        <div class="tag tag-mid" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">○</span>A-B轮融资
+        </div>
+        <div class="tag tag-mid" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">○</span>智能制造
+        </div>
+        <div class="tag tag-mid" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">○</span>新能源
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="label-group">
+      <div class="label-group-title">需求标签（高置信度）</div>
+      <div class="label-row">
+        <div class="tag tag-high selected" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">✓</span>优质项目
+        </div>
+      </div>
+    </div>
+
+    <div class="label-group">
+      <div class="label-group-title">需求标签（建议确认）</div>
+      <div class="label-row">
+        <div class="tag tag-mid" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">○</span>上市辅导
+        </div>
+        <div class="tag tag-mid" onclick="this.classList.toggle('selected')">
+          <span class="tag-check">○</span>半导体
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot high"></div>✓ 高置信（直接提取）</div>
+      <div class="legend-item"><div class="legend-dot mid"></div>○ 中置信（语义推断）</div>
+    </div>
+
+    <div class="ai-note">
+      <span class="ai-note-icon">💡</span>
+      点击标签可选择或取消。选中的标签将显示在您的校友主页。建议优先确认高置信度标签。
+    </div>
+  </div>
+  <div class="popup-footer">
+    <div class="btn btn-secondary">重新编辑简介</div>
+    <div class="btn btn-primary">确认并应用</div>
+  </div>
+</div>
+</body>
+</html>

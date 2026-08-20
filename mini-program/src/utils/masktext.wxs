@@ -1,0 +1,31 @@
+// utils/masktext.wxs - 游客模式敏感信息脱敏
+// 姓名：只显示首字，其余*  公司：只显示首字，其余*
+
+// 姓名脱敏：张三丰 -> 张**
+var maskName = function(name, loginStatus) {
+  if (!name) return '匿名';
+  if (loginStatus !== true) {
+    var first = name.charAt(0);
+    var len = name.length;
+    var stars = len > 1 ? (new Array(len)).join('*') : '';
+    return first + stars;
+  }
+  return name;
+};
+
+// 公司脱敏
+var maskCompany = function(company, loginStatus) {
+  if (!company) return '';
+  if (loginStatus !== true) {
+    var first = company.charAt(0);
+    var len = company.length;
+    var stars = len > 1 ? (new Array(len)).join('*') : '';
+    return first + stars;
+  }
+  return company;
+};
+
+module.exports = {
+  maskName: maskName,
+  maskCompany: maskCompany
+};

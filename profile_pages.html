@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI商务社交 - 原型页面索引</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", Arial, sans-serif; background:#1a1a1a; min-height:100vh; padding:40px 20px; color:#fff; }
+h1 { text-align:center; color:#fff; font-size:24px; margin-bottom:8px; }
+.subtitle { text-align:center; color:rgba(255,255,255,0.5); font-size:14px; margin-bottom:40px; }
+.modules { max-width:900px; margin:0 auto; }
+.module-title { color:#e86a3a; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin:30px 0 16px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.module-title:first-child { margin-top:0; }
+.pages { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:12px; }
+.page-link { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:16px; text-decoration:none; color:#fff; transition:all 0.2s; display:block; }
+.page-link:hover { background:rgba(255,255,255,0.1); border-color:#e86a3a; transform:translateY(-2px); }
+.page-name { font-size:15px; font-weight:600; margin-bottom:6px; }
+.page-desc { font-size:12px; color:rgba(255,255,255,0.5); line-height:1.5; }
+.page-tag { display:inline-block; background:#1a3a5c; color:#7ab8ff; font-size:10px; padding:2px 6px; border-radius:4px; margin-top:8px; margin-right:4px; }
+.page-tag.core { background:#c2410c; color:#fff; }
+.page-tag.ai { background:#7c3aed; color:#fff; }
+.page-tag.new { background:#e86a3a; color:#fff; }
+</style>
+</head>
+<body>
+<h1>🤖 AI商务社交 - 产品原型</h1>
+<p class="subtitle">共19个HTML页面原型 · 点击页面名称即可在浏览器中预览</p>
+
+<div class="modules">
+
+  <!-- 首页Tab -->
+  <div class="module-title">🏠 首页 / AI助手 Tab（3页）</div>
+  <div class="pages">
+    <a class="page-link" href="page_P_home.html">
+      <div class="page-name">P. 首页（AI助手）</div>
+      <div class="page-desc">顶部用户区 + AI搜索框 + 今日推荐（人脉/供需/活动卡片）+ 动态Feed</div>
+      <span class="page-tag core">核心</span>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_Q_ai_assistant.html">
+      <div class="page-name">Q. AI人脉助手对话</div>
+      <div class="page-desc">对话式交互 + 快捷问题 + 结构化人脉推荐卡片 + 供需卡片 + 直接联系按钮</div>
+      <span class="page-tag core">核心</span>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_R_followup.html">
+      <div class="page-name">R. AI跟进提醒</div>
+      <div class="page-desc">待跟进事项 + AI生成话术 + 一键发送 + 已完成记录 + 对接成功率统计</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+  </div>
+
+  <!-- Profile档案 -->
+  <div class="module-title">📋 Profile 档案（8页）</div>
+  <div class="pages">
+    <a class="page-link" href="page_a_profile_view.html">
+      <div class="page-name">A. 校友Profile主页</div>
+      <div class="page-desc">查看他人Profile，含完整信息展示、标签、认证等级</div>
+      <span class="page-tag core">核心</span>
+    </a>
+    <a class="page-link" href="page_b_profile_edit.html">
+      <div class="page-name">B. 我的Profile编辑</div>
+      <div class="page-desc">编辑个人资料、经历、认证状态</div>
+      <span class="page-tag core">核心</span>
+    </a>
+    <a class="page-link" href="page_c_ai_tags_popup.html">
+      <div class="page-name">C. AI标签推荐弹窗</div>
+      <div class="page-desc">AI从文字经历中提取标签，用户一键采纳</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_d_profile_settings.html">
+      <div class="page-name">D. 档案设置</div>
+      <div class="page-desc">隐私设置、标签管理、消息通知</div>
+    </a>
+    <a class="page-link" href="page_e_certification.html">
+      <div class="page-name">E. 认证中心</div>
+      <div class="page-desc">三级认证体系：手机→校友互保→深度认证</div>
+      <span class="page-tag core">核心</span>
+    </a>
+    <a class="page-link" href="page_f_work_history.html">
+      <div class="page-name">F. 过往经历编辑</div>
+      <div class="page-desc">工作经历、教育经历的多段编辑</div>
+    </a>
+    <a class="page-link" href="page_g_network_graph.html">
+      <div class="page-name">G. 关系网络图</div>
+      <div class="page-desc">校友关系网络可视化（一度人脉、二度人脉）</div>
+    </a>
+    <a class="page-link" href="page_h_profile_preview.html">
+      <div class="page-name">H. 预览主页效果</div>
+      <div class="page-desc">从他人视角看自己的Profile长什么样</div>
+    </a>
+  </div>
+
+  <!-- 标签系统 -->
+  <div class="module-title">🏷️ 标签系统（3页）</div>
+  <div class="pages">
+    <a class="page-link" href="page_i_tag_selector.html">
+      <div class="page-name">I. 标签编辑</div>
+      <div class="page-desc">自选标签 + AI推荐标签（紫色） + 他人建议标签（橙色）+ 采纳/忽略</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_j_alumni_filter.html">
+      <div class="page-name">J. 同学录标签筛选</div>
+      <div class="page-desc">多标签AND/OR组合筛选 + 相似度排序 + 筛选面板展开/收起</div>
+    </a>
+    <a class="page-link" href="tag_system_design.md">
+      <div class="page-name">📄 标签体系设计文档</div>
+      <div class="page-desc">100核心标签词库 + 标签→供需映射规则 + 供需自动生成逻辑</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+  </div>
+
+  <!-- 供需 -->
+  <div class="module-title">🔄 供需广场（2+2页）</div>
+  <div class="pages">
+    <a class="page-link" href="page_k_supply_demand.html">
+      <div class="page-name">K. 供需广场（v1）</div>
+      <div class="page-desc">AI根据标签自动生成供需卡片 + 发布/编辑 + 他人供需列表</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_K_v2_supply_demand.html">
+      <div class="page-name">K_v2. 供需广场【增强版】</div>
+      <div class="page-desc">智能机会Feed（AI主动推送匹配）+ 匹配度展示 + 共同连接 + AI帮你找对话框 + AI牵线确认</div>
+      <span class="page-tag ai">AI</span>
+      <span class="page-tag new">NEW</span>
+    </a>
+    <a class="page-link" href="page_S_publish_supply.html">
+      <div class="page-name">S. 发布供需（v1）</div>
+      <div class="page-desc">类型切换 + 关联Profile标签 + AI标签推荐 + AI曝光优化建议 + 预览发布</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_S_v2_publish_supply.html">
+      <div class="page-name">S_v2. 发布供需【增强版】</div>
+      <div class="page-desc">3步AI引导式发布（随便说说→AI分析提取→确认发布），大幅降低发布门槛</div>
+      <span class="page-tag ai">AI</span>
+      <span class="page-tag new">NEW</span>
+    </a>
+  </div>
+
+  <!-- 社交活动 -->
+  <div class="module-title">🎪 社交活动（3页）</div>
+  <div class="pages">
+    <a class="page-link" href="page_L_activity_list.html">
+      <div class="page-name">L. 活动列表页</div>
+      <div class="page-desc">AI推荐大卡片（92%匹配度+二度校友）+ 分类筛选 + 往期回顾</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_M_activity_detail.html">
+      <div class="page-name">M. 活动详情页</div>
+      <div class="page-desc">AI推荐参与人（匹配理由）+ 已报名头像墙 + 合作轨迹 + 会后跟进清单</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_O_publish_activity.html">
+      <div class="page-name">O. 发布活动页</div>
+      <div class="page-desc">AI标签推荐（颜色区分类型）+ AI优化建议（提升曝光率）+ 预览确认发布</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+  </div>
+
+  <!-- 校友社群 -->
+  <div class="module-title">👥 校友社群（1+1页）</div>
+  <div class="pages">
+    <a class="page-link" href="page_N_community.html">
+      <div class="page-name">N. 校友社群（v1）</div>
+      <div class="page-desc">我的社群 + AI精选推荐（匹配理由+热议话题）+ 发现更多社群</div>
+      <span class="page-tag ai">AI</span>
+    </a>
+    <a class="page-link" href="page_N_v2_community.html">
+      <div class="page-name">N_v2. 校友社群【增强版】</div>
+      <div class="page-desc">全新"机会"Tab：AI实时监听群聊商业信号，供需/问答/合作三类信号 + AI穿针引线 + 专家问答推荐</div>
+      <span class="page-tag ai">AI</span>
+      <span class="page-tag new">NEW</span>
+    </a>
+  </div>
+
+  <!-- AI增强功能Spec -->
+  <div class="module-title">📄 功能设计文档</div>
+  <div class="pages">
+    <a class="page-link" href="AI增强功能Spec.md">
+      <div class="page-name">📄 供需+社群AI增强功能Spec</div>
+      <div class="page-desc">完整功能设计文档：机会Feed、AI引导发布、社群信号监听、AI穿针引线、数据流转图、上线节奏</div>
+      <span class="page-tag ai">AI</span>
+      <span class="page-tag core">核心</span>
+    </a>
+  </div>
+
+</div>
+
+<p style="text-align:center; color:rgba(255,255,255,0.3); font-size:12px; margin-top:40px;">
+  共计 19 个HTML页面原型 + 1 份设计文档
+</p>
+</body>
+</html>

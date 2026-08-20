@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面F · 过往经历编辑</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px 0; }
+  .phone-frame { width: 375px; min-height: 820px; background: #f5f5f5; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border-radius: 40px; overflow: hidden; }
+  .status-bar { height: 44px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; }
+  .status-icons { position: absolute; right: 20px; bottom: 8px; font-size: 12px; }
+  .header { height: 44px; background: #fff; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #eee; justify-content: space-between; }
+  .header-back { font-size: 20px; color: #1a3a5c; }
+  .header-title { font-size: 16px; font-weight: 600; color: #333; }
+  .header-save { font-size: 14px; color: #e86a3a; font-weight: 500; }
+  .page-desc { background: #fff; padding: 16px; border-bottom: 8px solid #f5f5f5; font-size: 13px; color: #666; line-height: 1.6; }
+  .section { background: #fff; margin-bottom: 8px; }
+  .exp-card { margin: 0 16px 10px; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
+  .exp-header { background: #f8f9fc; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+  .exp-num { font-size: 13px; font-weight: 600; color: #333; }
+  .exp-delete { font-size: 12px; color: #e86a3a; }
+  .exp-body { padding: 14px; }
+  .exp-row { display: flex; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
+  .exp-row:last-child { border-bottom: none; }
+  .exp-label { font-size: 13px; color: #888; width: 60px; flex-shrink: 0; }
+  .exp-value { font-size: 13px; color: #333; flex: 1; display: flex; align-items: center; }
+  .exp-value.placeholder { color: #ccc; }
+  .exp-textarea { width: 100%; border: 1px solid #e8e8e8; border-radius: 8px; padding: 10px 12px; font-size: 13px; resize: none; line-height: 1.6; min-height: 60px; font-family: inherit; background: #fafafa; margin-top: 8px; }
+  .exp-textarea:focus { outline: none; border-color: #1a3a5c; background: #fff; }
+  .add-exp { background: #fff; margin: 0 16px 16px; border-radius: 12px; border: 1px dashed #ccc; padding: 16px; text-align: center; cursor: pointer; }
+  .add-exp:hover { border-color: #1a3a5c; }
+  .add-exp-icon { font-size: 20px; color: #888; margin-bottom: 4px; }
+  .add-exp-text { font-size: 13px; color: #888; }
+  .tip { background: #fff9f0; margin: 0 16px 16px; padding: 12px 14px; border-radius: 10px; font-size: 12px; color: #8a6a30; display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 56px; background: #fff; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #888; }
+  .nav-icon { font-size: 20px; }
+  .nav-item.active { color: #e86a3a; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar"><span class="time">9:41</span><span class="status-icons">📶  🔋</span></div>
+  <div class="header">
+    <span class="header-back">←</span>
+    <span class="header-title">编辑过往经历</span>
+    <span class="header-save">保存</span>
+  </div>
+
+  <div style="height:calc(100% - 44px); overflow-y:auto; padding-bottom:70px;">
+
+  <div class="page-desc">
+    填写过往经历，让校友更了解您的背景，提升信任度。<br>
+    过往经历会自动出现在您的校友主页。
+  </div>
+
+  <div class="section">
+    <div style="padding:14px 16px 0;font-size:13px;font-weight:600;color:#333;">第1段经历</div>
+    <div class="exp-card">
+      <div class="exp-header">
+        <span class="exp-num">当前工作</span>
+        <span></span>
+      </div>
+      <div class="exp-body">
+        <div class="exp-row">
+          <span class="exp-label">公司</span>
+          <span class="exp-value">XX资本</span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-label">职位</span>
+          <span class="exp-value">合伙人</span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-label">时间</span>
+          <span class="exp-value">2018年 - 至今</span>
+        </div>
+        <textarea class="exp-textarea" placeholder="描述这段经历的主要内容...">专注成长期企业股权投资，主投A-B轮融资，重点关注智能制造、新能源方向。</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div style="padding:14px 16px 0;font-size:13px;font-weight:600;color:#333;">第2段经历</div>
+    <div class="exp-card">
+      <div class="exp-header">
+        <span class="exp-num">历史工作</span>
+        <span class="exp-delete">删除</span>
+      </div>
+      <div class="exp-body">
+        <div class="exp-row">
+          <span class="exp-label">公司</span>
+          <span class="exp-value">中金公司</span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-label">职位</span>
+          <span class="exp-value">投行部VP</span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-label">时间</span>
+          <span class="exp-value">2012年 - 2018年</span>
+        </div>
+        <textarea class="exp-textarea" placeholder="描述这段经历的主要内容...">负责Pre-IPO项目辅导，熟悉资本市场运作，主导多个A股上市项目。</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div style="padding:14px 16px 0;font-size:13px;font-weight:600;color:#333;">第3段经历</div>
+    <div class="exp-card" style="border-style:dashed;border-color:#ddd;">
+      <div class="exp-header" style="background:#fafafa;">
+        <span class="exp-num" style="color:#ccc;">第3段经历</span>
+        <span></span>
+      </div>
+      <div class="exp-body">
+        <div class="exp-row">
+          <span class="exp-label">公司</span>
+          <span class="exp-value placeholder">点击填写</span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-label">职位</span>
+          <span class="exp-value placeholder">点击填写</span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-label">时间</span>
+          <span class="exp-value placeholder">点击填写</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="add-exp">
+    <div class="add-exp-icon">＋</div>
+    <div class="add-exp-text">添加过往经历</div>
+  </div>
+
+  <div class="tip">
+    💡 提示：过往经历会自动出现在您的校友主页，帮助其他校友了解您的职业轨迹。最多支持3段经历。
+  </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item"><span class="nav-icon">🏠</span><span>首页</span></div>
+    <div class="nav-item"><span class="nav-icon">📅</span><span>活动</span></div>
+    <div class="nav-item"><span class="nav-icon">💼</span><span>供需</span></div>
+    <div class="nav-item"><span class="nav-icon">💬</span><span>社群</span></div>
+    <div class="nav-item active"><span class="nav-icon">👤</span><span>我的</span></div>
+  </div>
+</div>
+</body>
+</html>

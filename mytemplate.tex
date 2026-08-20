@@ -1,0 +1,28 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{PingFang SC}
+\setCJKmainfont{PingFang SC}
+\usepackage{geometry}
+\geometry{a4paper,margin=2.5cm}
+\usepackage{indentfirst}
+\setlength{\parindent}{2em}
+\linespread{1.5}
+$if(verbatim-in-note)$
+\usepackage{fancyvrb}
+$endif$
+$for(header-includes)$
+$header-includes$
+$endfor$
+$if(title)$
+\title{$title$}
+$endif$
+$if(author)$
+\author{$author$}
+$endif$
+$if(date)$
+\date{$date$}
+$endif$
+\begin{document}
+$body$
+\end{document}

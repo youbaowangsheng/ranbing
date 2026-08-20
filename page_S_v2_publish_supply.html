@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>发布供需 v2 — AI引导式发布</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-nav { background:#1a3a5c; padding:8px 16px; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; cursor:pointer; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; }
+.save-btn { color:#e86a3a; font-size:15px; font-weight:500; cursor:pointer; }
+
+/* ========== 步骤指示器 ========== */
+.step-indicator { display:flex; align-items:center; padding:16px 20px; gap:0; background:#fff; border-bottom:1px solid #f0f0f0; }
+.step-item { display:flex; flex-direction:column; align-items:center; flex:1; position:relative; }
+.step-item::after { content:''; position:absolute; top:12px; left:50%; width:100%; height:2px; background:#eee; }
+.step-item:last-child::after { display:none; }
+.step-circle { width:24px; height:24px; border-radius:50%; background:#eee; color:#fff; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center; z-index:1; margin-bottom:4px; transition:all 0.3s; }
+.step-circle.active { background:#7c3aed; }
+.step-circle.done { background:#52c41a; }
+.step-label { font-size:10px; color:#999; transition:all 0.3s; }
+.step-label.active { color:#7c3aed; font-weight:600; }
+.step-item.done::after { background:#52c41a; }
+.step-item.active::after { background:#7c3aed; width:50%; }
+
+/* ========== 页面内容区 ========== */
+.page-content { padding:0 16px 100px; }
+
+/* 步骤1：AI发现 */
+.step-page { padding-top:20px; }
+.step-header { text-align:center; margin-bottom:20px; }
+.step-emoji { font-size:48px; margin-bottom:12px; }
+.step-title { font-size:20px; font-weight:700; color:#1a1a1a; margin-bottom:6px; }
+.step-subtitle { font-size:13px; color:#888; line-height:1.6; }
+
+/* AI发现框 */
+.ai-discover-box { background:linear-gradient(135deg,#1a3a5c,#2d5a8a); border-radius:18px; padding:18px; margin-bottom:14px; position:relative; overflow:hidden; }
+.ai-discover-box::before { content:''; position:absolute; right:-30px; top:-30px; width:120px; height:120px; background:rgba(255,255,255,0.05); border-radius:50%; }
+.ai-discover-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.ai-discover-badge { background:rgba(255,255,255,0.2); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.ai-discover-title { color:#fff; font-size:16px; font-weight:600; }
+.ai-discover-textarea { width:100%; background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.25); border-radius:14px; padding:14px; color:#fff; font-size:14px; resize:none; outline:none; line-height:1.6; min-height:100px; margin-bottom:12px; transition:border-color 0.2s; }
+.ai-discover-textarea::placeholder { color:rgba(255,255,255,0.6); }
+.ai-discover-textarea:focus { border-color:rgba(255,255,255,0.5); }
+.ai-char-count { text-align:right; font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:8px; }
+.ai-submit-btn { width:100%; background:#fff; color:#1a3a5c; border:none; padding:13px; border-radius:24px; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.ai-submit-btn:active { background:#f0f0f0; }
+
+/* AI发现的示例提示 */
+.ai-example-hints { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.example-chip { background:#f5f0ff; color:#7c3aed; border:1px solid #e8d5ff; padding:6px 12px; border-radius:20px; font-size:12px; cursor:pointer; }
+.example-chip:active { background:#ede0ff; }
+
+/* AI分析结果 */
+.ai-analysis-result { background:#faf8ff; border:2px solid #7c3aed; border-radius:18px; padding:16px; margin-bottom:14px; }
+.ai-analysis-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.ai-analysis-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.ai-analysis-title { font-size:14px; font-weight:600; color:#7c3aed; }
+.ai-analysis-tabs { display:flex; gap:6px; margin-bottom:12px; }
+.analysis-tab { flex:1; text-align:center; padding:8px; border-radius:10px; font-size:13px; cursor:pointer; }
+.analysis-tab.supply { background:#e8fdf5; color:#059669; }
+.analysis-tab.demand { background:#fff3e8; color:#c2410c; }
+.analysis-tab.both { background:#f0f0f0; color:#666; }
+.analysis-tab.active.supply { background:#059669; color:#fff; }
+.analysis-tab.active.demand { background:#c2410c; color:#fff; }
+.analysis-tab.active.both { background:#666; color:#fff; }
+
+/* 分析出的标签 */
+.analysis-section { margin-bottom:12px; }
+.analysis-section-label { font-size:12px; color:#888; margin-bottom:6px; font-weight:500; }
+.analysis-tags { display:flex; flex-wrap:wrap; gap:5px; }
+.analysis-tag { padding:5px 10px; border-radius:10px; font-size:12px; cursor:pointer; border:1px solid; transition:all 0.2s; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; border-color:#e0c5ff; }
+.tag-purple.selected { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; border-color:#c5d5f5; }
+.tag-blue.selected { background:#1a3a5c; color:#fff; border-color:#1a3a5c; }
+.tag-green { background:#e8fdf5; color:#059669; border-color:#a7f3d0; }
+.tag-green.selected { background:#059669; color:#fff; border-color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; border-color:#ffc5a0; }
+.tag-orange.selected { background:#c2410c; color:#fff; border-color:#c2410c; }
+
+/* 分析出的内容摘要 */
+.analysis-summary { background:#fff; border-radius:12px; padding:12px; margin-bottom:12px; }
+.analysis-summary-label { font-size:12px; color:#888; margin-bottom:6px; }
+.analysis-summary-text { font-size:14px; color:#333; line-height:1.6; }
+.analysis-summary-text span { color:#7c3aed; background:#f5f0ff; padding:1px 4px; border-radius:4px; }
+
+/* AI自我评估 */
+.ai-quality-score { background:#fff; border-radius:12px; padding:12px; margin-bottom:12px; }
+.score-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.score-label { font-size:13px; color:#333; font-weight:500; }
+.score-value { font-size:15px; font-weight:700; }
+.score-good { color:#059669; }
+.score-mid { color:#e86a3a; }
+.score-track { height:8px; background:#f0f0f0; border-radius:4px; overflow:hidden; margin-bottom:8px; }
+.score-fill { height:100%; border-radius:4px; transition:width 0.5s; }
+.score-fill.good { background:linear-gradient(90deg,#52c41a,#73d13d); }
+.score-fill.mid { background:linear-gradient(90deg,#e86a3a,#f0a06a); }
+.score-hints { font-size:12px; color:#888; line-height:1.6; }
+.score-hints li { margin-bottom:2px; }
+
+/* 继续按钮 */
+.continue-btn { width:100%; background:#7c3aed; color:#fff; border:none; padding:14px; border-radius:24px; font-size:16px; font-weight:700; cursor:pointer; margin-top:16px; }
+.continue-btn:active { background:#6d28d9; }
+.continue-btn.orange { background:#e86a3a; }
+.continue-btn.orange:active { background:#c2410c; }
+.continue-btn.green { background:#059669; }
+.continue-btn.green:active { background:#047857; }
+
+/* 跳过 */
+.skip-btn { text-align:center; margin-top:10px; }
+.skip-link { font-size:13px; color:#999; cursor:pointer; text-decoration:underline; }
+
+/* ========== 步骤2：确认信息 ========== */
+.form-item { margin-bottom:14px; }
+.form-label { font-size:13px; color:#888; font-weight:500; margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+.form-label-required { color:#e86a3a; }
+.form-input { width:100%; background:#f8f9fa; border:1px solid #e8e8e8; border-radius:10px; padding:12px 14px; font-size:14px; color:#1a1a1a; outline:none; transition:border-color 0.2s; }
+.form-input:focus { border-color:#7c3aed; background:#fff; }
+.form-textarea { width:100%; background:#f8f9fa; border:1px solid #e8e8e8; border-radius:10px; padding:12px 14px; font-size:14px; color:#1a1a1a; outline:none; resize:none; min-height:100px; line-height:1.6; transition:border-color 0.2s; }
+.form-textarea:focus { border-color:#7c3aed; background:#fff; }
+
+/* 步骤2关联标签 */
+.linked-tags { background:#f8f9fa; border-radius:10px; padding:10px 12px; margin-bottom:14px; }
+.linked-tags-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.linked-tags-label { font-size:12px; color:#888; }
+.linked-tags-edit { font-size:12px; color:#7c3aed; cursor:pointer; }
+.linked-tags-row { display:flex; flex-wrap:wrap; gap:5px; }
+.linked-tag { padding:3px 8px; border-radius:8px; font-size:12px; background:#f3e8ff; color:#7c3aed; }
+
+/* ========== 步骤3：发布确认 ========== */
+.confirm-card { border-radius:16px; padding:16px; margin-bottom:14px; border:2px solid; }
+.confirm-card.supply { background:#f8fdf8; border-color:#a7f3d0; }
+.confirm-card.demand { background:#fff8f5; border-color:#ffc5a0; }
+.confirm-type { font-size:12px; padding:3px 10px; border-radius:8px; font-weight:600; display:inline-block; margin-bottom:8px; }
+.confirm-type.supply { background:#e8fdf5; color:#059669; }
+.confirm-type.demand { background:#fff3e8; color:#c2410c; }
+.confirm-title { font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:4px; }
+.confirm-author { font-size:13px; color:#888; margin-bottom:10px; }
+.confirm-body { font-size:14px; color:#333; line-height:1.6; margin-bottom:10px; }
+.confirm-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.mini-tag { padding:2px 8px; border-radius:8px; font-size:11px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+
+/* 发布成功 */
+.success-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.97); z-index:200; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; }
+.success-overlay.show { display:flex; }
+.success-icon { font-size:64px; margin-bottom:16px; }
+.success-title { font-size:22px; font-weight:700; color:#1a1a1a; margin-bottom:8px; }
+.success-desc { font-size:14px; color:#888; line-height:1.6; margin-bottom:24px; }
+.success-actions { display:flex; flex-direction:column; gap:10px; width:100%; }
+.success-btn-primary { background:#059669; color:#fff; border:none; padding:14px; border-radius:24px; font-size:16px; font-weight:700; cursor:pointer; width:100%; }
+.success-btn-secondary { background:#fff; color:#666; border:1px solid #ddd; padding:14px; border-radius:24px; font-size:16px; font-weight:600; cursor:pointer; width:100%; }
+
+/* 底部发布栏 */
+.bottom-bar { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; padding:12px 16px; padding-bottom:calc(12px + env(safe-area-inset-bottom)); display:flex; gap:10px; }
+.bottom-bar .continue-btn { margin:0; flex:1; }
+
+/* 隐私设置 */
+.privacy-row { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#f8f9fa; border-radius:10px; cursor:pointer; }
+.privacy-left { display:flex; align-items:center; gap:8px; }
+.privacy-icon { font-size:16px; }
+.privacy-label { font-size:14px; color:#333; }
+.privacy-value { font-size:13px; color:#888; }
+.privacy-arrow { font-size:14px; color:#999; margin-left:6px; }
+
+/* 有效期 */
+.validity-row { display:flex; gap:8px; }
+.validity-chip { flex:1; text-align:center; padding:8px; border-radius:10px; font-size:13px; cursor:pointer; background:#f5f5f5; color:#666; border:1px solid transparent; }
+.validity-chip.active { background:#e8f0fe; color:#1a3a5c; border-color:#1a3a5c; font-weight:500; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-nav">
+    <div class="back-btn" onclick="prevStep()">‹</div>
+    <div class="nav-title" id="navTitle">发布供需</div>
+    <div class="save-btn">存草稿</div>
+  </div>
+
+  <!-- 步骤指示器 -->
+  <div class="step-indicator">
+    <div class="step-item active" id="step1Indicator">
+      <div class="step-circle active" id="step1Circle">1</div>
+      <div class="step-label active" id="step1Label">AI发现</div>
+    </div>
+    <div class="step-item" id="step2Indicator">
+      <div class="step-circle" id="step2Circle">2</div>
+      <div class="step-label" id="step2Label">确认信息</div>
+    </div>
+    <div class="step-item" id="step3Indicator">
+      <div class="step-circle" id="step3Circle">3</div>
+      <div class="step-label" id="step3Label">发布</div>
+    </div>
+  </div>
+
+  <!-- ========== 步骤1：AI发现 ========== -->
+  <div id="step1" class="page-content">
+    <div class="step-page">
+      <div class="step-header">
+        <div class="step-emoji">💡</div>
+        <div class="step-title">AI帮你发现供需机会</div>
+        <div class="step-subtitle">说说你在做什么，或者你缺什么<br>AI会帮你提炼成精准的供需卡片</div>
+      </div>
+
+      <!-- AI发现输入框 -->
+      <div class="ai-discover-box">
+        <div class="ai-discover-header">
+          <span class="ai-discover-badge">✨ AI</span>
+          <span class="ai-discover-title">你在做什么？或缺什么？</span>
+        </div>
+        <textarea class="ai-discover-textarea" id="aiInput" placeholder="例如：我现在在做一个面向连锁餐饮的SaaS产品，已经有几家种子客户，想找有餐饮渠道资源的合伙人..." maxlength="300"></textarea>
+        <div class="ai-char-count"><span id="charCount">0</span>/300</div>
+        <button class="ai-submit-btn" onclick="runAIDiscover()">
+          <span>🔍</span> 让AI帮我分析
+        </button>
+      </div>
+
+      <!-- 快捷示例 -->
+      <div style="font-size:12px; color:#888; margin-bottom:8px;">试试这样说：</div>
+      <div class="ai-example-hints">
+        <button class="example-chip" onclick="fillExample('我在一家FA机构工作，专门看企业服务赛道的项目')">💼 在FA机构，专门看企业服务</button>
+        <button class="example-chip" onclick="fillExample('我有个客户要投工厂数字化，有相关项目推荐吗')">🏭 客户要投工厂数字化项目</button>
+        <button class="example-chip" onclick="fillExample('我是连续创业者，做过两个B2B项目，现在想找技术合伙人')">🚀 连续创业者，找技术合伙人</button>
+        <button class="example-chip" onclick="fillExample('我们公司做制造业ERP，想找有工厂资源的渠道合作')">📊 制造业ERP找渠道资源</button>
+      </div>
+
+      <!-- AI分析结果（默认隐藏，分析后显示） -->
+      <div id="analysisResult" class="ai-analysis-result hidden">
+        <div class="ai-analysis-header">
+          <span class="ai-analysis-badge">✨ AI分析</span>
+          <span class="ai-analysis-title">发现2个供需机会</span>
+        </div>
+
+        <div class="ai-analysis-tabs">
+          <div class="analysis-tab supply active" id="tabSupply" onclick="selectType('supply')">📤 可提供</div>
+          <div class="analysis-tab demand" id="tabDemand" onclick="selectType('demand')">📥 我需要</div>
+          <div class="analysis-tab both" id="tabBoth" onclick="selectType('both')">🤝 都有</div>
+        </div>
+
+        <!-- 供给分析 -->
+        <div id="analysisSupply">
+          <div class="analysis-section">
+            <div class="analysis-section-label">推荐标签</div>
+            <div class="analysis-tags" id="supplyTags">
+              <span class="analysis-tag tag-purple selected" onclick="toggleAnalysisTag(this)">企业服务</span>
+              <span class="analysis-tag tag-blue selected" onclick="toggleAnalysisTag(this)">客户资源</span>
+              <span class="analysis-tag tag-green" onclick="toggleAnalysisTag(this)">B2B</span>
+              <span class="analysis-tag tag-orange" onclick="toggleAnalysisTag(this)">渠道分销</span>
+              <span class="analysis-tag tag-purple" onclick="toggleAnalysisTag(this)">连续创业者</span>
+            </div>
+          </div>
+          <div class="analysis-summary">
+            <div class="analysis-summary-label">📝 AI生成的供需描述</div>
+            <div class="analysis-summary-text" id="supplySummary">
+              在<span>企业服务</span>领域深耕多年，积累了大量企业级客户资源，熟悉<span>制造业、餐饮连锁</span>等行业决策链，可为B2B SaaS、数字化转型类项目<span>对接关键决策人</span>。
+            </div>
+          </div>
+        </div>
+
+        <!-- 需求分析 -->
+        <div id="analysisDemand" class="hidden">
+          <div class="analysis-section">
+            <div class="analysis-section-label">推荐标签</div>
+            <div class="analysis-tags">
+              <span class="analysis-tag tag-orange selected" onclick="toggleAnalysisTag(this)">技术合伙人</span>
+              <span class="analysis-tag tag-purple selected" onclick="toggleAnalysisTag(this)">创业合伙</span>
+              <span class="analysis-tag tag-blue" onclick="toggleAnalysisTag(this)">餐饮SaaS</span>
+              <span class="analysis-tag tag-green" onclick="toggleAnalysisTag(this)">融资需求</span>
+            </div>
+          </div>
+          <div class="analysis-summary">
+            <div class="analysis-summary-label">📝 AI生成的供需描述</div>
+            <div class="analysis-summary-text">
+              <span>连续创业者</span>，已成功退出两个B2B项目，现寻求<span>技术合伙人</span>共同开发<span>餐饮SaaS</span>方向。有行业资源、有启动资金、有客户关系，缺技术落地能力。
+            </div>
+          </div>
+        </div>
+
+        <!-- AI质量评分 -->
+        <div class="ai-quality-score">
+          <div class="score-header">
+            <span class="score-label">✨ AI曝光优化评分</span>
+            <span class="score-value score-good" id="scoreValue">85分</span>
+          </div>
+          <div class="score-track">
+            <div class="score-fill good" id="scoreFill" style="width:85%;"></div>
+          </div>
+          <ul class="score-hints" id="scoreHints">
+            <li>✅ 标签精准，覆盖"企业服务+B2B"双维度</li>
+            <li>✅ 描述具体，提到"关键决策人"增加辨识度</li>
+            <li>💡 建议补充"可先发资料看看"，响应率可提升30%</li>
+          </ul>
+        </div>
+
+        <button class="continue-btn green" onclick="goToStep2()">✅ 确认，继续完善</button>
+        <div class="skip-btn"><span class="skip-link" onclick="goToStep2()">稍后让AI优化，先手动填写</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== 步骤2：确认信息 ========== -->
+  <div id="step2" class="page-content hidden">
+    <div class="step-page">
+      <div class="step-header">
+        <div class="step-emoji">✏️</div>
+        <div class="step-title">确认并完善信息</div>
+        <div class="step-subtitle">AI已帮你提取关键信息<br>你可以直接发布，也可以再调整</div>
+      </div>
+
+      <!-- 类型切换 -->
+      <div style="display:flex; background:#f5f5f5; border-radius:12px; padding:3px; margin-bottom:16px;">
+        <div style="flex:1; text-align:center; padding:10px; border-radius:10px; font-size:14px; cursor:pointer; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.08); color:#059669; font-weight:600;" id="typeSupply" onclick="setPublishType('supply')">📤 我可提供</div>
+        <div style="flex:1; text-align:center; padding:10px; border-radius:10px; font-size:14px; cursor:pointer; color:#999;" id="typeDemand" onclick="setPublishType('demand')">📥 我需要</div>
+      </div>
+
+      <!-- 关联Profile标签 -->
+      <div class="linked-tags">
+        <div class="linked-tags-header">
+          <span class="linked-tags-label">📌 将关联你的Profile标签</span>
+          <span class="linked-tags-edit">管理 ›</span>
+        </div>
+        <div class="linked-tags-row">
+          <span class="linked-tag">企业服务</span>
+          <span class="linked-tag">优质客户</span>
+          <span class="linked-tag">渠道分销</span>
+          <span class="linked-tag">连续创业者</span>
+        </div>
+      </div>
+
+      <!-- 标题 -->
+      <div class="form-item">
+        <div class="form-label"><span class="form-label-required">*</span>供需标题</div>
+        <input class="form-input" id="titleInput" placeholder="简洁明确，让人一眼看懂价值" value="可提供：企业服务客户资源对接">
+      </div>
+
+      <!-- 详细描述 -->
+      <div class="form-item">
+        <div class="form-label"><span class="form-label-required">*</span>详细描述</div>
+        <textarea class="form-textarea" id="descInput">在企业服务领域深耕8年，积累了大量企业级客户资源，熟悉制造业、餐饮连锁等行业决策链，可为B2B SaaS、数字化转型类项目对接关键决策人。
+
+可先发资料看看，感兴趣再约见面。</textarea>
+      </div>
+
+      <!-- AI推荐标签 -->
+      <div class="form-item">
+        <div class="form-label">
+          <span class="form-label-required">*</span>标签
+          <span style="font-size:11px; color:#aaa; font-weight:400; margin-left:4px;">AI已推荐</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span class="analysis-tag tag-purple selected" onclick="this.classList.toggle('selected')">企业服务</span>
+          <span class="analysis-tag tag-blue selected" onclick="this.classList.toggle('selected')">客户资源</span>
+          <span class="analysis-tag tag-green" onclick="this.classList.toggle('selected')">B2B</span>
+          <span class="analysis-tag tag-orange" onclick="this.classList.toggle('selected')">渠道分销</span>
+        </div>
+      </div>
+
+      <!-- 有效期 -->
+      <div class="form-item">
+        <div class="form-label">有效期</div>
+        <div class="validity-row">
+          <div class="validity-chip active" onclick="this.parentElement.querySelectorAll('.validity-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active')">7天</div>
+          <div class="validity-chip" onclick="this.parentElement.querySelectorAll('.validity-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active')">30天</div>
+          <div class="validity-chip" onclick="this.parentElement.querySelectorAll('.validity-chip').forEach(c=>c.classList.remove('active')); this.classList.add('active')">长期有效</div>
+        </div>
+      </div>
+
+      <!-- 隐私 -->
+      <div class="form-item">
+        <div class="form-label">可见范围</div>
+        <div class="privacy-row">
+          <div class="privacy-left">
+            <span class="privacy-icon">🌐</span>
+            <span class="privacy-label">公开</span>
+          </div>
+          <div>
+            <span class="privacy-value">所有认证校友可见</span>
+            <span class="privacy-arrow">›</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="continue-btn orange" onclick="goToStep3()">预览并发布 ›</button>
+      <div class="skip-btn"><span class="skip-link">仅保存草稿</span></div>
+    </div>
+  </div>
+
+  <!-- ========== 步骤3：发布确认 ========== -->
+  <div id="step3" class="page-content hidden">
+    <div class="step-page">
+      <div class="step-header">
+        <div class="step-emoji">🎉</div>
+        <div class="step-title">预览并发布</div>
+        <div class="step-subtitle">确认以下信息无误后<br>点击发布，你的供需将展示给精准匹配的人</div>
+      </div>
+
+      <div class="confirm-card supply" id="confirmCard">
+        <span class="confirm-type supply" id="confirmType">📤 可提供</span>
+        <div class="confirm-title" id="confirmTitle">可提供：企业服务客户资源对接</div>
+        <div class="confirm-author">👤 王建 · 清华 2022届 · 连续创业者</div>
+        <div class="confirm-body" id="confirmBody">在企业服务领域深耕8年，积累了大量企业级客户资源，熟悉制造业、餐饮连锁等行业决策链，可为B2B SaaS、数字化转型类项目对接关键决策人。可先发资料看看。</div>
+        <div class="confirm-tags">
+          <span class="mini-tag tag-purple">企业服务</span>
+          <span class="mini-tag tag-blue">客户资源</span>
+          <span class="mini-tag tag-green">B2B</span>
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:12px; padding:12px; margin-bottom:14px;">
+        <div style="font-size:13px; color:#333; line-height:1.6;">
+          <span style="color:#059669; font-weight:600;">✅</span> 将同步展示在你的Profile页<br>
+          <span style="color:#059669; font-weight:600;">✅</span> AI将推送给可能感兴趣的人<br>
+          <span style="color:#059669; font-weight:600;">✅</span> 有效期：7天（可延长）
+        </div>
+      </div>
+
+      <button class="continue-btn green" id="finalPublishBtn" onclick="publishNow()">🚀 确认发布</button>
+      <div class="skip-btn"><span class="skip-link" onclick="prevStep()">‹ 返回修改</span></div>
+    </div>
+  </div>
+
+  <!-- 底部导航（步骤1时显示存草稿） -->
+  <div class="bottom-bar hidden" id="bottomBar">
+    <button class="continue-btn" id="bottomBtn" onclick="handleBottomAction()">继续</button>
+  </div>
+
+  <!-- 发布成功遮罩 -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">发布成功！</div>
+    <div class="success-desc">你的供需已展示给目标人群<br>AI正在为你寻找匹配的供需机会<br>有进展会第一时间通知你</div>
+    <div class="success-actions">
+      <button class="success-btn-primary" onclick="viewInSquare()">去供需广场看看</button>
+      <button class="success-btn-secondary" onclick="closeSuccess()">返回首页</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var currentStep = 1;
+var selectedType = 'supply';
+var hasAnalyzed = false;
+
+// Char count
+var aiInput = document.getElementById('aiInput');
+aiInput.addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length;
+});
+
+function fillExample(text) {
+  document.getElementById('aiInput').value = text;
+  document.getElementById('charCount').textContent = text.length;
+}
+
+function runAIDiscover() {
+  var text = document.getElementById('aiInput').value.trim();
+  if (!text) return;
+  hasAnalyzed = true;
+  document.getElementById('analysisResult').classList.remove('hidden');
+  document.getElementById('step1').querySelector('.step-page').scrollTop = 0;
+}
+
+function selectType(type) {
+  selectedType = type;
+  document.getElementById('tabSupply').className = 'analysis-tab ' + (type === 'supply' ? 'supply active' : 'supply');
+  document.getElementById('tabDemand').className = 'analysis-tab ' + (type === 'demand' ? 'demand active' : 'demand');
+  document.getElementById('tabBoth').className = 'analysis-tab ' + (type === 'both' ? 'both active' : 'both');
+  document.getElementById('analysisSupply').classList.toggle('hidden', type !== 'supply' && type !== 'both');
+  document.getElementById('analysisDemand').classList.toggle('hidden', type !== 'demand' && type !== 'both');
+}
+
+function toggleAnalysisTag(el) {
+  el.classList.toggle('selected');
+}
+
+function goToStep2() {
+  currentStep = 2;
+  updateStepUI();
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('navTitle').textContent = '确认信息';
+}
+
+function goToStep3() {
+  currentStep = 3;
+  updateStepUI();
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+  document.getElementById('navTitle').textContent = '发布确认';
+
+  // Sync from form
+  var title = document.getElementById('titleInput').value;
+  var desc = document.getElementById('descInput').value;
+  var isDemand = document.getElementById('typeDemand').style.background === 'rgb(255, 255, 255)';
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmBody').textContent = desc;
+  var card = document.getElementById('confirmCard');
+  var typeEl = document.getElementById('confirmType');
+  if (isDemand) {
+    card.className = 'confirm-card demand';
+    typeEl.className = 'confirm-type demand';
+    typeEl.textContent = '📥 我需要';
+  } else {
+    card.className = 'confirm-card supply';
+    typeEl.className = 'confirm-type supply';
+    typeEl.textContent = '📤 可提供';
+  }
+}
+
+function setPublishType(type) {
+  var sup = document.getElementById('typeSupply');
+  var dem = document.getElementById('typeDemand');
+  if (type === 'supply') {
+    sup.style.background = '#fff'; sup.style.color = '#059669'; sup.style.fontWeight = '600';
+    dem.style.background = 'transparent'; dem.style.color = '#999'; dem.style.fontWeight = '400';
+    selectedType = 'supply';
+  } else {
+    dem.style.background = '#fff'; dem.style.color = '#c2410c'; dem.style.fontWeight = '600';
+    sup.style.background = 'transparent'; sup.style.color = '#999'; sup.style.fontWeight = '400';
+    selectedType = 'demand';
+  }
+}
+
+function updateStepUI() {
+  for (var i = 1; i <= 3; i++) {
+    var circle = document.getElementById('step' + i + 'Circle');
+    var label = document.getElementById('step' + i + 'Label');
+    var indicator = document.getElementById('step' + i + 'Indicator');
+    circle.className = 'step-circle';
+    label.className = 'step-label';
+    indicator.className = 'step-item';
+    if (i < currentStep) {
+      circle.classList.add('done');
+      circle.textContent = '✓';
+      label.classList.add('active');
+      indicator.classList.add('done');
+    } else if (i === currentStep) {
+      circle.classList.add('active');
+      label.classList.add('active');
+      indicator.classList.add('active');
+    }
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    updateStepUI();
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step3').classList.add('hidden');
+    document.getElementById('step' + currentStep).classList.remove('hidden');
+    document.getElementById('navTitle').textContent = ['发布供需', '确认信息', '发布确认'][currentStep - 1];
+  }
+}
+
+function publishNow() {
+  document.getElementById('successOverlay').classList.add('show');
+}
+
+function viewInSquare() {
+  document.getElementById('successOverlay').classList.remove('show');
+}
+
+function closeSuccess() {
+  document.getElementById('successOverlay').classList.remove('show');
+}
+</script>
+
+</body>
+</html>

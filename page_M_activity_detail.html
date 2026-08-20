@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>活动详情</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; position:absolute; top:0; left:0; right:0; z-index:10; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部返回栏 */
+.top-bar { position:absolute; top:44px; left:0; right:0; z-index:10; display:flex; align-items:center; padding:8px 16px; }
+.top-bar-icon { width:32px; height:32px; background:rgba(0,0,0,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; cursor:pointer; }
+.top-bar-spacer { flex:1; }
+.top-bar-icons { display:flex; gap:8px; }
+.top-bar-icon-sm { width:32px; height:32px; background:rgba(0,0,0,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; cursor:pointer; }
+
+/* 封面图 */
+.cover { height:220px; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.cover-bg { position:absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; font-size:80px; opacity:0.3; }
+.cover-gradient { position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent,rgba(0,0,0,0.3)); }
+.cover-label { position:absolute; top:16px; left:16px; background:#e86a3a; color:#fff; font-size:11px; padding:3px 10px; border-radius:8px; font-weight:600; }
+.cover-match { position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.4); color:#fff; font-size:11px; padding:3px 10px; border-radius:8px; display:flex; align-items:center; gap:4px; }
+
+/* 主内容 */
+.content { padding:16px; padding-bottom:90px; }
+
+/* 基本信息卡片 */
+.info-card { background:#fff; border-radius:14px; padding:16px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.event-title { font-size:18px; font-weight:700; color:#1a1a1a; margin-bottom:10px; line-height:1.4; }
+.event-meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.meta-item { display:flex; align-items:center; gap:6px; font-size:13px; color:#555; background:#f8f9fa; padding:8px 10px; border-radius:8px; }
+.meta-icon { font-size:14px; }
+.meta-value { color:#1a1a1a; font-weight:500; }
+.event-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.mini-tag { padding:2px 8px; border-radius:8px; font-size:11px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+
+/* AI推荐参与人 */
+.ai-recommend-card { background:linear-gradient(135deg,#f8f5ff,#f0e8ff); border-radius:14px; padding:14px; margin-bottom:12px; border:1px solid #e8d5ff; }
+.ai-recommend-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.ai-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.ai-title { font-size:14px; font-weight:600; color:#333; }
+.ai-hint { font-size:11px; color:#888; margin-left:auto; }
+.person-item { background:#fff; border-radius:12px; padding:12px; margin-bottom:8px; border:1px solid #f0e8ff; }
+.person-item:last-child { margin-bottom:0; }
+.person-top { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.person-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:600; flex-shrink:0; position:relative; }
+.cert-dot { position:absolute; bottom:0; right:0; width:12px; height:12px; background:#52c41a; border-radius:50%; border:2px solid #fff; }
+.person-info { flex:1; }
+.person-name { font-size:15px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.person-title { font-size:12px; color:#888; margin-top:2px; }
+.person-tags { display:flex; flex-wrap:wrap; gap:3px; margin-bottom:6px; }
+.person-tags .mini-tag { font-size:10px; padding:1px 5px; }
+.person-reason { font-size:12px; color:#7c3aed; background:#f8f5ff; padding:6px 10px; border-radius:8px; display:flex; align-items:flex-start; gap:6px; }
+.person-reason-icon { flex-shrink:0; margin-top:1px; }
+.person-actions { display:flex; gap:8px; margin-top:8px; }
+.btn-connect { flex:1; background:#7c3aed; color:#fff; border:none; padding:7px; border-radius:12px; font-size:13px; cursor:pointer; font-weight:500; }
+.btn-ignore { flex:1; background:#fff; color:#999; border:1px solid #eee; padding:7px; border-radius:12px; font-size:13px; cursor:pointer; }
+
+/* 已报名头像墙 */
+.attendees-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.attendees-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.attendees-title { font-size:15px; font-weight:600; color:#1a1a1a; }
+.attendees-count { font-size:12px; color:#888; }
+.attendees-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; }
+.attendee-item { text-align:center; }
+.attendee-avatar { width:40px; height:40px; border-radius:50%; margin:0 auto 4px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:600; }
+.attendee-name { font-size:10px; color:#666; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.attendee-more { font-size:10px; color:#999; margin-top:2px; }
+
+/* 活动详情 */
+.detail-section { background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.detail-title { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:10px; }
+.detail-text { font-size:13px; color:#555; line-height:1.7; }
+
+/* 合作轨迹 */
+.social-track { background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.track-title { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:10px; }
+.track-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f5f5f5; }
+.track-item:last-child { border-bottom:none; padding-bottom:0; }
+.track-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.track-icon-green { background:#e8fdf5; }
+.track-icon-orange { background:#fff3e8; }
+.track-icon-blue { background:#e8f0fe; }
+.track-text { flex:1; font-size:13px; color:#555; }
+.track-time { font-size:11px; color:#999; }
+
+/* AI跟进提醒 */
+.ai-followup { background:linear-gradient(135deg,#fff8f5,#fff0eb); border-radius:14px; padding:14px; margin-bottom:12px; border:1px solid #ffc5a0; }
+.followup-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.followup-icon { font-size:18px; }
+.followup-title { font-size:14px; font-weight:600; color:#c2410c; }
+.followup-badge { background:#e86a3a; color:#fff; font-size:10px; padding:1px 6px; border-radius:6px; margin-left:auto; }
+.followup-item { display:flex; align-items:flex-start; gap:8px; padding:8px 0; border-bottom:1px solid rgba(232,106,58,0.1); font-size:13px; color:#555; }
+.followup-item:last-child { border-bottom:none; }
+.followup-check { width:16px; height:16px; border-radius:4px; border:1.5px solid #ddd; flex-shrink:0; margin-top:2px; }
+.followup-time { font-size:11px; color:#999; margin-left:auto; white-space:nowrap; margin-top:3px; }
+
+/* 底部报名栏 */
+.bottom-bar { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; padding:12px 16px; padding-bottom:calc(12px + env(safe-area-inset-bottom)); display:flex; gap:12px; align-items:center; }
+.share-btn { width:44px; height:44px; background:#f5f5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; flex-shrink:0; }
+.register-btn { flex:1; background:#e86a3a; color:#fff; border:none; padding:12px; border-radius:22px; font-size:16px; font-weight:600; cursor:pointer; text-align:center; }
+.register-btn:active { background:#d45a2a; }
+.registered { background:#52c41a; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部操作栏 -->
+  <div class="top-bar">
+    <div class="top-bar-icon">‹</div>
+    <div class="top-bar-spacer"></div>
+    <div class="top-bar-icons">
+      <div class="top-bar-icon-sm">收藏</div>
+      <div class="top-bar-icon-sm">↗</div>
+    </div>
+  </div>
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="cover-bg">🎯</div>
+    <div class="cover-gradient"></div>
+    <div class="cover-label">🔥 热门</div>
+    <div class="cover-match">👑 92%匹配</div>
+  </div>
+
+  <!-- 主内容 -->
+  <div class="content">
+
+    <!-- 基本信息卡片 -->
+    <div class="info-card">
+      <div class="event-title">SaaS企业服务闭门会：增长方法论与资源对接</div>
+      <div class="event-meta-grid">
+        <div class="meta-item"><span class="meta-icon">📅</span><span class="meta-value">5月18日 14:00</span></div>
+        <div class="meta-item"><span class="meta-icon">📍</span><span class="meta-value">北京·望京</span></div>
+        <div class="meta-item"><span class="meta-icon">👥</span><span class="meta-value">已报 12 / 限30人</span></div>
+        <div class="meta-item"><span class="meta-icon">⏱</span><span class="meta-value">预计3小时</span></div>
+      </div>
+      <div class="event-tags">
+        <span class="mini-tag tag-blue">企业服务</span>
+        <span class="mini-tag tag-green">B2B</span>
+        <span class="mini-tag tag-orange">资源对接</span>
+        <span class="mini-tag tag-blue">创业企业</span>
+      </div>
+    </div>
+
+    <!-- AI推荐参与人 -->
+    <div class="ai-recommend-card">
+      <div class="ai-recommend-header">
+        <span class="ai-badge">✨ AI推荐</span>
+        <span class="ai-title">你可能想认识的人</span>
+        <span class="ai-hint">按供需互补排序</span>
+      </div>
+
+      <div class="person-item">
+        <div class="person-top">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">
+            张
+            <div class="cert-dot"></div>
+          </div>
+          <div class="person-info">
+            <div class="person-name">张伟 <span style="font-size:11px; color:#888; font-weight:400;">创始人</span></div>
+            <div class="person-title">企业服务 · B2B SaaS · 清华2022届</div>
+          </div>
+        </div>
+        <div class="person-tags">
+          <span class="mini-tag tag-green">可提供：客户资源</span>
+          <span class="mini-tag tag-orange">需求：品牌曝光</span>
+        </div>
+        <div class="person-reason">
+          <span class="person-reason-icon">💡</span>
+          <span>与你的企业服务标签高度匹配，且他的客户资源可填补你的渠道短板，互补率达87%</span>
+        </div>
+        <div class="person-actions">
+          <button class="btn-connect">找合作</button>
+          <button class="btn-ignore">忽略</button>
+        </div>
+      </div>
+
+      <div class="person-item">
+        <div class="person-top">
+          <div class="person-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">
+            李
+            <div class="cert-dot"></div>
+          </div>
+          <div class="person-info">
+            <div class="person-name">李娜 <span style="font-size:11px; color:#888; font-weight:400;">合伙人</span></div>
+            <div class="person-title">投资机构 · VC · 北大2018届</div>
+          </div>
+        </div>
+        <div class="person-tags">
+          <span class="mini-tag tag-green">可提供：投资资源</span>
+          <span class="mini-tag tag-orange">需求：优质SaaS项目</span>
+        </div>
+        <div class="person-reason">
+          <span class="person-reason-icon">💡</span>
+          <span>专注企业服务赛道，正在看B2B方向，现场直接对接效率最高</span>
+        </div>
+        <div class="person-actions">
+          <button class="btn-connect">约见面</button>
+          <button class="btn-ignore">忽略</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 已报名头像墙 -->
+    <div class="attendees-card">
+      <div class="attendees-header">
+        <div class="attendees-title">已报名校友</div>
+        <div class="attendees-count">12人 · 含4位二度校友</div>
+      </div>
+      <div class="attendees-grid">
+        <div class="attendee-item">
+          <div class="attendee-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">张</div>
+          <div class="attendee-name">张伟</div>
+        </div>
+        <div class="attendee-item">
+          <div class="attendee-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">李</div>
+          <div class="attendee-name">李娜</div>
+        </div>
+        <div class="attendee-item">
+          <div class="attendee-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">王</div>
+          <div class="attendee-name">王强</div>
+        </div>
+        <div class="attendee-item">
+          <div class="attendee-avatar" style="background:linear-gradient(135deg,#1a3a5c,#2d5a8a);">陈</div>
+          <div class="attendee-name">陈思</div>
+        </div>
+        <div class="attendee-item">
+          <div class="attendee-avatar" style="background:#e86a3a;">周</div>
+          <div class="attendee-name">周洋</div>
+        </div>
+        <div class="attendee-item">
+          <div class="attendee-avatar" style="background:#555;">+7</div>
+          <div class="attendee-more">查看全部</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 活动详情 -->
+    <div class="detail-section">
+      <div class="detail-title">活动详情</div>
+      <div class="detail-text">
+        本期闭门会聚焦企业服务领域，15位创始人/合伙人级别校友参与，围绕以下议题展开：<br><br>
+        1. SaaS企业如何在寒冬中实现正向现金流<br>
+        2. B2B销售体系建设：从0到1的核心节点<br>
+        3. 企业服务资源对接：现场自我介绍+自由交流<br><br>
+        活动特色：全程AI记录，会后自动生成参会人员对接清单，标注合作机会。
+      </div>
+    </div>
+
+    <!-- 合作轨迹 -->
+    <div class="social-track">
+      <div class="track-title">你的社交轨迹</div>
+      <div class="track-item">
+        <div class="track-icon track-icon-green">✅</div>
+        <div class="track-text">和张伟、王强同在"企业服务"标签下，已建立连接</div>
+        <div class="track-time">校友</div>
+      </div>
+      <div class="track-item">
+        <div class="track-icon track-icon-orange">🤝</div>
+        <div class="track-text">和张伟有1次供需匹配记录，尚未完成对接</div>
+        <div class="track-time">待跟进</div>
+      </div>
+      <div class="track-item">
+        <div class="track-icon track-icon-blue">📅</div>
+        <div class="track-text">和陈思共同参加过"Q1企业服务复盘会"</div>
+        <div class="track-time">往期</div>
+      </div>
+    </div>
+
+    <!-- AI跟进提醒 -->
+    <div class="ai-followup">
+      <div class="followup-header">
+        <span class="followup-icon">📋</span>
+        <span class="followup-title">AI提醒：会后跟进清单</span>
+        <span class="followup-badge">5项</span>
+      </div>
+      <div class="followup-item">
+        <div class="followup-check"></div>
+        <span和张伟交换的名片已录入，可发一条跟进消息">和张伟交换的名片已录入，可发一条跟进消息</span>
+        <span class="followup-time">活动结束后</span>
+      </div>
+      <div class="followup-item">
+        <div class="followup-check"></div>
+        <span>李娜对你们的供需匹配感兴趣，建议当天发送合作资料</span>
+        <span class="followup-time">活动结束后</span>
+      </div>
+      <div class="followup-item">
+        <div class="followup-check"></div>
+        <span>会后生成完整对接清单：3对企业服务供需机会</span>
+        <span class="followup-time">活动后2h</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部报名栏 -->
+  <div class="bottom-bar">
+    <div class="share-btn">↗</div>
+    <div class="register-btn">立即报名 · 剩余18位</div>
+  </div>
+
+</div>
+</body>
+</html>

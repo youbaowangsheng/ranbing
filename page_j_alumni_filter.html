@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>同学录筛选</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+/* 状态栏 */
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部搜索 */
+.top-search { background:#1a3a5c; padding:8px 16px 16px; }
+.search-row { display:flex; align-items:center; gap:10px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; }
+.search-box { flex:1; background:rgba(255,255,255,0.15); border-radius:20px; padding:8px 14px; display:flex; align-items:center; gap:8px; }
+.search-icon { font-size:14px; opacity:0.8; }
+.search-input { background:none; border:none; color:#fff; font-size:14px; width:100%; outline:none; }
+.search-input::placeholder { color:rgba(255,255,255,0.6); }
+.filter-btn { color:#fff; font-size:20px; padding:4px; }
+
+/* 已选筛选标签 */
+.filter-chips { padding:10px 16px; background:#fff; display:flex; flex-wrap:wrap; gap:6px; align-items:center; border-bottom:1px solid #eee; }
+.filter-chip { background:#e8f0fe; color:#1a3a5c; border:1px solid #c5d5f5; padding:4px 8px; border-radius:10px; font-size:12px; display:flex; align-items:center; gap:4px; cursor:pointer; }
+.filter-chip-close { font-size:10px; opacity:0.7; }
+.match-mode { font-size:12px; color:#888; margin-left:auto; padding-right:4px; }
+.match-mode span { color:#1a3a5c; font-weight:500; }
+
+/* Tab切换 */
+.tabs { display:flex; background:#fff; border-bottom:1px solid #eee; }
+.tab { flex:1; text-align:center; padding:12px; font-size:14px; color:#666; position:relative; cursor:pointer; }
+.tab.active { color:#1a3a5c; font-weight:600; }
+.tab.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:40px; height:3px; background:#1a3a5c; border-radius:2px; }
+.tab-count { font-size:11px; background:#ffe8e0; color:#e86a3a; padding:1px 5px; border-radius:8px; margin-left:4px; }
+
+/* 筛选面板 */
+.filter-panel { background:#fff; border-bottom:1px solid #eee; padding:16px; display:none; }
+.filter-panel.show { display:block; }
+.filter-section { margin-bottom:16px; }
+.filter-section:last-child { margin-bottom:0; }
+.filter-label { font-size:13px; color:#888; margin-bottom:8px; font-weight:500; }
+.filter-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.filter-tag { padding:5px 10px; border-radius:12px; font-size:12px; background:#f0f0f0; color:#333; cursor:pointer; border:1px solid transparent; }
+.filter-tag.sel { background:#e8f0fe; color:#1a3a5c; border-color:#1a3a5c; }
+.filter-row { display:flex; gap:8px; }
+.filter-select { flex:1; background:#f5f5f5; border:1px solid #e0e0e0; border-radius:8px; padding:8px 10px; font-size:13px; color:#333; outline:none; }
+.filter-btn-row { display:flex; gap:10px; margin-top:12px; }
+.filter-reset { flex:1; background:#fff; color:#666; border:1px solid #ddd; padding:10px; border-radius:20px; font-size:14px; cursor:pointer; }
+.filter-confirm { flex:1; background:#1a3a5c; color:#fff; border:none; padding:10px; border-radius:20px; font-size:14px; cursor:pointer; }
+
+/* 排序 */
+.sort-row { display:flex; align-items:center; padding:10px 16px; background:#fafafa; gap:16px; }
+.sort-item { font-size:12px; color:#666; display:flex; align-items:center; gap:4px; cursor:pointer; }
+.sort-item.active { color:#e86a3a; font-weight:600; }
+
+/* 列表 */
+.list { padding:12px 16px; }
+.list-item { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.list-item-top { display:flex; align-items:flex-start; gap:12px; }
+.item-avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:600; flex-shrink:0; position:relative; }
+.cert-badge { position:absolute; bottom:-2px; right:-2px; width:16px; height:16px; background:#52c41a; border-radius:50%; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-size:9px; color:#fff; }
+.item-info { flex:1; min-width:0; }
+.item-name { font-size:16px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.item-desc { font-size:13px; color:#666; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.item-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.mini-tag { padding:2px 7px; border-radius:8px; font-size:11px; }
+.mini-blue { background:#e8f0fe; color:#1a3a5c; }
+.mini-green { background:#e8fdf5; color:#059669; }
+.mini-orange { background:#fff3e8; color:#c2410c; }
+.mini-purple { background:#f3e8ff; color:#7c3aed; }
+.item-similarity { text-align:right; flex-shrink:0; }
+.sim-score { font-size:20px; font-weight:700; color:#e86a3a; }
+.sim-label { font-size:10px; color:#999; }
+.item-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px solid #f0f0f0; }
+.item-school { font-size:12px; color:#888; display:flex; align-items:center; gap:4px; }
+.item-action { font-size:13px; color:#1a3a5c; font-weight:500; cursor:pointer; }
+
+/* 空状态 */
+.empty-state { text-align:center; padding:60px 20px; }
+.empty-icon { font-size:48px; margin-bottom:16px; }
+.empty-title { font-size:16px; color:#333; font-weight:600; margin-bottom:8px; }
+.empty-desc { font-size:13px; color:#999; }
+
+/* 底部导航 */
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; display:flex; padding:8px 0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex:1; text-align:center; padding:6px; }
+.nav-icon { font-size:20px; margin-bottom:2px; }
+.nav-label { font-size:10px; color:#999; }
+.nav-item.active .nav-icon { }
+.nav-item.active .nav-label { color:#1a3a5c; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right">
+      <span>📶</span><span>🔋</span>
+    </div>
+  </div>
+
+  <!-- 顶部搜索 -->
+  <div class="top-search">
+    <div class="search-row">
+      <div class="back-btn">‹</div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" placeholder="搜索姓名、公司、院校" value="企业服务">
+      </div>
+      <div class="filter-btn" onclick="toggleFilter()">⚙️</div>
+    </div>
+  </div>
+
+  <!-- 已选筛选标签 -->
+  <div class="filter-chips">
+    <div class="filter-chip">企业服务 <span class="filter-chip-close">✕</span></div>
+    <div class="filter-chip">融资需求 <span class="filter-chip-close">✕</span></div>
+    <div class="filter-chip">北京 <span class="filter-chip-close">✕</span></div>
+    <div class="match-mode">任一匹配 <span>▼</span></div>
+  </div>
+
+  <!-- Tab -->
+  <div class="tabs">
+    <div class="tab active">推荐 <span class="tab-count">23</span></div>
+    <div class="tab">供需匹配</div>
+    <div class="tab">活动</div>
+    <div class="tab">我关注的</div>
+  </div>
+
+  <!-- 排序 -->
+  <div class="sort-row">
+    <div class="sort-item active">👑 智能排序</div>
+    <div class="sort-item">📍 同城优先</div>
+    <div class="sort-item">🎓 同校优先</div>
+    <div class="sort-item">⭐ 认证等级</div>
+  </div>
+
+  <!-- 筛选面板（默认展开） -->
+  <div class="filter-panel show" id="filterPanel">
+    <div class="filter-section">
+      <div class="filter-label">标签筛选</div>
+      <div class="filter-tags">
+        <div class="filter-tag sel">企业服务</div>
+        <div class="filter-tag sel">融资需求</div>
+        <div class="filter-tag sel">技术开发</div>
+        <div class="filter-tag">资本支持</div>
+        <div class="filter-tag">优质客户</div>
+        <div class="filter-tag">渠道分销</div>
+        <div class="filter-tag">人才推荐</div>
+        <div class="filter-tag">媒体资源</div>
+        <div class="filter-tag">创业企业</div>
+        <div class="filter-tag">投资机构</div>
+        <div class="filter-tag">消费零售</div>
+        <div class="filter-tag">医疗健康</div>
+        <div class="filter-tag">金融科技</div>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-label">毕业年份</div>
+      <div class="filter-row">
+        <select class="filter-select">
+          <option>不限</option>
+        </select>
+        <select class="filter-select">
+          <option>不限</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-label">所在城市</div>
+      <div class="filter-row">
+        <select class="filter-select">
+          <option>北京</option>
+          <option>上海</option>
+          <option>深圳</option>
+          <option>杭州</option>
+          <option>广州</option>
+          <option>成都</option>
+        </select>
+        <select class="filter-select">
+          <option>全部区县</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-label">认证等级</div>
+      <div class="filter-tags">
+        <div class="filter-tag sel">已认证校友</div>
+        <div class="filter-tag">Lv.2 深度认证</div>
+        <div class="filter-tag">未认证</div>
+      </div>
+    </div>
+    <div class="filter-btn-row">
+      <button class="filter-reset">重置</button>
+      <button class="filter-confirm" onclick="toggleFilter()">确定筛选</button>
+    </div>
+  </div>
+
+  <!-- 列表 -->
+  <div class="list">
+
+    <!-- 卡片1：高相似度 -->
+    <div class="list-item">
+      <div class="list-item-top">
+        <div class="item-avatar">
+          张
+          <div class="cert-badge">✓</div>
+        </div>
+        <div class="item-info">
+          <div class="item-name">张伟<span style="font-size:12px; color:#888; font-weight:400;"> · 创始人</span></div>
+          <div class="item-desc">企业服务 · B2B SaaS · 累计服务200+企业客户</div>
+          <div class="item-tags">
+            <span class="mini-tag mini-blue">企业服务</span>
+            <span class="mini-tag mini-green">优质客户</span>
+            <span class="mini-tag mini-orange">融资需求</span>
+            <span class="mini-tag mini-purple">技术开发</span>
+          </div>
+        </div>
+        <div class="item-similarity">
+          <div class="sim-score">92%</div>
+          <div class="sim-label">匹配度</div>
+        </div>
+      </div>
+      <div class="item-bottom">
+        <div class="item-school">🏫 清华 2022届 · 📍 北京 · 可提供：客户资源</div>
+        <div class="item-action">找合作 ›</div>
+      </div>
+    </div>
+
+    <!-- 卡片2 -->
+    <div class="list-item">
+      <div class="list-item-top">
+        <div class="item-avatar" style="background:linear-gradient(135deg,#e86a3a,#f0a06a);">
+          李
+        </div>
+        <div class="item-info">
+          <div class="item-name">李娜<span style="font-size:12px; color:#888; font-weight:400;"> · 合伙人</span></div>
+          <div class="item-desc">投资机构 · 关注企业服务/SaaS赛道</div>
+          <div class="item-tags">
+            <span class="mini-tag mini-blue">投资机构</span>
+            <span class="mini-tag mini-green">资本支持</span>
+            <span class="mini-tag mini-purple">行业老兵</span>
+          </div>
+        </div>
+        <div class="item-similarity">
+          <div class="sim-score">85%</div>
+          <div class="sim-label">匹配度</div>
+        </div>
+      </div>
+      <div class="item-bottom">
+        <div class="item-school">🏫 北大 2018届 · 📍 北京 · 可提供：投资资源</div>
+        <div class="item-action">约见面 ›</div>
+      </div>
+    </div>
+
+    <!-- 卡片3：供需互补 -->
+    <div class="list-item">
+      <div class="list-item-top">
+        <div class="item-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">
+          王
+          <div class="cert-badge">✓</div>
+        </div>
+        <div class="item-info">
+          <div class="item-name">王强<span style="font-size:12px; color:#888; font-weight:400;"> · 技术VP</span></div>
+          <div class="item-desc">先进制造 · 工业互联网 · 工厂数字化转型</div>
+          <div class="item-tags">
+            <span class="mini-tag mini-blue">先进制造</span>
+            <span class="mini-tag mini-orange">销售困难</span>
+            <span class="mini-tag mini-purple">供应链</span>
+          </div>
+        </div>
+        <div class="item-similarity">
+          <div class="sim-score">78%</div>
+          <div class="sim-label">匹配度</div>
+        </div>
+      </div>
+      <div class="item-bottom">
+        <div class="item-school">🏫 复旦 2020届 · 📍 上海 · 需求：销售渠道</div>
+        <div class="item-action">对接合作 ›</div>
+      </div>
+    </div>
+
+    <!-- 卡片4 -->
+    <div class="list-item">
+      <div class="list-item-top">
+        <div class="item-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
+          陈
+        </div>
+        <div class="item-info">
+          <div class="item-name">陈思<span style="font-size:12px; color:#888; font-weight:400;"> · 市场总监</span></div>
+          <div class="item-desc">消费零售 · 品牌增长 · 操盘过多个千万级项目</div>
+          <div class="item-tags">
+            <span class="mini-tag mini-blue">消费零售</span>
+            <span class="mini-tag mini-green">媒体资源</span>
+            <span class="mini-tag mini-orange">品牌弱</span>
+          </div>
+        </div>
+        <div class="item-similarity">
+          <div class="sim-score">71%</div>
+          <div class="sim-label">匹配度</div>
+        </div>
+      </div>
+      <div class="item-bottom">
+        <div class="item-school">🏫 交大 2019届 · 📍 上海 · 需求：品牌曝光</div>
+        <div class="item-action">找合作 ›</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">首页</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🤝</div>
+      <div class="nav-label">人脉</div>
+    </div>
+    <div class="nav-item active">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">同学录</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">💬</div>
+      <div class="nav-label">消息</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">我的</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleFilter() {
+  var panel = document.getElementById('filterPanel');
+  panel.classList.toggle('show');
+}
+</script>
+</body>
+</html>

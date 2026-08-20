@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面D · 档案设置页</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px 0; }
+  .phone-frame { width: 375px; min-height: 900px; background: #f5f5f5; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border-radius: 40px; overflow: hidden; }
+  .status-bar { height: 44px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; }
+  .status-icons { position: absolute; right: 20px; bottom: 8px; font-size: 12px; }
+  .header { height: 44px; background: #fff; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #eee; }
+  .header-back { font-size: 20px; color: #1a3a5c; margin-right: 12px; }
+  .header-title { font-size: 16px; font-weight: 600; color: #333; flex: 1; text-align: center; margin-right: 32px; }
+  .header-more { font-size: 20px; color: #888; }
+  .section { background: #fff; margin-bottom: 8px; }
+  .section-title { font-size: 13px; color: #888; padding: 12px 16px 8px; font-weight: 500; }
+  .progress-wrap { padding: 0 16px 14px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #333; margin-bottom: 8px; }
+  .progress-label span { color: #1a3a5c; font-weight: 600; }
+  .progress-track { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #1a3a5c, #2a6aac); border-radius: 4px; width: 72%; }
+  .progress-items { margin-top: 12px; }
+  .progress-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; padding: 3px 0; }
+  .progress-check { color: #52c41a; font-size: 13px; }
+  .progress-x { color: #ddd; font-size: 13px; }
+  .progress-tip { background: #fff9f0; border: 1px solid #ffe8c0; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #8a6a30; display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .cert-badge { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #f5f5f5; }
+  .cert-badge:last-child { border-bottom: none; }
+  .cert-icon { font-size: 28px; }
+  .cert-info { flex: 1; }
+  .cert-name { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 6px; }
+  .cert-name .live { font-size: 10px; background: #c8a951; color: #fff; padding: 1px 6px; border-radius: 8px; }
+  .cert-name .pending { font-size: 10px; background: #fa8c16; color: #fff; padding: 1px 6px; border-radius: 8px; }
+  .cert-name .done { font-size: 10px; background: #52c41a; color: #fff; padding: 1px 6px; border-radius: 8px; }
+  .cert-sub { font-size: 11px; color: #888; margin-top: 2px; }
+  .cert-perm { font-size: 11px; color: #aaa; }
+  .cert-row { padding: 10px 16px; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; align-items: center; }
+  .cert-row:last-child { border-bottom: none; }
+  .cert-row-label { font-size: 13px; color: #555; }
+  .cert-row-value { font-size: 13px; color: #888; display: flex; align-items: center; gap: 4px; }
+  .cert-row-value .arrow { font-size: 12px; }
+  .setting-row { padding: 13px 16px; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; align-items: center; }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { font-size: 14px; color: #333; }
+  .setting-value { font-size: 13px; color: #888; display: flex; align-items: center; gap: 4px; }
+  .stat-row { display: flex; padding: 12px 16px; gap: 0; }
+  .stat-item { flex: 1; text-align: center; border-right: 1px solid #f0f0f0; }
+  .stat-item:last-child { border-right: none; }
+  .stat-num { font-size: 20px; font-weight: 700; color: #1a3a5c; }
+  .stat-num.orange { color: #e86a3a; }
+  .stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+  .stat-label span { color: #e86a3a; }
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 56px; background: #fff; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #888; }
+  .nav-icon { font-size: 20px; }
+  .nav-item.active { color: #e86a3a; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar"><span class="time">9:41</span><span class="status-icons">📶  🔋</span></div>
+  <div class="header">
+    <span class="header-back">←</span>
+    <span class="header-title">档案设置</span>
+    <span class="header-more">⋯</span>
+  </div>
+
+  <div style="height:calc(100% - 44px); overflow-y:auto; padding-bottom:70px;">
+
+  <div class="section">
+    <div class="section-title">档案完整度</div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>72%</span>
+        <span style="font-size:11px;color:#888;">完整度越高，匹配越精准</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <div class="progress-items">
+        <div class="progress-item"><span class="progress-check">✓</span> 基础信息（姓名/届别/公司/职位）</div>
+        <div class="progress-item"><span class="progress-check">✓</span> 上传头像</div>
+        <div class="progress-item"><span class="progress-check">✓</span> 个人简介（AI已提取标签）</div>
+        <div class="progress-item"><span class="progress-check">✓</span> 供给标签（6个）</div>
+        <div class="progress-item"><span class="progress-check">✓</span> 需求标签（2个）</div>
+        <div class="progress-item"><span class="progress-x">✗</span> 过往经历（建议填写，提升可信度）</div>
+        <div class="progress-item"><span class="progress-x">✗</span> 合作成功记录（可后续添加）</div>
+      </div>
+      <div class="progress-tip">
+        📝 完善过往经历 → <strong>完整度+15%</strong>，获得更高信任度
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏅 认证等级</div>
+    <div class="cert-badge">
+      <div class="cert-icon">🏅🏅🏅</div>
+      <div class="cert-info">
+        <div class="cert-name">已深度认证 <span class="live">当前</span></div>
+        <div class="cert-sub">2023年认证 · 学历证书已审核</div>
+      </div>
+    </div>
+    <div style="padding:8px 16px 12px;">
+      <div class="cert-row"><span class="cert-row-label">Lv.3 深度认证</span><span class="cert-row-value"><span class="done">✓ 已完成</span></span></div>
+      <div class="cert-row"><span class="cert-row-label">Lv.2 身份认证</span><span class="cert-row-value"><span class="done">✓ 已完成</span></span></div>
+      <div class="cert-row"><span class="cert-row-label">Lv.1 基础认证</span><span class="cert-row-value"><span class="done">✓ 已完成</span></span></div>
+    </div>
+    <div style="padding:0 16px 12px;">
+      <div style="font-size:11px;color:#888;margin-bottom:8px;">升级认证有什么好处？</div>
+      <div style="font-size:12px;color:#555;line-height:1.7;">
+        · Lv.3解锁：高端闭门活动报名资格<br>
+        · Lv.3解锁：合作推荐优先展示<br>
+        · Lv.3解锁：金色认证标识，信任度更高
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔒 隐私设置</div>
+    <div class="setting-row">
+      <span class="setting-label">基础信息可见范围</span>
+      <span class="setting-value">所有认证校友 <span class="arrow">›</span></span>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">联系方式可见范围</span>
+      <span class="setting-value">仅认证校友 <span class="arrow">›</span></span>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">供需信息可见范围</span>
+      <span class="setting-value">申请后可见 <span class="arrow">›</span></span>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">是否显示"谁看过我的档案"</span>
+      <span class="setting-value">显示 <span class="arrow">›</span></span>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">是否接受AI主动推荐</span>
+      <span class="setting-value" style="color:#52c41a;">接受 ✓ <span class="arrow">›</span></span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🚫 黑名单（3人）</div>
+    <div class="setting-row">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:14px;">王</div>
+        <div>
+          <div style="font-size:13px;color:#333;">王六 · 2015级MBA</div>
+          <div style="font-size:11px;color:#888;">某公司 · CEO · 已屏蔽</div>
+        </div>
+      </div>
+      <span style="font-size:12px;color:#e86a3a;">查看 ›</span>
+    </div>
+    <div style="padding:10px 16px;text-align:center;">
+      <span style="font-size:12px;color:#888;">+ 查看全部黑名单</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📊 互动数据</div>
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-num">128</div>
+        <div class="stat-label">被浏览 <span>+12</span></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num orange">23</div>
+        <div class="stat-label">被收藏</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">7</div>
+        <div class="stat-label">收到私信</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num orange">3</div>
+        <div class="stat-label">合作请求</div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item"><span class="nav-icon">🏠</span><span>首页</span></div>
+    <div class="nav-item"><span class="nav-icon">📅</span><span>活动</span></div>
+    <div class="nav-item"><span class="nav-icon">💼</span><span>供需</span></div>
+    <div class="nav-item"><span class="nav-icon">💬</span><span>社群</span></div>
+    <div class="nav-item active"><span class="nav-icon">👤</span><span>我的</span></div>
+  </div>
+</div>
+</body>
+</html>

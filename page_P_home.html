@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>首页 AI助手</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部用户区 */
+.top-user { background:#1a3a5c; padding:12px 16px 16px; display:flex; align-items:center; gap:10px; }
+.user-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#e86a3a,#f0a06a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:700; flex-shrink:0; border:2px solid rgba(255,255,255,0.3); }
+.user-info { flex:1; }
+.user-name { font-size:17px; color:#fff; font-weight:600; }
+.user-desc { font-size:12px; color:rgba(255,255,255,0.6); margin-top:2px; }
+.user-actions { display:flex; gap:8px; }
+.icon-btn { width:36px; height:36px; background:rgba(255,255,255,0.12); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff; cursor:pointer; }
+
+/* AI搜索框 */
+.ai-search-bar { padding:0 16px 12px; background:#1a3a5c; }
+.ai-search-box { background:#fff; border-radius:22px; padding:10px 16px; display:flex; align-items:center; gap:10px; box-shadow:0 4px 16px rgba(0,0,0,0.15); cursor:pointer; }
+.ai-search-icon { font-size:18px; }
+.ai-search-text { flex:1; font-size:15px; color:#333; }
+.ai-search-hint { font-size:13px; color:#aaa; }
+.ai-search-arrow { font-size:14px; color:#ccc; }
+
+/* AI助手入口标签 */
+.ai-assistant-row { display:flex; align-items:center; gap:8px; padding:10px 16px; background:#faf8ff; border-bottom:1px solid #f0e8ff; }
+.ai-assistant-label { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:3px 10px; border-radius:10px; font-weight:600; white-space:nowrap; }
+.ai-assistant-text { font-size:13px; color:#7c3aed; flex:1; }
+.ai-assistant-link { font-size:12px; color:#999; }
+
+/* Tab切换 */
+.tab-row { display:flex; padding:0 16px; background:#fff; border-bottom:1px solid #eee; }
+.tab { flex:1; text-align:center; padding:12px 0; font-size:14px; color:#666; position:relative; cursor:pointer; }
+.tab.active { color:#1a3a5c; font-weight:600; }
+.tab.active::after { content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:28px; height:3px; background:#1a3a5c; border-radius:2px; }
+
+/* 今日推荐区块 */
+.today-section { padding:12px 16px; }
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.section-title { font-size:15px; font-weight:600; color:#1a1a1a; display:flex; align-items:center; gap:6px; }
+.section-more { font-size:12px; color:#888; cursor:pointer; }
+.section-count { font-size:11px; color:#999; }
+
+/* 推荐卡片 */
+.rec-card { background:#fff; border-radius:14px; padding:14px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border-left:4px solid #1a3a5c; cursor:pointer; }
+.rec-card:active { background:#fafafa; }
+.rec-card.supply { border-left-color:#52c41a; }
+.rec-card.demand { border-left-color:#e86a3a; }
+.rec-card.event { border-left-color:#7c3aed; }
+.rec-card-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.rec-type-badge { font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.badge-supply { background:#e8fdf5; color:#059669; }
+.badge-demand { background:#fff3e8; color:#c2410c; }
+.badge-event { background:#f3e8ff; color:#7c3aed; }
+.badge-person { background:#e8f0fe; color:#1a3a5c; }
+.rec-title { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:4px; line-height:1.4; }
+.rec-meta { font-size:12px; color:#888; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+.rec-tags { display:flex; flex-wrap:wrap; gap:3px; margin-bottom:8px; }
+.mini-tag { padding:1px 7px; border-radius:6px; font-size:11px; }
+.tag-blue { background:#e8f0fe; color:#1a3a5c; }
+.tag-green { background:#e8fdf5; color:#059669; }
+.tag-orange { background:#fff3e8; color:#c2410c; }
+.tag-purple { background:#f3e8ff; color:#7c3aed; }
+.rec-footer { display:flex; align-items:center; justify-content:space-between; padding-top:8px; border-top:1px solid #f5f5f5; }
+.rec-avatars { display:flex; }
+.rec-avatars .avatar { width:22px; height:22px; border-radius:50%; border:1.5px solid #fff; margin-left:-6px; font-size:9px; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); }
+.rec-avatars .avatar:first-child { margin-left:0; }
+.rec-match { font-size:13px; color:#e86a3a; font-weight:600; }
+.rec-action-btn { background:#1a3a5c; color:#fff; border:none; padding:5px 14px; border-radius:12px; font-size:12px; cursor:pointer; }
+
+/* 人脉卡片特殊 */
+.person-card { display:flex; gap:12px; align-items:flex-start; }
+.person-avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#1a3a5c,#2d5a8a); display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:600; flex-shrink:0; position:relative; }
+.cert-badge { position:absolute; bottom:0; right:0; width:14px; height:14px; background:#52c41a; border-radius:50%; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-size:8px; color:#fff; }
+.person-info { flex:1; }
+.person-name { font-size:15px; font-weight:600; color:#1a1a1a; margin-bottom:3px; }
+.person-title { font-size:12px; color:#888; margin-bottom:4px; }
+.person-tags { display:flex; flex-wrap:wrap; gap:3px; }
+.person-footer { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+.person-reason { font-size:12px; color:#7c3aed; background:#f8f5ff; padding:5px 8px; border-radius:8px; flex:1; margin-right:8px; }
+.person-cta { background:#7c3aed; color:#fff; border:none; padding:6px 14px; border-radius:12px; font-size:12px; cursor:pointer; white-space:nowrap; }
+
+/* 动态Feed */
+.feed-section { padding:12px 16px 100px; }
+.feed-item { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #f5f5f5; }
+.feed-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.feed-icon-purple { background:#f3e8ff; }
+.feed-icon-green { background:#e8fdf5; }
+.feed-icon-orange { background:#fff3e8; }
+.feed-icon-blue { background:#e8f0fe; }
+.feed-content { flex:1; }
+.feed-text { font-size:13px; color:#333; line-height:1.5; }
+.feed-text strong { color:#1a3a5c; }
+.feed-text .highlight { color:#e86a3a; }
+.feed-time { font-size:11px; color:#bbb; margin-top:4px; }
+.feed-action { font-size:12px; color:#1a3a5c; font-weight:500; cursor:pointer; white-space:nowrap; margin-left:8px; }
+
+/* 底部导航 */
+.bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; display:flex; padding:8px 0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.nav-item { flex:1; text-align:center; padding:6px; }
+.nav-icon { font-size:20px; margin-bottom:2px; }
+.nav-label { font-size:10px; color:#999; }
+.nav-item.active .nav-label { color:#1a3a5c; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部用户区（动态） -->
+  <div class="top-user" id="topUser">
+    <div class="user-avatar" id="userAvatar">?</div>
+    <div class="user-info">
+      <div class="user-name" id="userName">加载中...</div>
+      <div class="user-desc" id="userDesc">—</div>
+    </div>
+    <div class="user-actions">
+      <div class="icon-btn">🔔</div>
+      <div class="icon-btn">⚙️</div>
+    </div>
+  </div>
+
+  <!-- AI搜索框 -->
+  <div class="ai-search-bar">
+    <div class="ai-search-box">
+      <span class="ai-search-icon">✨</span>
+      <span class="ai-search-text">找企业服务创始人合作</span>
+      <span class="ai-search-hint">或问AI任何问题</span>
+      <span class="ai-search-arrow">›</span>
+    </div>
+  </div>
+
+  <!-- AI助手入口 -->
+  <div class="ai-assistant-row">
+    <span class="ai-assistant-label">🤖 AI助手</span>
+    <span class="ai-assistant-text">发现3个潜在合作机会，点击处理</span>
+    <span class="ai-assistant-link">查看 ›</span>
+  </div>
+
+  <!-- Tab切换 -->
+  <div class="tab-row">
+    <div class="tab active">今日推荐</div>
+    <div class="tab">供需</div>
+    <div class="tab">活动</div>
+    <div class="tab">动态</div>
+  </div>
+
+  <!-- 主内容区 -->
+  <div class="today-section">
+
+    <!-- 人脉推荐 -->
+    <div class="section-header">
+      <div class="section-title">👤 你可能想认识</div>
+      <div class="section-more">查看更多 ›</div>
+    </div>
+
+    <div id="personRecommendList">
+      <div style="padding:20px; text-align:center; color:#999; font-size:13px;" id="personLoading">加载中...</div>
+      <div id="personEmpty" class="hidden" style="padding:20px; text-align:center; color:#999; font-size:13px;">暂无推荐</div>
+    </div>
+
+    <!-- 供需推荐 -->
+    <div class="section-header" style="margin-top:16px;">
+      <div class="section-title">🔄 供需推荐</div>
+      <div class="section-more">查看全部 ›</div>
+    </div>
+
+    <div id="supplyRecommendList"></div>
+    <div id="supplyRecommendLoading" style="padding:20px; text-align:center; color:#999; font-size:13px;">加载中...</div>
+    <div id="supplyRecommendEmpty" class="hidden" style="padding:20px; text-align:center; color:#999; font-size:13px;">暂无供需推荐</div>
+
+    <!-- 活动推荐 -->
+    <div class="section-header" style="margin-top:16px;">
+      <div class="section-title">🎪 活动推荐</div>
+      <div class="section-more">查看全部 ›</div>
+    </div>
+
+    <div id="activityRecommendList"></div>
+    <div id="activityRecommendLoading" style="padding:20px; text-align:center; color:#999; font-size:13px;">加载中...</div>
+    <div id="activityRecommendEmpty" class="hidden" style="padding:20px; text-align:center; color:#999; font-size:13px;">暂无活动</div>
+
+  </div>
+
+  <!-- 动态Feed -->
+  <div class="feed-section">
+    <div class="section-header">
+      <div class="section-title">📮 最新动态</div>
+    </div>
+
+    <div id="feedList">
+      <div class="feed-item" id="feedLoading">
+        <div class="feed-icon feed-icon-purple" style="background:#f3e8ff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px;">⏳</div>
+        <div class="feed-content">
+          <div class="feed-text">加载中...</div>
+          <div class="feed-time"></div>
+        </div>
+      </div>
+    </div>
+    <div id="feedEmpty" class="hidden" style="padding:20px; text-align:center; color:#999; font-size:13px;">暂无动态</div>
+
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">首页</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🤝</div>
+      <div class="nav-label">人脉</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🔄</div>
+      <div class="nav-label">供需</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">🎪</div>
+      <div class="nav-label">活动</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">我的</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =====================================================
+// 首页 API 集成
+// =====================================================
+window.API_BASE = 'http://localhost:8899/api/v1';
+window.AUTH_TOKEN = localStorage.getItem('ranbing_token') || '';
+
+function api(path) {
+  var h = { 'Content-Type': 'application/json' };
+  if (window.AUTH_TOKEN) h['Authorization'] = 'Bearer ' + window.AUTH_TOKEN;
+  return fetch(window.API_BASE + path, { headers: h });
+}
+
+function avatarColor(seed) {
+  var colors = [
+    'linear-gradient(135deg,#e86a3a,#f0a06a)',
+    'linear-gradient(135deg,#7c3aed,#a855f7)',
+    'linear-gradient(135deg,#059669,#34d399)',
+    'linear-gradient(135deg,#1a3a5c,#2d5a8a)',
+    'linear-gradient(135deg,#c8a951,#e8c84a)',
+    'linear-gradient(135deg,#e74c3c,#ff7675)',
+  ];
+  var idx = (seed || 'x').charCodeAt(0) % colors.length;
+  return colors[idx];
+}
+
+function initials(name) {
+  return name ? name.slice(0, 1) : '?';
+}
+
+function timeAgo(str) {
+  if (!str) return '';
+  var d = new Date(str);
+  var diff = Math.floor((new Date() - d) / 1000);
+  if (diff < 60) return '刚刚';
+  if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
+  if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+  if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+  return d.toLocaleDateString('zh-CN');
+}
+
+function tagBadge(name) {
+  if (!name) return 'tag-blue';
+  var L = name.toLowerCase();
+  if (L.includes('投资') || L.includes('融资') || L.includes('FA')) return 'tag-purple';
+  if (L.includes('渠道') || L.includes('销售') || L.includes('客户')) return 'tag-blue';
+  if (L.includes('品牌') || L.includes('增长') || L.includes('消费')) return 'tag-green';
+  if (L.includes('技术') || L.includes('开发')) return 'tag-orange';
+  return 'tag-blue';
+}
+
+// ---- 1. 加载当前用户Profile ----
+function loadMe() {
+  api('/profiles/me/').then(function(r) { return r.json(); }).then(function(data) {
+    if (data.code !== 0) return;
+    var p = data.data;
+    document.getElementById('userAvatar').textContent = initials(p.real_name);
+    document.getElementById('userAvatar').style.background = avatarColor(p.real_name);
+    document.getElementById('userName').textContent = (p.real_name || '') + ' · ' + (p.position || '创业者');
+    document.getElementById('userDesc').textContent =
+      (p.education_school || '') + (p.education_year ? p.education_year + '届' : '') +
+      ' · ' + (p.industry || p.company || '') + ' · 完善度' + Math.round((p.active_score || 0)) + '%';
+  }).catch(function() {});
+}
+
+// ---- 2. 人脉推荐（从 profiles 取前5，排除自己） ----
+function loadPersonRecommend() {
+  api('/profiles/').then(function(r) { return r.json(); }).then(function(data) {
+    var el = document.getElementById('personRecommendList');
+    var loading = document.getElementById('personLoading');
+    var empty = document.getElementById('personEmpty');
+    if (!el) return;
+    var profiles = (data.results || []).slice(0, 3);
+    loading.style.display = 'none';
+    if (profiles.length === 0) { empty.classList.remove('hidden'); return; }
+    el.innerHTML = profiles.map(function(p) {
+      var tags = (p.tags || []).slice(0, 2);
+      var tagsHtml = tags.map(function(t) {
+        return '<span class="mini-tag ' + tagBadge(t.name) + '">' + (t.name || '') + '</span>';
+      }).join('');
+      return '<div class="rec-card" onclick="location.href=\'page_a_profile_view.html?uuid=' + p.uuid + '\'">' +
+        '<div class="person-card">' +
+          '<div class="person-avatar" style="background:' + avatarColor(p.real_name) + ';">' + initials(p.real_name) + '</div>' +
+          '<div class="person-info">' +
+            '<div class="person-name">' + (p.real_name || '未知') + '</div>' +
+            '<div class="person-title">' + (p.industry || p.company || '') + ' · ' + (p.position || '') + ' · ' + (p.education_school || '') + (p.education_year || '') + '届</div>' +
+            '<div class="person-tags">' + tagsHtml + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="person-footer">' +
+          '<div class="person-reason">🔥 AI推荐匹配</div>' +
+          '<button class="person-cta" onclick="event.stopPropagation(); alert(\'连接功能开发中\')">找合作</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }).catch(function() {
+    var loading = document.getElementById('personLoading');
+    if (loading) loading.textContent = '加载失败';
+  });
+}
+
+// ---- 3. 供需推荐（取前2条） ----
+function loadSupplyRecommend() {
+  api('/supplies/').then(function(r) { return r.json(); }).then(function(data) {
+    var el = document.getElementById('supplyRecommendList');
+    var loading = document.getElementById('supplyRecommendLoading');
+    var empty = document.getElementById('supplyRecommendEmpty');
+    if (!el) return;
+    var items = (data.results || []).slice(0, 2);
+    loading.style.display = 'none';
+    if (items.length === 0) { empty.classList.remove('hidden'); return; }
+    el.innerHTML = items.map(function(s) {
+      var p = s.profile || {};
+      var typeClass = s.supply_type == 1 ? 'supply' : 'demand';
+      var typeBadge = s.supply_type == 1 ? 'badge-supply' : 'badge-demand';
+      var typeLabel = s.supply_type == 1 ? '📤 供给' : '📥 需求';
+      var tags = s.tags || [];
+      var tagsHtml = tags.slice(0, 2).map(function(t) {
+        return '<span class="mini-tag ' + tagBadge(t.name) + '">' + (t.name || '') + '</span>';
+      }).join('');
+      return '<div class="rec-card ' + typeClass + '">' +
+        '<div class="rec-card-header">' +
+          '<span class="rec-type-badge ' + typeBadge + '">' + typeLabel + '</span>' +
+        '</div>' +
+        '<div class="rec-title">' + (s.title || '') + '</div>' +
+        '<div class="rec-meta"><span>👤 ' + (p.real_name || '未知') + '</span><span>👁 ' + (s.view_count || 0) + '次浏览</span></div>' +
+        (tagsHtml ? '<div class="rec-tags">' + tagsHtml + '</div>' : '') +
+        '<div class="rec-footer">' +
+          '<span class="rec-match">🔥 AI推荐 ›</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }).catch(function() {
+    var loading = document.getElementById('supplyRecommendLoading');
+    if (loading) loading.textContent = '加载失败';
+  });
+}
+
+// ---- 4. 动态Feed（从 supplies + activities 混合生成） ----
+function loadFeed() {
+  Promise.all([
+    api('/supplies/').then(function(r) { return r.json(); }),
+    api('/activities/').then(function(r) { return r.json(); })
+  ]).then(function(results) {
+    var supplies = results[0].results || [];
+    var activities = results[1].results || [];
+    var el = document.getElementById('feedList');
+    var empty = document.getElementById('feedEmpty');
+    if (!el) return;
+    var items = [];
+    supplies.slice(0, 3).forEach(function(s) {
+      var p = s.profile || {};
+      items.push({
+        icon: '🤝',
+        iconClass: 'feed-icon-purple',
+        text: '<strong>' + (p.real_name || '有人') + '</strong> 更新了供需：' + (s.title || ''),
+        time: timeAgo(s.created_at)
+      });
+    });
+    activities.slice(0, 2).forEach(function(a) {
+      items.push({
+        icon: '📅',
+        iconClass: 'feed-icon-green',
+        text: '<strong>' + (a.organizer_name || '有人') + '</strong> 发布了活动 "' + (a.title || '') + '"',
+        time: timeAgo(a.created_at)
+      });
+    });
+    document.getElementById('feedLoading').style.display = 'none';
+    if (items.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+    el.innerHTML = items.map(function(item) {
+      return '<div class="feed-item">' +
+        '<div class="' + item.iconClass + '" style="background:inherit; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">' + item.icon + '</div>' +
+        '<div class="feed-content">' +
+          '<div class="feed-text">' + item.text + '</div>' +
+          '<div class="feed-time">' + item.time + '</div>' +
+        '</div>' +
+        '<div class="feed-action">查看 ›</div>' +
+      '</div>';
+    }).join('');
+  }).catch(function() {
+    var loading = document.getElementById('feedLoading');
+    if (loading) loading.querySelector('.feed-text').textContent = '加载失败';
+  });
+}
+
+// ---- 初始化 ----
+loadMe();
+loadPersonRecommend();
+loadSupplyRecommend();
+loadFeed();
+</script>
+
+</body>
+</html>

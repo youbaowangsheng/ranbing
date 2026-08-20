@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>发布活动</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background:#f0f2f5; font-size:14px; color:#1a1a1a; width:375px; min-height:812px; margin:0 auto; }
+
+.phone-frame { width:375px; min-height:812px; background:#fff; position:relative; overflow:hidden; margin:0 auto; border-radius:40px; border:8px solid #1a1a1a; }
+
+.status-bar { background:#1a3a5c; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; color:#fff; font-size:12px; }
+.status-left { font-weight:600; }
+.status-right { display:flex; align-items:center; gap:4px; }
+
+/* 顶部 */
+.top-nav { background:#1a3a5c; padding:8px 16px; display:flex; align-items:center; gap:12px; }
+.back-btn { color:#fff; font-size:24px; width:28px; text-align:center; cursor:pointer; }
+.nav-title { color:#fff; font-size:17px; font-weight:600; flex:1; text-align:center; }
+.save-btn { color:#e86a3a; font-size:15px; font-weight:500; cursor:pointer; }
+
+/* 表单内容 */
+.form { padding:16px; padding-bottom:90px; }
+
+/* 类型切换 */
+.type-toggle { display:flex; background:#f5f5f5; border-radius:12px; padding:3px; margin-bottom:16px; }
+.type-item { flex:1; text-align:center; padding:10px; border-radius:10px; font-size:14px; color:#666; cursor:pointer; font-weight:500; }
+.type-item.active { background:#fff; color:#1a3a5c; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+
+/* 表单项 */
+.form-item { margin-bottom:16px; }
+.form-label { font-size:13px; color:#888; font-weight:500; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.form-label-required { color:#e86a3a; }
+.form-input { width:100%; background:#f8f9fa; border:1px solid #e8e8e8; border-radius:10px; padding:12px 14px; font-size:14px; color:#1a1a1a; outline:none; transition:border-color 0.2s; }
+.form-input:focus { border-color:#1a3a5c; background:#fff; }
+.form-input::placeholder { color:#bbb; }
+.form-textarea { width:100%; background:#f8f9fa; border:1px solid #e8e8e8; border-radius:10px; padding:12px 14px; font-size:14px; color:#1a1a1a; outline:none; resize:none; min-height:100px; line-height:1.6; }
+.form-textarea:focus { border-color:#1a3a5c; background:#fff; }
+.form-row { display:flex; gap:10px; }
+.form-row .form-item { flex:1; }
+
+/* AI推荐标签 */
+.ai-tags-box { background:#faf8ff; border:1px solid #e8d5ff; border-radius:12px; padding:12px; }
+.ai-tags-header { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.ai-badge { background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:11px; padding:2px 8px; border-radius:8px; font-weight:600; }
+.ai-tags-title { font-size:13px; color:#7c3aed; font-weight:500; }
+.ai-tags-row { display:flex; flex-wrap:wrap; gap:6px; }
+.ai-tag { padding:5px 10px; border-radius:10px; font-size:12px; cursor:pointer; border:1px solid; transition:all 0.2s; }
+.ai-tag-purple { background:#f3e8ff; color:#7c3aed; border-color:#e0c5ff; }
+.ai-tag-purple.selected { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+.ai-tag-blue { background:#e8f0fe; color:#1a3a5c; border-color:#c5d5f5; }
+.ai-tag-blue.selected { background:#1a3a5c; color:#fff; border-color:#1a3a5c; }
+.ai-tag-orange { background:#fff3e8; color:#c2410c; border-color:#ffc5a0; }
+.ai-tag-orange.selected { background:#c2410c; color:#fff; border-color:#c2410c; }
+.ai-tag-green { background:#e8fdf5; color:#059669; border-color:#a7f3d0; }
+.ai-tag-green.selected { background:#059669; color:#fff; border-color:#059669; }
+
+/* AI优化建议 */
+.ai-suggestion { background:linear-gradient(135deg,#fff8f5,#fff0eb); border:1px solid #ffc5a0; border-radius:12px; padding:12px; margin-top:10px; }
+.ai-suggestion-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.ai-suggestion-icon { font-size:16px; }
+.ai-suggestion-title { font-size:13px; color:#c2410c; font-weight:600; }
+.ai-suggestion-content { font-size:12px; color:#666; line-height:1.6; }
+.ai-suggestion-content li { margin-bottom:4px; }
+
+/* 隐私设置 */
+.privacy-row { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#f8f9fa; border-radius:10px; }
+.privacy-left { display:flex; align-items:center; gap:8px; }
+.privacy-icon { font-size:16px; }
+.privacy-label { font-size:14px; color:#333; }
+.privacy-value { font-size:13px; color:#888; }
+.privacy-arrow { font-size:14px; color:#999; }
+
+/* 位置输入 */
+.location-input-wrap { position:relative; }
+.location-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; color:#888; }
+.location-input { padding-left:34px; }
+
+/* 人数上限 */
+.limit-row { display:flex; gap:10px; align-items:center; }
+.limit-input { flex:1; background:#f8f9fa; border:1px solid #e8e8e8; border-radius:10px; padding:12px 14px; font-size:14px; color:#1a1a1a; outline:none; width:80px; }
+.limit-input:focus { border-color:#1a3a5c; }
+.limit-unit { font-size:13px; color:#888; }
+
+/* 底部发布栏 */
+.bottom-bar { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #eee; padding:12px 16px; padding-bottom:calc(12px + env(safe-area-inset-bottom)); display:flex; gap:12px; }
+.btn-preview { width:44px; height:44px; background:#f5f5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; flex-shrink:0; }
+.publish-btn { flex:1; background:#e86a3a; color:#fff; border:none; padding:12px; border-radius:22px; font-size:16px; font-weight:600; cursor:pointer; text-align:center; }
+
+/* 预览遮罩 */
+.mask { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; display:flex; align-items:center; justify-content:center; }
+.preview-box { background:#fff; border-radius:16px; padding:20px; margin:20px; max-width:335px; }
+.preview-title { font-size:15px; font-weight:600; text-align:center; margin-bottom:16px; }
+.preview-row { display:flex; gap:10px; margin-bottom:12px; }
+.preview-chip { padding:6px 12px; border-radius:10px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- 状态栏 -->
+  <div class="status-bar">
+    <div class="status-left">9:41</div>
+    <div class="status-right"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- 顶部 -->
+  <div class="top-nav">
+    <div class="back-btn">‹</div>
+    <div class="nav-title">发布活动</div>
+    <div class="save-btn">存草稿</div>
+  </div>
+
+  <!-- 表单 -->
+  <div class="form">
+
+    <!-- 类型切换 -->
+    <div class="type-toggle">
+      <div class="type-item active">🎯 主办活动</div>
+      <div class="type-item">🤝 发起聚会</div>
+    </div>
+
+    <!-- 活动名称 -->
+    <div class="form-item">
+      <div class="form-label">
+        <span class="form-label-required">*</span>活动名称
+      </div>
+      <input class="form-input" placeholder="例如：SaaS企业服务闭门会·资源对接专场" value="SaaS企业服务闭门会·资源对接">
+    </div>
+
+    <!-- 时间地点 -->
+    <div class="form-row">
+      <div class="form-item">
+        <div class="form-label"><span class="form-label-required">*</span>日期</div>
+        <input class="form-input" type="date" value="2026-05-18" style="color:#333;">
+      </div>
+      <div class="form-item">
+        <div class="form-label"><span class="form-label-required">*</span>时间</div>
+        <input class="form-input" type="time" value="14:00" style="color:#333;">
+      </div>
+    </div>
+
+    <div class="form-item">
+      <div class="form-label"><span class="form-label-required">*</span>活动地点</div>
+      <div class="location-input-wrap">
+        <span class="location-icon">📍</span>
+        <input class="form-input location-input" placeholder="请输入详细地址" value="北京·望京·氪空间">
+      </div>
+    </div>
+
+    <!-- 人数上限 -->
+    <div class="form-item">
+      <div class="form-label">人数上限</div>
+      <div class="limit-row">
+        <input class="limit-input" type="number" value="30" style="color:#333;">
+        <span class="limit-unit">人</span>
+      </div>
+    </div>
+
+    <!-- AI推荐标签 -->
+    <div class="form-item">
+      <div class="form-label">
+        <span class="form-label-required">*</span>活动标签
+        <span style="font-size:11px; color:#aaa; font-weight:400; margin-left:4px;">AI根据内容推荐</span>
+      </div>
+      <div class="ai-tags-box">
+        <div class="ai-tags-header">
+          <span class="ai-badge">✨ AI推荐</span>
+          <span class="ai-tags-title">选择1-3个标签，提升曝光率</span>
+        </div>
+        <div class="ai-tags-row">
+          <span class="ai-tag ai-tag-purple selected" onclick="toggleTag(this)">企业服务 ✓</span>
+          <span class="ai-tag ai-tag-blue selected" onclick="toggleTag(this)">B2B ✓</span>
+          <span class="ai-tag ai-tag-orange" onclick="toggleTag(this)">资源对接</span>
+          <span class="ai-tag ai-tag-green" onclick="toggleTag(this)">融资</span>
+          <span class="ai-tag ai-tag-purple" onclick="toggleTag(this)">创业企业</span>
+          <span class="ai-tag ai-tag-blue" onclick="toggleTag(this)">技术合作</span>
+          <span class="ai-tag ai-tag-orange" onclick="toggleTag(this)">品牌营销</span>
+          <span class="ai-tag ai-tag-green" onclick="toggleTag(this)">人才招聘</span>
+        </div>
+        <div style="font-size:11px; color:#7c3aed; margin-top:8px; display:flex; align-items:center; gap:4px;">
+          <span>💡</span>AI根据你输入的活动名称和描述推荐
+        </div>
+      </div>
+    </div>
+
+    <!-- 活动描述 -->
+    <div class="form-item">
+      <div class="form-label">活动描述</div>
+      <textarea class="form-textarea" placeholder="请详细描述活动内容、议程、适合人群等信息，越详细AI越能帮你匹配合适的参与者">本期闭门会聚焦企业服务领域，15位创始人/合伙人级别校友参与，围绕以下议题展开：
+
+1. SaaS企业如何在寒冬中实现正向现金流
+2. B2B销售体系建设：从0到1的核心节点
+3. 企业服务资源对接：现场自我介绍+自由交流
+
+活动特色：全程AI记录，会后自动生成参会人员对接清单，标注合作机会。</textarea>
+
+      <!-- AI优化建议 -->
+      <div class="ai-suggestion">
+        <div class="ai-suggestion-header">
+          <span class="ai-suggestion-icon">📝</span>
+          <span class="ai-suggestion-title">✨ AI优化建议</span>
+        </div>
+        <div class="ai-suggestion-content">
+          根据你的标签组合，这条活动描述可以增加以下内容提升匹配度：
+          <ul>
+            <li>• 补充"适合带产品来的创始人"等具体人群描述，预计曝光提升20%</li>
+            <li>• 建议加"本次预计3对企业服务供需对接成功"，参与者意愿度提升35%</li>
+            <li>• 已有"会后对接清单"亮点，建议突出宣传，能提高63%高质量人群报名率</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 隐私设置 -->
+    <div class="form-item">
+      <div class="form-label">可见范围</div>
+      <div class="privacy-row" style="cursor:pointer;">
+        <div class="privacy-left">
+          <span class="privacy-icon">🌐</span>
+          <span class="privacy-label">公开</span>
+        </div>
+        <div>
+          <span class="privacy-value">所有认证校友可见</span>
+          <span class="privacy-arrow"> ›</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部发布栏 -->
+  <div class="bottom-bar">
+    <div class="btn-preview" onclick="showPreview()">预览</div>
+    <div class="publish-btn" onclick="showPreview()">发布活动</div>
+  </div>
+
+</div>
+
+<!-- 预览弹窗 -->
+<div class="mask" id="previewMask" style="display:none;" onclick="closePreview(event)">
+  <div class="preview-box" onclick="event.stopPropagation()">
+    <div class="preview-title">📋 活动预览</div>
+    <div style="font-size:14px; font-weight:600; margin-bottom:12px;">SaaS企业服务闭门会·资源对接</div>
+    <div style="font-size:13px; color:#555; line-height:1.7; margin-bottom:12px;">
+      📅 5月18日 14:00<br>
+      📍 北京·望京·氪空间<br>
+      👥 限30人
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+      <span class="preview-chip" style="background:#f3e8ff; color:#7c3aed;">企业服务</span>
+      <span class="preview-chip" style="background:#e8f0fe; color:#1a3a5c;">B2B</span>
+      <span class="preview-chip" style="background:#fff3e8; color:#c2410c;">资源对接</span>
+    </div>
+    <div style="font-size:12px; color:#888; text-align:center;">点击"发布"后活动将展示在活动列表中</div>
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button style="flex:1; padding:10px; border-radius:20px; border:1px solid #ddd; background:#fff; color:#666; font-size:14px; cursor:pointer;" onclick="closePreview({})">返回修改</button>
+      <button style="flex:1; padding:10px; border-radius:20px; border:none; background:#e86a3a; color:#fff; font-size:14px; font-weight:600; cursor:pointer;" onclick="closePreview({})">确认发布</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleTag(el) {
+  el.classList.toggle('selected');
+}
+function showPreview() {
+  document.getElementById('previewMask').style.display='flex';
+}
+function closePreview(e) {
+  if (e.target === document.getElementById('previewMask')) {
+    document.getElementById('previewMask').style.display='none';
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>页面B · 我的Profile编辑页</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 20px 0; }
+  .phone-frame { width: 375px; min-height: 900px; background: #f5f5f5; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border-radius: 40px; overflow: hidden; }
+  .status-bar { height: 44px; background: #fff; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; }
+  .status-icons { position: absolute; right: 20px; bottom: 8px; font-size: 12px; }
+  .header { height: 44px; background: #fff; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid #eee; justify-content: space-between; }
+  .header-back { font-size: 20px; color: #1a3a5c; }
+  .header-title { font-size: 16px; font-weight: 600; color: #333; }
+  .header-right { font-size: 14px; color: #e86a3a; }
+  .profile-header { background: #fff; padding: 20px; text-align: center; border-bottom: 8px solid #f5f5f5; }
+  .avatar-wrap { position: relative; display: inline-block; }
+  .avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #1a3a5c, #2a5a8c); margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; font-weight: 600; }
+  .avatar-edit { position: absolute; bottom: 0; right: 0; width: 24px; height: 24px; background: #e86a3a; border-radius: 50%; border: 2px solid #fff; font-size: 12px; color: #fff; display: flex; align-items: center; justify-content: center; }
+  .profile-name { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-top: 10px; }
+  .profile-sub { font-size: 12px; color: #888; margin-top: 4px; }
+  .profile-sub .verified { color: #52c41a; }
+  .section { background: #fff; margin-bottom: 8px; }
+  .section-head { padding: 14px 16px 10px; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; align-items: center; }
+  .section-title { font-size: 14px; font-weight: 600; color: #333; }
+  .section-title span { font-size: 11px; color: #e86a3a; margin-left: 4px; }
+  .section-edit { font-size: 13px; color: #e86a3a; }
+  .info-row { display: flex; padding: 10px 16px; border-bottom: 1px solid #f5f5f5; }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { font-size: 14px; color: #888; width: 70px; flex-shrink: 0; }
+  .info-value { font-size: 14px; color: #333; flex: 1; }
+  .info-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px 14px; }
+  .tag { font-size: 12px; padding: 4px 10px; border-radius: 12px; background: #f0f4f8; color: #1a3a5c; position: relative; }
+  .tag-remove { position: absolute; top: -6px; right: -4px; width: 14px; height: 14px; background: #e86a3a; border-radius: 50%; color: #fff; font-size: 8px; display: flex; align-items: center; justify-content: center; }
+  .tag-add { background: #fff; border: 1px dashed #ccc; color: #888; }
+  .intro-area { padding: 0 16px 12px; }
+  .textarea { width: 100%; border: 1px solid #e8e8e8; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #333; resize: none; line-height: 1.7; min-height: 90px; font-family: inherit; background: #fafafa; }
+  .textarea:focus { outline: none; border-color: #1a3a5c; background: #fff; }
+  .ai-tip { background: #fff9f0; border: 1px solid #ffe8c0; border-radius: 8px; margin: 0 16px 10px; padding: 10px 12px; font-size: 12px; color: #8a6a30; display: flex; align-items: flex-start; gap: 8px; }
+  .ai-tip-icon { font-size: 14px; flex-shrink: 0; }
+  .tag-suggest { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px; }
+  .tag-suggest .tag { cursor: pointer; }
+  .tag-suggest .tag.selected { background: #1a3a5c; color: #fff; }
+  .tag-suggest .tag.selected .tag-remove { display: none; }
+  .ai-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; margin: 0 16px 14px; background: #fff; border: 1px solid #e86a3a; border-radius: 20px; font-size: 13px; color: #e86a3a; cursor: pointer; }
+  .ai-btn-icon { font-size: 14px; }
+  .pref-row { display: flex; gap: 8px; padding: 10px 16px; }
+  .pref-item { font-size: 13px; padding: 5px 12px; border-radius: 16px; border: 1px solid #ddd; color: #888; }
+  .pref-item.selected { background: #1a3a5c; color: #fff; border-color: #1a3a5c; }
+  .save-btn { margin: 16px; padding: 14px; background: #1a3a5c; color: #fff; border-radius: 24px; text-align: center; font-size: 16px; font-weight: 600; cursor: pointer; }
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 56px; background: #fff; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom, 0); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #888; }
+  .nav-icon { font-size: 20px; }
+  .nav-item.active { color: #e86a3a; }
+  .progress-bar { padding: 0 16px 16px; }
+  .progress-track { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #1a3a5c, #2a6aac); width: 72%; border-radius: 3px; }
+  .progress-text { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #888; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <span class="status-icons">📶  🔋</span>
+  </div>
+  <div class="header">
+    <span class="header-back">←</span>
+    <span class="header-title">编辑我的档案</span>
+    <span class="header-right">预览主页</span>
+  </div>
+
+  <div style="height:calc(100% - 44px); overflow-y:auto; padding-bottom:70px;">
+
+  <div class="profile-header">
+    <div class="avatar-wrap">
+      <div class="avatar">张</div>
+      <div class="avatar-edit">✎</div>
+    </div>
+    <div class="profile-name">张 总</div>
+    <div class="profile-sub"><span class="verified">✓ 已深度认证</span> · 2012级MBA</div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">基本信息（必填）</span>
+    </div>
+    <div class="info-row"><span class="info-label">姓名</span><span class="info-value">张总 <span style="color:#52c41a;font-size:11px;">✓ 已认证</span></span></div>
+    <div class="info-row">
+      <span class="info-label">届别</span>
+      <span class="info-value">2012级MBA</span>
+      <span class="section-edit">修改</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">公司</span>
+      <span class="info-value" style="color:#ccc;">点击填写</span>
+      <span class="section-edit">编辑</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">职位</span>
+      <span class="info-value" style="color:#ccc;">点击填写</span>
+      <span class="section-edit">编辑</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">城市</span>
+      <span class="info-value" style="color:#ccc;">点击选择</span>
+      <span class="section-edit">编辑</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">个人简介</span>
+      <span class="section-title" style="color:#e86a3a;font-size:11px;">AI从中提取标签</span>
+    </div>
+    <div class="intro-area">
+      <textarea class="textarea" placeholder="介绍一下您的职业背景、擅长领域和合作需求...">专注Pre-IPO阶段企业股权投资，主投A-B轮融资。重点关注智能制造、新能源、半导体方向。希望认识有融资需求的企业家，也愿意与同行交流行业见解。</textarea>
+    </div>
+    <div class="ai-tip">
+      <span class="ai-tip-icon">💡</span>
+      <span>AI已识别到"融资"相关关键词，检测到供给和需求意图，建议提取标签</span>
+    </div>
+    <div style="padding:0 16px 8px;">
+      <div style="font-size:12px;color:#888;margin-bottom:8px;">推荐标签（点击选择）</div>
+      <div class="tag-suggest">
+        <div class="tag selected">融资渠道 <span class="tag-remove">×</span></div>
+        <div class="tag selected">投资标的 <span class="tag-remove">×</span></div>
+        <div class="tag selected">A-B轮融资 <span class="tag-remove">×</span></div>
+        <div class="tag">智能制造 <span class="tag-remove" style="display:none;">×</span></div>
+        <div class="tag">新能源 <span class="tag-remove" style="display:none;">×</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">💼 供给标签（我能提供什么）</span>
+      <span style="font-size:11px;color:#888;">AI辅助生成</span>
+    </div>
+    <div class="info-tags">
+      <div class="tag">融资渠道 <span class="tag-remove">×</span></div>
+      <div class="tag">投资标的 <span class="tag-remove">×</span></div>
+      <div class="tag">FA服务 <span class="tag-remove">×</span></div>
+      <div class="tag">产业资本 <span class="tag-remove">×</span></div>
+      <div class="tag">A-B轮融资 <span class="tag-remove">×</span></div>
+      <div class="tag">智能制造 <span class="tag-remove">×</span></div>
+      <div class="tag tag-add">+ 添加</div>
+    </div>
+    <div class="ai-btn">
+      <span class="ai-btn-icon">✨</span>
+      让AI根据简介推荐更多标签
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">🔍 需求标签（我在找什么）</span>
+    </div>
+    <div class="info-tags">
+      <div class="tag tag-orange">优质项目 <span class="tag-remove">×</span></div>
+      <div class="tag tag-orange">产业资本 <span class="tag-remove">×</span></div>
+      <div class="tag tag-orange">上市辅导 <span class="tag-remove">×</span></div>
+      <div class="tag tag-add">+ 添加</div>
+    </div>
+    <div class="ai-btn">
+      <span class="ai-btn-icon">✨</span>
+      让AI根据简介生成需求标签
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">🤝 合作偏好</span>
+    </div>
+    <div class="pref-row">
+      <div class="pref-item selected">见面详谈</div>
+      <div class="pref-item selected">线上沟通</div>
+      <div class="pref-item">仅文字交流</div>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div style="font-size:12px;color:#666;margin-bottom:6px;">档案完整度：72%</div>
+    <div class="progress-track"><div class="progress-fill"></div></div>
+    <div class="progress-text">
+      <span>已完成：基础信息/头像/简介/标签</span>
+      <span style="color:#e86a3a;">完善过往经历 → +15%</span>
+    </div>
+  </div>
+
+  <div class="save-btn">💾 保存档案</div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <span class="nav-icon">🏠</span><span>首页</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">📅</span><span>活动</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">💼</span><span>供需</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">💬</span><span>社群</span>
+    </div>
+    <div class="nav-item active">
+      <span class="nav-icon">👤</span><span>我的</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
