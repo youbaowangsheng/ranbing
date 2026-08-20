@@ -5,6 +5,7 @@ Page({
   data: {
     userInfo: {},
     loggedIn: false,
+    isLogin: false,
     items: [],
     leftItems: [],
     rightItems: [],
@@ -17,7 +18,7 @@ Page({
 
   onShow() {
     const token = wx.getStorageSync('token')
-    this.setData({ loggedIn: !!token })
+    this.setData({ loggedIn: !!token, isLogin: !!token })
     this.loadAll()
     if (token) this.loadUserInfo()
   },

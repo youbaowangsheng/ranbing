@@ -1,4 +1,4 @@
-<!-- 活动详情 -->
+<wxs module="mask" src="../../utils/masktext.wxs" />
 <view class="container">
   <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
 
@@ -36,11 +36,11 @@
       <view class="card-title">主办方</view>
       <view class="organizer-row">
         <view class="org-avatar" style="background: {{item.organizer.avatar_color || '#1a3a5c'}}">
-          {{item.organizer.real_name ? item.organizer.real_name.charAt(0) : '?'}}
+          {{mask.maskName(item.organizer.real_name, isLogin)}}
         </view>
         <view class="org-info">
-          <text class="org-name">{{item.organizer.real_name}}</text>
-          <text class="org-company">{{item.organizer.company}}</text>
+          <text class="org-name">{{mask.maskName(item.organizer.real_name, isLogin)}}</text>
+          <text class="org-company">{{mask.maskCompany(item.organizer.company, isLogin)}}</text>
         </view>
       </view>
     </view>

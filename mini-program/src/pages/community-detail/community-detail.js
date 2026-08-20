@@ -12,6 +12,7 @@ Page({
     membersLoading: false,
     msgLoading: false,
     posting: false,
+    isLogin: false,
   },
 
   onLoad(options) {
@@ -20,9 +21,10 @@ Page({
       wx.showToast({ title: '参数错误', icon: 'none' });
       return wx.navigateBack();
     }
-    this.setData({ uuid });
-    this.loadDetail();
+    this.setData({ uuid })
+    this.loadDetail()
     const token = wx.getStorageSync('token')
+    this.setData({ isLogin: !!token })
     if (token) this.checkJoinStatus()
   },
 

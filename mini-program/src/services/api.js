@@ -19,7 +19,11 @@ function request(path, method = 'GET', data = null) {
         } else if (res.statusCode === 401) {
           wx.removeStorageSync('token')
           wx.removeStorageSync('userInfo')
-          wx.navigateTo({ url: '/pages/login/login' })
+          // GET请求401不跳转（公开数据，后端已支持游客访问）
+          // 只有写操作才需要跳转登录
+          if (method !== 'GET' && method !== 'get') {
+            wx.navigateTo({ url: '/pages/login/login' })
+          }
           reject(new Error('未登录'))
         } else {
           const errMsg = res.data && (res.data.message || (res.data.errors && JSON.stringify(res.data.errors)) || res.data.detail || res.statusCode)

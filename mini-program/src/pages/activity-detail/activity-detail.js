@@ -2,9 +2,9 @@
 const { getActivityDetail, request, extractData } = require('../../services/api.js')
 
 Page({
-  data: { item: null, loading: true, joined: false, uuid: '', joined_count: 0 },
+  data: { item: null, loading: true, joined: false, uuid: '', joined_count: 0, isLogin: false },
   onLoad(opts) {
-    this.setData({ uuid: opts.uuid })
+    this.setData({ uuid: opts.uuid, isLogin: !!wx.getStorageSync('token') })
     this.loadDetail()
   },
   async loadDetail() {

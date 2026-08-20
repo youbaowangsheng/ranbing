@@ -1,4 +1,4 @@
-<!-- 供需广场：供给/需求切换 -->
+<wxs module="mask" src="../../utils/masktext.wxs" />
 <view class="container">
   <view class="top-bar">
     <view class="search-box" bindtap="toSearch">
@@ -23,8 +23,8 @@
           {{item.avatar_char}}
         </view>
         <view class="supply-user">
-          <text class="supply-name">{{item.profile.real_name || '匿名'}}</text>
-          <text class="supply-company">{{item.profile.company || ''}} {{item.profile.position ? '· '+item.profile.position : ''}}</text>
+          <text class="supply-name">{{mask.maskName(item.profile.real_name, isLogin) || '匿名'}}</text>
+          <text class="supply-company">{{mask.maskCompany(item.profile.company, isLogin)}} {{item.profile.position ? '· '+item.profile.position : ''}}</text>
         </view>
         <view class="supply-type {{item.supply_type===1?'type-supply':'type-demand'}}">
           {{item.supply_type===1?'供给':'需求'}}

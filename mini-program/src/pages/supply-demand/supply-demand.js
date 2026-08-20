@@ -2,7 +2,7 @@
 const { getSupplies, extractData } = require('../../services/api.js')
 
 Page({
-  data: { items: [], page: 1, pageSize: 20, hasMore: true, loading: false, loadingMore: false, typeTab: 'all', keyword: '' },
+  data: { items: [], page: 1, pageSize: 20, hasMore: true, loading: false, loadingMore: false, typeTab: 'all', keyword: '', isLogin: false },
 
   onPullDownRefresh() {
     this.setData({ page: 1, items: [], hasMore: true })
@@ -10,6 +10,7 @@ Page({
   },
 
   onShow() {
+    this.setData({ isLogin: !!wx.getStorageSync('token') })
     this.loadData()
   },
 

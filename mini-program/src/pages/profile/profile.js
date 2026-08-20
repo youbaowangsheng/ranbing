@@ -4,15 +4,15 @@ const { getProfile, request } = require('../../services/api.js')
 Page({
   data: {
     userInfo: null,
+    isLogin: false,
     stats: { supply_count: 0, conn_count: 0, match_count: 0, community_count: 0 }
   },
 
   onShow() {
     const token = wx.getStorageSync('token')
-    if (!token) { wx.navigateTo({ url: '/pages/login/login' }); return }
     const userInfo = wx.getStorageSync('userInfo')
-    this.setData({ userInfo: this._prepUser(userInfo) })
-    this.loadProfile()
+    this.setData({ userInfo: this._prepUser(userInfo), isLogin: !!token })
+    if (token) this.loadProfile()
   },
 
   _prepUser(u) {

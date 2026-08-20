@@ -1,4 +1,4 @@
-<!-- 我的主页 -->
+<wxs module="mask" src="../../utils/masktext.wxs" />
 <view class="container">
 
   <!-- 用户信息卡 -->
@@ -7,8 +7,8 @@
       {{userInfo.real_name_first || userInfo.nickname_first || '?'}}
     </view>
     <view class="profile-info">
-      <view class="profile-name">{{userInfo.real_name || userInfo.nickname || '未登录'}}</view>
-      <view class="profile-meta" wx:if="{{userInfo.company}}">{{userInfo.company}}{{userInfo.position ? ' · '+userInfo.position : ''}}</view>
+      <view class="profile-name">{{mask.maskName(userInfo.real_name || userInfo.nickname || '未登录', isLogin)}}</view>
+      <view class="profile-meta" wx:if="{{userInfo.company}}">{{mask.maskCompany(userInfo.company, isLogin)}}{{userInfo.position ? ' · '+userInfo.position : ''}}</view>
       <view class="cert-row" wx:if="{{userInfo.cert_level >= 1}}">
         <text class="cert-badge" wx:if="{{userInfo.cert_level === 1}}">📱 已手机认证</text>
         <text class="cert-badge" wx:if="{{userInfo.cert_level === 2}}">🎓 校友认证</text>

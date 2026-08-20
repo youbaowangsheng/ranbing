@@ -8,12 +8,13 @@ Page({
     matchResults: [],
     quickQuestions: ['找投资', '找客户', '找渠道资源', '找技术合伙人', '找专家人脉', '消费行业机会'],
     aiTyping: false,
-    scrollTop: 0
+    scrollTop: 0,
+    isLogin: false,
   },
 
   onLoad(query) {
     const token = wx.getStorageSync('token')
-    if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
+    this.setData({ isLogin: !!token })
     this.fromPage = query.from || ''
     // 初始欢迎语
     this.setData({
@@ -31,6 +32,7 @@ Page({
   async sendMessage() {
     const text = this.data.inputText.trim()
     if (!text || this.data.aiTyping) return
+    if (!this.data.isLogin) { wx.navigateTo({ url: '/pages/login/login' }); return }
 
     this.setData({ inputText: '', aiTyping: true, matchResults: [] })
     this._appendMessage('user', text)

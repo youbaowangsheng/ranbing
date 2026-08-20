@@ -1,5 +1,5 @@
+<wxs module="mask" src="../../utils/masktext.wxs" />
 <view class="page">
-  <!-- header banner -->
   <view class="comm-header">
     <view class="comm-cover" wx:if="{{community.cover_url}}">
       <image src="{{community.cover_url}}" mode="aspectFill" class="cover-img"/>
@@ -31,7 +31,7 @@
     <view class="member-grid">
       <view class="member-card" wx:for="{{members}}" wx:key="uuid" bindtap="viewProfile" data-uuid="{{item.profile.uuid}}">
         <image class="member-avatar" src="{{item.profile.avatar_url||'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}}" mode="aspectFill"/>
-        <text class="member-name">{{item.profile.real_name||'匿名'}}</text>
+        <text class="member-name">{{mask.maskName(item.profile.real_name, isLogin)||'匿名'}}</text>
         <text class="member-role" wx:if="{{item.role===3}}">群主</text>
         <text class="member-role member-admin" wx:elif="{{item.role===2}}">管理员</text>
       </view>
@@ -50,7 +50,7 @@
       <view class="msg-header">
         <image class="msg-avatar" src="{{item.profile.avatar_url||''}}" mode="aspectFill"/>
         <view class="msg-meta">
-          <text class="msg-name">{{item.profile.real_name}}</text>
+          <text class="msg-name">{{mask.maskName(item.profile.real_name, isLogin)}}</text>
           <text class="msg-time">{{item.created_at_fmt}}</text>
         </view>
         <text class="pin-badge" wx:if="{{item.is_pinned}}">置顶</text>

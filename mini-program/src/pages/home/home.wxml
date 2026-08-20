@@ -1,4 +1,4 @@
-<!-- 首页 - 瀑布流混合信息流 -->
+<wxs module="mask" src="../../utils/masktext.wxs" />
 <view class="container">
   <view class="top-bar">
     <view class="search-icon-btn" bindtap="toSearch">🔍</view>
@@ -9,7 +9,7 @@
   <view class="user-card" wx:if="{{loggedIn}}">
     <view class="user-info">
       <view class="user-name">{{userInfo.nickname || '用户'}}</view>
-      <view class="user-meta">{{userInfo.company || '未填写公司'}} · {{userInfo.position || '未填写职位'}}</view>
+      <view class="user-meta">{{mask.maskCompany(userInfo.company, isLogin) || '未填写公司'}} · {{userInfo.position || '未填写职位'}}</view>
     </view>
     <button class="publish-btn" bindtap="toPublish">+ 发布</button>
   </view>
@@ -36,8 +36,8 @@
             <view class="sc-header">
               <view class="sc-avatar" style="background: {{item.avatar_color}}">{{item.avatar_char}}</view>
               <view class="sc-user">
-                <text class="sc-name">{{item.profile.real_name || '匿名'}}</text>
-                <text class="sc-meta">{{item.profile.company || ''}}</text>
+                <text class="sc-name">{{mask.maskName(item.profile.real_name, isLogin) || '匿名'}}</text>
+                <text class="sc-meta">{{mask.maskCompany(item.profile.company, isLogin)}}</text>
               </view>
               <text class="sc-type {{item.supply_type === 1 ? 'type-supply' : 'type-demand'}}">{{item.supply_type === 1 ? '供给' : '需求'}}</text>
             </view>
@@ -90,8 +90,8 @@
             <view class="sc-header">
               <view class="sc-avatar" style="background: {{item.avatar_color}}">{{item.avatar_char}}</view>
               <view class="sc-user">
-                <text class="sc-name">{{item.profile.real_name || '匿名'}}</text>
-                <text class="sc-meta">{{item.profile.company || ''}}</text>
+                <text class="sc-name">{{mask.maskName(item.profile.real_name, isLogin) || '匿名'}}</text>
+                <text class="sc-meta">{{mask.maskCompany(item.profile.company, isLogin)}}</text>
               </view>
               <text class="sc-type {{item.supply_type === 1 ? 'type-supply' : 'type-demand'}}">{{item.supply_type === 1 ? '供给' : '需求'}}</text>
             </view>

@@ -1,4 +1,4 @@
-<!-- AI助手 -->
+<wxs module="mask" src="../../utils/masktext.wxs" />
 <view class="container">
   <!-- 顶栏 -->
   <view class="top-bar">
@@ -36,7 +36,7 @@
         </view>
         <view class="result-title">{{item.title}}</view>
         <view class="result-reason" wx:if="{{item.match_reason}}">💡 {{item.match_reason}}</view>
-        <view class="result-meta" wx:if="{{item.profile}}">{{item.profile.real_name || ''}} · {{item.profile.company || ''}}</view>
+        <view class="result-meta" wx:if="{{item.profile}}">{{mask.maskName(item.profile.real_name, isLogin)}} · {{mask.maskCompany(item.profile.company, isLogin)}}</view>
       </view>
     </view>
 
