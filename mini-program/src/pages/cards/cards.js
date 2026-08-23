@@ -37,8 +37,9 @@ Page({
 
   editCard(e) {
     const card = e.currentTarget.dataset.card;
-    const str = encodeURIComponent(JSON.stringify(card));
-    wx.navigateTo({ url: '/pages/card-edit/card-edit?card=' + str });
+    // 名片数据可能较大（图片 URL 等），URL 长度受限，改用 storage 传 uuid
+    wx.setStorageSync('card_edit_target', card)
+    wx.navigateTo({ url: '/pages/card-edit/card-edit?uuid=' + (card.uuid || '') });
   },
 
   deleteCard(e) {

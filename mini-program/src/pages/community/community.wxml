@@ -41,7 +41,7 @@
             <text wx:if="{{item.join_status === 1 && item.role === 2}}"> · 管理员</text>
           </view>
         </view>
-        <view wx:if="{{item.join_status !== 1}}" class="join-btn" bindtap="joinNow" data-uuid="{{item.uuid}}">加入</view>
+        <view wx:if="{{item.join_status !== 1}}" class="join-btn" catchtap="joinNow" data-uuid="{{item.uuid}}">加入</view>
         <text wx:if="{{item.join_status === 1}}" class="card-arrow">›</text>
       </view>
 

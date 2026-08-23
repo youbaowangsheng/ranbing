@@ -9,11 +9,23 @@ Page({
     smsCode: '',
     countdown: 0,
     wechatLoading: false,
-    errorMsg: ''
+    errorMsg: '',
+    agreeProtocol: false
   },
 
   switchTab(e) {
     this.setData({ activeTab: e.currentTarget.dataset.tab, errorMsg: '' })
+  },
+
+  toggleAgree() {
+    this.setData({ agreeProtocol: !this.data.agreeProtocol })
+  },
+
+  openProtocol() {
+    wx.navigateTo({ url: '/pages/agreement/service' })
+  },
+  openPrivacy() {
+    wx.navigateTo({ url: '/pages/agreement/privacy' })
   },
 
   onPhoneInput(e) { this.setData({ phone: e.detail.value }) },
@@ -41,15 +53,21 @@ Page({
 
   startCountdown() {
     this.setData({ countdown: 60 })
-    const t = setInterval(() => {
+    if (this._timer) clearInterval(this._timer)  // 防止重复启动
+    this._timer = setInterval(() => {
       const c = this.data.countdown - 1
-      if (c <= 0) { clearInterval(t); this.setData({ countdown: 0 }) }
+      if (c <= 0) { clearInterval(this._timer); this._timer = null; this.setData({ countdown: 0 }) }
       else this.setData({ countdown: c })
     }, 1000)
   },
 
+  onUnload() {
+    if (this._timer) { clearInterval(this._timer); this._timer = null }
+  },
+
   async doPasswordLogin() {
-    const { phone, password } = this.data
+    const { phone, password, agreeProtocol } = this.data
+    if (!agreeProtocol) { this.setData({ errorMsg: '请先阅读并同意《用户协议》和《隐私政策》' }); return }
     if (!phone || phone.length !== 11) { this.setData({ errorMsg: '请输入11位手机号' }); return }
     if (!password) { this.setData({ errorMsg: '请输入密码' }); return }
     this.setData({ errorMsg: '' })
@@ -70,7 +88,8 @@ Page({
   },
 
   async doSmsLogin() {
-    const { phone, smsCode } = this.data
+    const { phone, smsCode, agreeProtocol } = this.data
+    if (!agreeProtocol) { this.setData({ errorMsg: '请先阅读并同意《用户协议》和《隐私政策》' }); return }
     if (!phone || phone.length !== 11) { this.setData({ errorMsg: '请输入11位手机号' }); return }
     if (!smsCode || smsCode.length < 4) { this.setData({ errorMsg: '请输入验证码' }); return }
     this.setData({ errorMsg: '' })
@@ -90,6 +109,8 @@ Page({
   },
 
   async doWechatLogin() {
+    const { agreeProtocol } = this.data
+    if (!agreeProtocol) { this.setData({ errorMsg: '请先阅读并同意《用户协议》和《隐私政策》' }); return }
     this.setData({ wechatLoading: true, errorMsg: '' })
     try {
       const res = await loginByWechat()

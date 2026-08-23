@@ -22,7 +22,9 @@
     "pages/contacts/contacts",
     "pages/contact-tags/contact-tags",
     "pages/cards/cards",
-    "pages/card-edit/card-edit"
+    "pages/card-edit/card-edit",
+    "pages/agreement/service",
+    "pages/agreement/privacy"
   ],
   "window": {
     "navigationStyle": "custom",

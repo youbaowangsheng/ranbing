@@ -24,7 +24,9 @@ Page({
       if (this.data.keyword) params.search = this.data.keyword
       const res = await getSupplies(params)
       const rawItems = extractData(res) || []
-      const items = rawItems.map(item => ({
+      const items = rawItems
+        .filter(item => item && item.profile)  // 过滤 profile 缺失
+        .map(item => ({
         ...item,
         avatar_char: item.profile?.real_name ? item.profile.real_name.charAt(0) : '?',
         created_at_fmt: item.created_at ? item.created_at.replace('T', ' ').slice(0, 16) : ''

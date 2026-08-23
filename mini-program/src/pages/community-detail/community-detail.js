@@ -1,4 +1,4 @@
-const { getCommunityDetail, getCommunityMembers, getCommunityMessages, postCommunityMessage, joinCommunity, leaveCommunity, getProfile, extractData } = require('../../services/api');
+const { getCommunityDetail, getCommunityMembers, getCommunityMessages, postCommunityMessage, joinCommunity, leaveCommunity, getProfile, extractData } = require('../../services/api.js');
 
 Page({
   data: {

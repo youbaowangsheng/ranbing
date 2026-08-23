@@ -62,14 +62,16 @@ Page({
       const communities = Array.isArray(communityRes) ? communityRes
         : communityRes.results || communityRes.items || []
 
-      const supplyItems = supplies.map(item => ({
-        ...item,
-        card_type: 'supply',
-        avatar_char: item.profile?.real_name ? item.profile.real_name.charAt(0) : '?',
-        avatar_color: item.profile?.avatar_color || '#1a3a5c',
-        created_at_fmt: item.created_at ? item.created_at.replace('T', ' ').slice(0, 16) : '',
-        supply_type: item.supply_type || item.type || 1
-      }))
+      const supplyItems = supplies
+        .filter(item => item && item.profile)  // 过滤 profile 缺失的脏数据
+        .map(item => ({
+          ...item,
+          card_type: 'supply',
+          avatar_char: item.profile?.real_name ? item.profile.real_name.charAt(0) : '?',
+          avatar_color: item.profile?.avatar_color || '#1a3a5c',
+          created_at_fmt: item.created_at ? item.created_at.replace('T', ' ').slice(0, 16) : '',
+          supply_type: item.supply_type || item.type || 1
+        }))
 
       const activityItems = activities.map(item => ({
         ...item,
@@ -85,9 +87,10 @@ Page({
         created_at_fmt: item.created_at ? item.created_at.replace('T', ' ').slice(0, 16) : ''
       }))
 
-      // 混合所有类型，打散插入两列
+      // 混合所有类型，按时间稳定排序（最新在上）后插入两列
+      // 注意：之前用 Math.random() 每次进首页顺序都不一样，用户体验差
       const mixed = [...supplyItems, ...activityItems, ...communityItems]
-        .sort(() => Math.random() - 0.5)
+        .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
 
       const left = []
       const right = []

@@ -20,25 +20,29 @@ Page({
   onLoad(options) {
     const token = wx.getStorageSync('token')
     if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
-    if (options.card) {
-      try {
-        const card = JSON.parse(decodeURIComponent(options.card));
-        this.setData({
-          isEdit: true,
-          cardUuid: card.uuid,
-          form: {
-            name: card.name || '',
-            company: card.company || '',
-            position: card.position || '',
-            phone: card.phone || '',
-            wechat: card.wechat || '',
-            email: card.email || '',
-            bio: card.bio || '',
-            tags: Array.isArray(card.tags) ? card.tags.join(',') : '',
-            is_default: !!card.is_default,
-          },
-        });
-      } catch (e) {}
+    // 优先从 storage 取（避免 URL 长度限制），fallback 老格式（兼容旧调用）
+    const stored = wx.getStorageSync('card_edit_target')
+    const card = stored || (options.card ? (() => {
+      try { return JSON.parse(decodeURIComponent(options.card)) } catch (e) { return null }
+    })() : null)
+    if (card) {
+      this.setData({
+        isEdit: true,
+        cardUuid: card.uuid || '',
+        form: {
+          name: card.name || '',
+          company: card.company || '',
+          position: card.position || '',
+          phone: card.phone || '',
+          wechat: card.wechat || '',
+          email: card.email || '',
+          bio: card.bio || '',
+          tags: Array.isArray(card.tags) ? card.tags.join(',') : '',
+          is_default: !!card.is_default,
+        },
+      });
+      // 用完即清，避免污染下次进入
+      wx.removeStorageSync('card_edit_target')
     }
   },
 

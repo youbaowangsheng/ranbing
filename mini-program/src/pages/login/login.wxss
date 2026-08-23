@@ -152,3 +152,41 @@ page {
   margin-bottom: 12px;
 }
 .hidden { display: none !important; }
+
+/* 协议勾选 */
+.login-protocol-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+  font-size: 11px;
+  color: #666;
+  line-height: 1.6;
+}
+.login-protocol-row .protocol-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+}
+.login-protocol-row .checkbox-box {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 3px;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #fff;
+  background: #fff;
+  box-sizing: border-box;
+}
+.login-protocol-row .checkbox-box.checked {
+  background: #1a3a5c;
+  border-color: #1a3a5c;
+}
+.login-protocol-row .protocol-label { color: #666; }
+.login-protocol-row .protocol-link { color: #1a3a5c; }
+.login-protocol-row .protocol-and { color: #666; margin: 0 2px; }

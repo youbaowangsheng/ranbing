@@ -16,6 +16,16 @@ page { background: #f0f2f5; }
 .welcome-icon { font-size: 48px; margin-bottom: 10px; }
 .welcome-title { font-size: 18px; font-weight: 700; color: #1a3a5c; margin-bottom: 6px; }
 .welcome-desc { font-size: 13px; color: #888; line-height: 1.5; }
+.ai-notice {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: #a855f7;
+  background: #f5f0ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 12px;
+}
 
 /* 消息行 */
 .msg-row { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-start; }
@@ -23,6 +33,17 @@ page { background: #f0f2f5; }
 .msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: #f0f2f5; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .msg-row.ai .msg-avatar { background: #e8f0fe; }
 .msg-content { max-width: 75%; }
+.msg-tag {
+  display: inline-block;
+  font-size: 10px;
+  color: #a855f7;
+  background: #f5f0ff;
+  border: 1px solid #e9d5ff;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  margin-left: 4px;
+}
 .msg-bubble { background: #fff; border-radius: 14px; padding: 10px 14px; font-size: 14px; color: #333; line-height: 1.6; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .msg-row.user .msg-bubble { background: #1a3a5c; color: #fff; }
 

@@ -17,7 +17,7 @@
 
   <view class="loading" wx:if="{{loading}}"><text>加载中...</text></view>
   <view class="supply-list" wx:if="{{!loading}}">
-    <view class="supply-card" wx:for="{{items}}" wx:key="uuid" bindtap="toDetail" data-uuid="{{item.uuid}}">
+    <view class="supply-card" wx:for="{{items}}" wx:key="uuid" bindtap="toDetail" data-uuid="{{item.uuid}}" wx:if="{{item.profile}}">
       <view class="supply-header">
         <view class="supply-avatar" style="background: {{item.profile.avatar_color || '#1a3a5c'}}">
           {{item.avatar_char}}

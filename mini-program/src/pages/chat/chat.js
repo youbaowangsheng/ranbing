@@ -34,13 +34,18 @@ Page({
         is_mine: item.is_mine,
         created_at: item.created_at
       }))
-      // 分页：第1页是最新的，需要反转显示
-      const allMsgs = this.data.page === 1 ? msgs.reverse() : [...msgs.reverse(), ...this.data.messages]
+      // 假设服务端按 created_at DESC 返回（最新在前）：
+      //   page=1 → 取最新，反转成时间正序，并滚到底部
+      //   page>1 → 取更早的页，反转后追加到列表末尾（更早的在最底部）
+      const ordered = msgs.reverse()
+      const messages = this.data.page === 1
+        ? ordered
+        : [...this.data.messages, ...ordered]
       this.setData({
-        messages: allMsgs,
+        messages,
         hasMore: msgs.length >= 20,
         loadingMore: false,
-        scrollTop: this.data.page === 1 ? 1 : this.data.scrollTop
+        scrollTop: this.data.page === 1 ? 99999 : this.data.scrollTop
       })
     } catch (e) {
       console.error('加载消息失败', e)

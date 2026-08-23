@@ -1,0 +1,36 @@
+/*
+ * masktext.wxs — 用于 wxml 中对组织者信息做脱敏显示
+ * 已登录(isLogin == true)显示完整；未登录时脱敏成「姓*」「**公司」
+ */
+
+var safeStr = function(v) {
+  if (v == null || v == undefined) return '';
+  return String(v);
+};
+
+var maskName = function(name, isLogin) {
+  if (isLogin) return name;
+  if (!name) return '';
+  // 中文姓名：保留首字，其余替换为「*」
+  if (name.length <= 1) return name;
+  var stars = '';
+  for (var i = 1; i < name.length; i++) stars += '*';
+  return name.charAt(0) + stars;
+};
+
+var maskCompany = function(company, isLogin) {
+  if (isLogin) return company;
+  if (!company) return '';
+  // 公司名：保留前2字，其余「*」；超长截断避免换行
+  if (company.length <= 2) return company;
+  var kept = company.substring(0, 2);
+  var stars = '';
+  for (var j = 2; j < company.length; j++) stars += '*';
+  return kept + stars;
+};
+
+module.exports = {
+  maskName: maskName,
+  maskCompany: maskCompany,
+  safeStr: safeStr
+};

@@ -11,7 +11,8 @@ Page({
     password: '',
     confirmPwd: '',
     countdown: 0,
-    errorMsg: ''
+    errorMsg: '',
+    agreeProtocol: false
   },
 
   onPhoneInput(e) { this.setData({ phone: e.detail.value }) },
@@ -21,6 +22,10 @@ Page({
   onConfirmPwdInput(e) { this.setData({ confirmPwd: e.detail.value }) },
 
   goBack() { wx.navigateBack() },
+
+  toggleAgree() {
+    this.setData({ agreeProtocol: !this.data.agreeProtocol })
+  },
 
   async sendCode() {
     const { phone } = this.data
@@ -43,17 +48,23 @@ Page({
 
   startCountdown() {
     this.setData({ countdown: 60 })
-    const t = setInterval(() => {
+    if (this._timer) clearInterval(this._timer)
+    this._timer = setInterval(() => {
       const c = this.data.countdown - 1
-      if (c <= 0) { clearInterval(t); this.setData({ countdown: 0 }) }
+      if (c <= 0) { clearInterval(this._timer); this._timer = null; this.setData({ countdown: 0 }) }
       else this.setData({ countdown: c })
     }, 1000)
   },
 
+  onUnload() {
+    if (this._timer) { clearInterval(this._timer); this._timer = null }
+  },
+
   async nextStep() {
-    const { phone, smsCode } = this.data
+    const { phone, smsCode, agreeProtocol } = this.data
     if (!phone || phone.length !== 11) { this.setData({ errorMsg: '请输入11位手机号' }); return }
     if (!smsCode || smsCode.length < 4) { this.setData({ errorMsg: '请输入验证码' }); return }
+    if (!agreeProtocol) { this.setData({ errorMsg: '请先阅读并同意《用户协议》和《隐私政策》' }); return }
     this.setData({ errorMsg: '' })
     this.setData({ step: 2 })
   },
@@ -91,20 +102,10 @@ Page({
   },
 
   openProtocol() {
-    wx.showModal({
-      title: '用户协议',
-      content: '燃烧吧用户协议：用户在使用本平台服务时，需遵守相关法律法规，不得发布违法、违规内容。平台对用户发布的内容不承担法律责任。',
-      showCancel: false,
-      confirmText: '我已知晓'
-    })
+    wx.navigateTo({ url: '/pages/agreement/service' })
   },
   openPrivacy() {
-    wx.showModal({
-      title: '隐私政策',
-      content: '燃烧吧隐私政策：我们收集您的手机号、设备信息等用于账号安全和个性化服务。未经您同意，我们不会向第三方披露您的个人信息。',
-      showCancel: false,
-      confirmText: '我已知晓'
-    })
+    wx.navigateTo({ url: '/pages/agreement/privacy' })
   },
 
   backToStep1() { this.setData({ step: 1 }) }

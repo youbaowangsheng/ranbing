@@ -30,8 +30,8 @@
     <!-- 左列 -->
     <view class="waterfall-col">
       <view class="waterfall-item" wx:for="{{leftItems}}" wx:key="uuid" bindtap="onItemTap" data-item="{{item}}">
-        <!-- 供需卡片 -->
-        <block wx:if="{{item.card_type === 'supply'}}">
+        <!-- 供需卡片（profile 缺失则兜底显示匿名） -->
+        <block wx:if="{{item.card_type === 'supply' && item.profile}}">
           <view class="supply-card">
             <view class="sc-header">
               <view class="sc-avatar" style="background: {{item.avatar_color}}">{{item.avatar_char}}</view>
@@ -84,8 +84,8 @@
     <!-- 右列 -->
     <view class="waterfall-col">
       <view class="waterfall-item" wx:for="{{rightItems}}" wx:key="uuid" bindtap="onItemTap" data-item="{{item}}">
-        <!-- 供需卡片 -->
-        <block wx:if="{{item.card_type === 'supply'}}">
+        <!-- 供需卡片（profile 缺失则兜底显示匿名） -->
+        <block wx:if="{{item.card_type === 'supply' && item.profile}}">
           <view class="supply-card">
             <view class="sc-header">
               <view class="sc-avatar" style="background: {{item.avatar_color}}">{{item.avatar_char}}</view>

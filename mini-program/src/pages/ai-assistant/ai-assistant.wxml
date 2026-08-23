@@ -14,6 +14,7 @@
       <view class="welcome-icon">🤖</view>
       <view class="welcome-title">我是燃冰AI助手</view>
       <view class="welcome-desc">可以问我任何关于供需匹配、人脉连接、行业资源的问题</view>
+      <view class="ai-notice">⚠ 内容由 AI 生成，仅供参考</view>
     </view>
 
     <!-- 消息 -->
@@ -21,6 +22,7 @@
       <view class="msg-row {{msg.role}}" wx:for="{{messages}}" wx:key="index">
         <view class="msg-avatar">{{msg.role === 'user' ? '👤' : '🤖'}}</view>
         <view class="msg-content">
+          <view class="msg-tag" wx:if="{{msg.role === 'ai'}}">⚠ AI 生成 · 仅供参考</view>
           <view class="msg-bubble">{{msg.content}}</view>
         </view>
       </view>
@@ -45,6 +47,7 @@
       <view class="msg-row ai">
         <view class="msg-avatar">🤖</view>
         <view class="msg-content">
+          <view class="msg-tag">⚠ AI 生成 · 仅供参考</view>
           <view class="msg-bubble typing">
             <text class="dot">●</text><text class="dot">●</text><text class="dot">●</text>
           </view>

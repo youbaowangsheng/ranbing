@@ -23,8 +23,16 @@
       </view>
     </view>
 
-    <button class="btn-primary" bindtap="nextStep">下一步</button>
-    <view class="protocol-hint">注册即表示同意<a class="protocol-link" bindtap="openProtocol">《用户协议》</a>和<a class="protocol-link" bindtap="openPrivacy">《隐私政策》</a></view>
+    <view class="protocol-row">
+      <view class="protocol-checkbox {{agreeProtocol?'checked':''}}" bindtap="toggleAgree">
+        <view class="checkbox-box {{agreeProtocol?'checked':''}}">{{agreeProtocol?'✓':''}}</view>
+        <text class="protocol-label">我已阅读并同意</text>
+      </view>
+      <text class="protocol-link" bindtap="openProtocol">《用户协议》</text>
+      <text class="protocol-and">和</text>
+      <text class="protocol-link" bindtap="openPrivacy">《隐私政策》</text>
+    </view>
+    <button class="btn-primary" bindtap="nextStep" disabled="{{!agreeProtocol}}">下一步</button>
   </view>
 
   <!-- Step 2: 设置密码+昵称 -->

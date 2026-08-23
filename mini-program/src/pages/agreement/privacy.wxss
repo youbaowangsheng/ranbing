@@ -1,0 +1,33 @@
+/* 隐私政策 */
+page { background: #f0f2f5; }
+.container { min-height: 100vh; background: #f0f2f5; padding: 0 16px; }
+
+/* 顶栏 */
+.top-bar { background: #1a3a5c; padding: 70px 16px 14px; display: flex; align-items: center; justify-content: space-between; }
+.back-btn { font-size: 28px; color: #fff; width: 32px; }
+.top-bar-title { font-size: 17px; font-weight: 600; color: #fff; }
+.top-bar-right { width: 32px; }
+
+/* 正文 */
+.content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 16px;
+  margin-bottom: 40px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.meta { font-size: 12px; color: #999; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #eee; }
+.meta-row { line-height: 1.8; }
+
+.intro { font-size: 14px; color: #333; line-height: 1.8; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px dashed #eee; }
+
+.section { margin-bottom: 22px; }
+.section-title { font-size: 15px; font-weight: 700; color: #1a3a5c; margin-bottom: 10px; }
+.section-content { font-size: 14px; color: #333; line-height: 1.8; }
+.para { margin-bottom: 10px; }
+.para:last-child { margin-bottom: 0; }
+.hl { font-weight: 600; color: #1a3a5c; }
+
+.footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+.footer-line { font-size: 12px; color: #aaa; }

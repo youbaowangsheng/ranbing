@@ -59,7 +59,8 @@ Page({
           wx.removeStorageSync('token')
           wx.removeStorageSync('refresh_token')
           wx.removeStorageSync('userInfo')
-          wx.navigateTo({ url: '/pages/login/login' })
+          // 用 reLaunch 清空页面栈，避免左滑回到已退出登录的页面
+          wx.reLaunch({ url: '/pages/login/login' })
         }
       }
     })

@@ -59,6 +59,17 @@
         <text>{{wechatLoading?'登录中...':'确认登录'}}</text>
       </button>
     </view>
+
+    <!-- 协议勾选 -->
+    <view class="login-protocol-row">
+      <view class="protocol-checkbox {{agreeProtocol?'checked':''}}" bindtap="toggleAgree">
+        <view class="checkbox-box {{agreeProtocol?'checked':''}}">{{agreeProtocol?'✓':''}}</view>
+        <text class="protocol-label">我已阅读并同意</text>
+      </view>
+      <text class="protocol-link" bindtap="openProtocol">《用户协议》</text>
+      <text class="protocol-and">和</text>
+      <text class="protocol-link" bindtap="openPrivacy">《隐私政策》</text>
+    </view>
   </view>
 
   <!-- 注册链接 -->

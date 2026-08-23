@@ -1,0 +1,98 @@
+<view class="container">
+  <view class="top-bar">
+    <view class="back-btn" bindtap="goBack">‹</view>
+    <text class="top-bar-title">用户服务协议</text>
+    <view class="top-bar-right"></view>
+  </view>
+
+  <scroll-view class="content" scroll-y="true">
+    <view class="meta">
+      <view class="meta-row">最近更新：2026-08-20</view>
+      <view class="meta-row">生效时间：2026-08-20</view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">一、协议范围与接受</view>
+      <view class="section-content">
+        <view class="para">本协议是您与"燃冰"（以下简称"本平台"）之间就使用本平台服务所订立的协议。请您仔细阅读本协议所有条款，并确认充分理解、同意全部内容后再行使用。一旦您点击"同意"或实际使用本平台服务，即视为您已充分理解并接受本协议全部条款。</view>
+        <view class="para">本平台为商务社交及供需撮合类工具，提供包括但不限于以下服务：用户注册与认证、供需信息发布与匹配、活动组织与报名、社群互动、私信沟通、AI 智能问答等。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">二、账号注册与使用</view>
+      <view class="section-content">
+        <view class="para">1. 您需使用本人实名手机号完成注册。注册过程中须完成短信验证码验证，确保账号与本人身份对应。</view>
+        <view class="para">2. 您应妥善保管账号、密码及验证码。因您主动泄露、遗失或被他人盗用所产生的全部后果，由您本人承担。</view>
+        <view class="para">3. 您理解并同意：一个手机号对应一个账号。如发现账号存在冒用他人身份、批量注册等异常情况，本平台有权暂停或终止该账号。</view>
+        <view class="para">4. 您可随时通过"我的-设置"页面申请注销账号。账号注销后，与该账号相关的全部数据将依照《隐私政策》进行删除或匿名化处理。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">三、服务内容</view>
+      <view class="section-content">
+        <view class="para">本平台主要提供以下功能：</view>
+        <view class="para">1. 供需撮合：用户可发布供给或需求信息，本平台通过智能匹配协助用户发现潜在合作对象。</view>
+        <view class="para">2. 活动组织：用户可发起或报名参加线下沙龙、行业路演、培训等活动。</view>
+        <view class="para">3. 社群互动：用户可在公开或私密社群中交流行业资讯、分享见解。</view>
+        <view class="para">4. 私信沟通：用户可基于平台内关系链进行一对一即时通讯。</view>
+        <view class="para">5. AI 助手：本平台提供基于大语言模型的智能问答功能，可回答用户关于供需匹配、人脉连接、行业资源等问题。AI 生成的内容仅供参考，不构成任何投资、合作或法律建议。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">四、用户行为规范</view>
+      <view class="section-content">
+        <view class="para">您在使用本平台服务时，须遵守中华人民共和国法律法规，并承诺不得发布、传播以下内容：</view>
+        <view class="para">1. 违反宪法确定的基本原则的；危害国家安全、泄露国家秘密、颠覆国家政权、破坏国家统一的；损害国家荣誉和利益的。</view>
+        <view class="para">2. 散布谣言、淫秽、色情、赌博、暴力、凶杀、恐怖或者教唆犯罪的。</view>
+        <view class="para">3. 侮辱或者诽谤他人，侵害他人合法权益的。</view>
+        <view class="para">4. 含有虚假、欺诈、诱骗性质的信息。</view>
+        <view class="para">5. 涉及他人隐私、个人信息或商业秘密的。</view>
+        <view class="para">6. 含有广告、营销、垃圾信息或骚扰他人之内容的。</view>
+        <view class="para">7. 违反公序良俗或本平台社区规范的。</view>
+        <view class="para">您理解并同意：本平台有权对您发布的内容进行审核。如发现违规内容，平台有权立即删除、限制传播，并对相应账号采取警告、禁言、封禁等措施。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">五、知识产权</view>
+      <view class="section-content">
+        <view class="para">1. 本平台包含的全部内容（包括但不限于文字、图片、音频、视频、软件、程序、版面设计、Logo、商标等）的知识产权归本平台或合法授权方所有，受中华人民共和国法律法规及国际公约保护。</view>
+        <view class="para">2. 您在本平台发布的内容，视为您授予本平台一项全球性、非独占、可免费使用的内容展示与传播许可，用于平台运营及服务改进之目的。</view>
+        <view class="para">3. 未经本平台或合法授权方书面许可，您不得以任何形式复制、传播、售卖、镜像或商业利用本平台任何内容。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">六、免责声明</view>
+      <view class="section-content">
+        <view class="para">1. 本平台仅提供信息发布与撮合渠道，不对您与其他用户之间达成的任何线下交易、合作或活动承担担保责任。</view>
+        <view class="para">2. AI 助手生成的内容基于算法模型，可能存在错误、偏差或不准确之处，仅供参考，不构成任何专业建议。您应根据自身判断做出决策，并承担相应责任。</view>
+        <view class="para">3. 因不可抗力（包括但不限于自然灾害、战争、政策变更、网络中断等）导致的服务中断或数据丢失，本平台不承担责任。</view>
+        <view class="para">4. 您理解并同意：本平台按"现状"提供服务，不对服务的及时性、安全性、准确性、可用性做出任何明示或暗示的保证。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">七、协议变更与终止</view>
+      <view class="section-content">
+        <view class="para">1. 本平台有权根据法律法规变更、业务调整等情况修改本协议。修改后的协议将在本平台公布，公布前会进行合理期限的通知。</view>
+        <view class="para">2. 如您不同意修改后的协议，应立即停止使用本平台服务并注销账号。继续使用视为接受修改。</view>
+        <view class="para">3. 您违反本协议或法律法规的，本平台有权立即终止对您的服务，保留追究法律责任的权利。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">八、法律适用与争议解决</view>
+      <view class="section-content">
+        <view class="para">本协议的订立、执行和解释均适用中华人民共和国法律。因本协议产生的任何争议，双方应友好协商解决；协商不成的，任一方有权将争议提交本平台运营方所在地人民法院诉讼解决。</view>
+      </view>
+    </view>
+
+    <view class="footer">
+      <view class="footer-line">— 本协议最终解释权归燃冰所有 —</view>
+    </view>
+  </scroll-view>
+</view>

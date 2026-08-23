@@ -1,4 +1,4 @@
-const { getContactTags, getContactTagsFor, addContactTag, removeContactTag, request } = require('../../services/api.js');
+const { getContactTags, getContactTagsFor, addContactTag, removeContactTag, request, extractData } = require('../../services/api.js');
 
 Page({
   data: {
@@ -6,6 +6,7 @@ Page({
     allTags: [],
     myTagIds: [],
     loading: false,
+    saving: false,  // 防连点
   },
 
   onLoad(options) {
@@ -21,8 +22,7 @@ Page({
   loadAllTags() {
     this.setData({ loading: true });
     getContactTags().then(res => {
-      const code = res.data && res.data.code !== undefined ? res.data.code : (res.code !== undefined ? res.code : 0);
-      const list = code === 0 ? (res.data.data || []) : [];
+      const list = extractData(res) || [];
       const tags = list.map(t => ({ id: t.id, name: t.name, selected: false }));
       this.setData({ allTags: tags, loading: false });
     }).catch(() => this.setData({ loading: false }));
@@ -30,8 +30,7 @@ Page({
 
   loadMyTagIds(profileUuid) {
     getContactTagsFor(profileUuid).then(res => {
-      const code = res.data && res.data.code !== undefined ? res.data.code : (res.code !== undefined ? res.code : 0);
-      const list = code === 0 ? (res.data.data || []) : [];
+      const list = extractData(res) || [];
       const myTagIds = list.map(t => t.id);
       const allTags = this.data.allTags.map(t => ({
         ...t,
@@ -53,35 +52,37 @@ Page({
   },
 
   addTag() {
+    if (this.data.saving) return  // 防连点
     wx.showModal({
       title: '新建标签',
       inputs: [{ name: 'tag', placeholder: '标签名称' }],
       success: res => {
         if (res.confirm && res.value && res.value.tag) {
+          this.setData({ saving: true })
           request('/contact-tags/', 'POST', { name: res.value.tag })
             .then(() => {
               wx.showToast({ title: '标签已创建', icon: 'success' });
               this.loadAllTags();
             })
-            .catch(() => wx.showToast({ title: '创建失败', icon: 'none' }));
+            .catch(() => wx.showToast({ title: '创建失败', icon: 'none' }))
+            .finally(() => this.setData({ saving: false }));
         }
       },
     });
   },
 
   saveTags() {
+    if (this.data.saving) return
+    this.setData({ saving: true })
     const { profileUuid, allTags } = this.data;
     const selectedIds = allTags.filter(t => t.selected).map(t => t.id);
     const promises = [];
-    const allTagsAll = allTags;
 
-    // Add new selections
     for (const id of selectedIds) {
       if (this.data.myTagIds.indexOf(id) < 0 && profileUuid) {
         promises.push(addContactTag(profileUuid, id));
       }
     }
-    // Remove unselections
     for (const id of this.data.myTagIds) {
       if (selectedIds.indexOf(id) < 0 && profileUuid) {
         promises.push(removeContactTag(profileUuid, id));
@@ -92,7 +93,7 @@ Page({
       setTimeout(() => wx.navigateBack(), 1000);
     }).catch(() => {
       wx.showToast({ title: '保存失败', icon: 'none' });
-    });
+    }).finally(() => this.setData({ saving: false }));
   },
 
   goBack() {

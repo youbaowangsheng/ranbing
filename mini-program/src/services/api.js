@@ -25,13 +25,35 @@ function request(path, method = 'GET', data = null) {
             wx.navigateTo({ url: '/pages/login/login' })
           }
           reject(new Error('未登录'))
+        } else if (res.statusCode === 403) {
+          // 后端校验失败（token过期/无效）。仅在确实带了 token 的情况下清理并提示重新登录，
+          // 否则视为公开接口权限问题，原样抛出。
+          const hadToken = !!wx.getStorageSync('token')
+          if (hadToken) {
+            wx.removeStorageSync('token')
+            wx.removeStorageSync('refresh_token')
+            wx.removeStorageSync('userInfo')
+            const msg = (res.data && (res.data.message || res.data.detail)) || '登录已失效'
+            wx.showToast({ title: msg, icon: 'none' })
+            // 跳登录页
+            const pages = getCurrentPages ? getCurrentPages() : []
+            const cur = pages[pages.length - 1]
+            if (!cur || !/pages\/login/.test(cur.route || '')) {
+              wx.navigateTo({ url: '/pages/login/login' })
+            }
+          }
+          reject(new Error((res.data && res.data.message) || '登录已失效'))
         } else {
           const errMsg = res.data && (res.data.message || (res.data.errors && JSON.stringify(res.data.errors)) || res.data.detail || res.statusCode)
           console.error('[API请求失败]', path, res.statusCode, res.data)
           reject(new Error(errMsg || '请求失败'))
         }
       },
-      fail: err => reject(new Error(err.errMsg || '网络错误'))
+      fail: err => {
+        // 网络层错误（DNS、超时、断网）给用户一个明确提示
+        wx.showToast({ title: '网络连接失败', icon: 'none' })
+        reject(new Error(err.errMsg || '网络错误'))
+      }
     })
   })
 }
@@ -251,11 +273,18 @@ function sendPrivateMessage(targetUuid, content) {
 // 统一提取响应数据，处理 DRF 分页和非分页两种格式
 // DRF分页: {results: [...], count: N}  -> 返回 results
 // 非分页: {code: 0, data: {...}} -> 返回 data
+// 嵌套: {code: 0, data: {code: 0, data: [...]}} -> 返回内层 data
 // 两者都不是 -> 返回原始 res
 function extractData(res) {
   if (Array.isArray(res)) return res
   if (res.results !== undefined) return res.results
-  if (res.data !== undefined) return res.data
+  if (res.data !== undefined) {
+    // 处理嵌套 code:0 / data:{code:0, data:...} 结构
+    if (res.data && res.data.code !== undefined && res.data.data !== undefined) {
+      return res.data.data
+    }
+    return res.data
+  }
   return res
 }
 
