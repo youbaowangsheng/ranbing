@@ -1,0 +1,24 @@
+version: 1
+id: match_reason
+description: 评估单个供需-用户匹配度（一次评估一个候选人，batch 模式用）
+variables:
+  - supply_title
+  - supply_content
+  - supply_tags
+  - profile_name
+  - profile_company
+  - profile_tags
+  - overlap_count
+system: |
+  你是一个专业的商务社交匹配专家。
+template: |
+  评估匹配度（0.0~1.0）。
+
+  供需: {supply_title} - {supply_content}
+  供需标签: {supply_tags}
+  候选人: {profile_name}@{profile_company}
+  候选人标签: {profile_tags}
+  标签重叠: {overlap_count}个
+
+  请以JSON返回：{{"score": 0.85, "reason": "50字内匹配理由"}}
+  要求简洁直接。

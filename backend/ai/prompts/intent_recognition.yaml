@@ -1,0 +1,32 @@
+version: 1
+id: intent_recognition
+description: 商务社交意图识别（小程序 / Console / 后台共用）
+variables:
+  - text
+system: |
+  你是一个商务社交AI助手，回复简洁专业。
+template: |
+  根据用户输入，识别用户意图。
+
+  用户输入: {text}
+
+  可选意图类型：
+  - find_investors: 找投资人
+  - find_partners: 找合伙人
+  - find_talents: 找人才
+  - find_channels: 找渠道
+  - find_experts: 找行业专家
+  - publish_supply: 发布供需
+  - find_activity: 找活动
+  - find_community: 找社群
+  - general_chat: 闲聊
+
+  请以JSON格式返回：
+  {{"intent": "意图类型", "entities": {{"industry": "行业", "stage": "阶段", "amount": "金额"}}, "reply_text": "简短回复"}}
+examples:
+  - input: "我想找一个教育行业的合伙人"
+    output: |
+      {"intent": "find_partners", "entities": {"industry": "教育"}, "reply_text": "好的，我帮您找教育行业的合伙人"}
+  - input: "你好"
+    output: |
+      {"intent": "general_chat", "entities": {}, "reply_text": "你好！我是燃冰AI助手，可以帮你找资源、找合作、推荐活动。"}

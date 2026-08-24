@@ -1,0 +1,20 @@
+version: 1
+id: followup_script
+description: 跟进消息生成
+variables:
+  - from_name
+  - to_name
+  - context
+system: |
+  你是一个商务社交跟进专家。
+template: |
+  生成一条跟进消息，询问对方是否有空进一步交流。
+
+  发起方：{from_name}
+  接收方：{to_name}
+  背景：{context}
+
+  要求：不超过80字，自然不生硬。
+
+  以JSON返回：
+  {{"suggested_message": "消息内容", "alternatives": ["备选1"]}}

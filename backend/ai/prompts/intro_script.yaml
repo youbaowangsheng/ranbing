@@ -1,0 +1,27 @@
+version: 1
+id: intro_script
+description: 初次联系话术生成
+variables:
+  - from_name
+  - from_company
+  - from_position
+  - to_name
+  - to_company
+  - to_position
+  - context
+system: |
+  你是一个商务社交话术专家，擅长生成自然、专业的联系话术。
+template: |
+  根据双方信息，生成自然的初次联系话术。
+
+  发起方：{from_name}，{from_company}，{from_position}
+  接收方：{to_name}，{to_company}，{to_position}
+  背景：{context}
+
+  要求：
+  - 话术要自然、简洁，不超过100字
+  - 体现双方的共同点或明确价值交换点
+  - 不要过于商业化
+
+  请以JSON格式返回：
+  {{"script": "话术内容", "variants": ["变体1", "变体2"]}}
