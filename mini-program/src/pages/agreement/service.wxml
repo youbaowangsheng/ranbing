@@ -91,6 +91,16 @@
       </view>
     </view>
 
+    <view class="section">
+      <view class="section-title">九、联系我们</view>
+      <view class="section-content">
+        <view class="para">如您对本协议有任何疑问、意见或建议，可通过以下方式联系我们：</view>
+        <view class="para">邮箱：legal@asiamlhk.com</view>
+        <view class="para">客服热线：见小程序"我的-客服"页面</view>
+        <view class="para">我们将在 15 个工作日内回复您的请求。</view>
+      </view>
+    </view>
+
     <view class="footer">
       <view class="footer-line">— 本协议最终解释权归燃冰所有 —</view>
     </view>

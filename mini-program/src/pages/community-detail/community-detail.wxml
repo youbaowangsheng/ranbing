@@ -67,7 +67,7 @@
   <view wx:if="{{activeTab==='post'}}">
     <textarea class="post-input" placeholder="说点什么..." maxlength="500" bindinput="onContentInput" value="{{postContent}}"/>
     <text class="word-count">{{postContent.length}}/500</text>
-    <button class="post-btn {{posting?'disabled':''}}" bindtap="doPost">{{posting?'发布中...':'发布动态'}}</button>
+    <button class="post-btn {{posting?'disabled':''}}" bindtap="doPost" disabled="{{posting}}">{{posting?'发布中...':'发布动态'}}</button>
   </view>
 
   <!-- bottom bar -->

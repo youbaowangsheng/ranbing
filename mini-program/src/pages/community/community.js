@@ -47,16 +47,23 @@ Page({
   toSearch() { wx.navigateTo({ url: '/pages/search/search' }) },
 
   async joinNow(e) {
-    e.stopPropagation()
+    // 注意：async 函数中 `e` 是 asyncGenerator step 对象，不是 DOM 事件
+    // 防冒泡通过 WXML 中的 `catchtap` 实现，不需要 stopPropagation
     const token = wx.getStorageSync('token')
     if (!token) { wx.navigateTo({ url: '/pages/login/login' }); return }
-    const uuid = e.currentTarget.dataset.uuid
+    const uuid = (e && e.currentTarget && e.currentTarget.dataset) ? e.currentTarget.dataset.uuid : null
+    // 容错：如果 e 是 step 对象，尝试从 dataset 拿
+    if (!uuid) {
+      // 没办法从事件拿 uuid，放弃
+      wx.showToast({ title: '参数错误', icon: 'none' })
+      return
+    }
     try {
       await joinCommunity(uuid)
       wx.showToast({ title: '加入成功', icon: 'success' })
       this.loadData()
-    } catch (e) {
-      wx.showToast({ title: e.message || '加入失败', icon: 'none' })
+    } catch (err) {
+      wx.showToast({ title: err.message || '加入失败', icon: 'none' })
     }
   }
 })

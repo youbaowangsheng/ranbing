@@ -61,6 +61,7 @@
         <view class="para">1. <text class="hl">微信开放平台 SDK：</text>用于微信一键登录。收集信息：微信 OpenID、UnionID、昵称、头像。隐私政策链接：https://weixin.qq.com/cgi-bin/readtemplate?lang=zh_CN&t=weixin_agreement&s=privacy</view>
         <view class="para">2. <text class="hl">阿里云短信 SDK：</text>用于发送验证码。收集信息：手机号码。</view>
         <view class="para">3. <text class="hl">微信内容安全 API：</text>用于 UGC 内容审核。收集信息：用户发布文本、图片。</view>
+        <view class="para">4. <text class="hl">DeepSeek AI 服务：</text>用于 AI 助手智能回复（意图意图识别、供需匹配推荐话术生成）。收集信息：您主动向对话输入的文本内容、上文提及下文会话上下文信息（包括您的昵称/公司/职位/标签等资料信息，用于个性化回复）。您的输入内容仅用于单次响应生成，不会用于模型训练。隐私政策链接：https://www.deepseek.com/privacy</view>
       </view>
     </view>
 
