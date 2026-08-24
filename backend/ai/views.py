@@ -10,9 +10,8 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.views.decorators.csrf import csrf_exempt
 
 from .services.intent import (
     recognize_intent, extract_tags, generate_match_reason,
@@ -21,6 +20,43 @@ from .services.intent import (
 from .tools import TOOL_SCHEMAS, execute_tool
 
 logger = logging.getLogger(__name__)
+
+# DeepSeek 调用 helper（替代 fipai.cn，2026-08-24 修复）
+def _call_deepseek(messages, *, temperature=0.7, max_tokens=1000, timeout=30):
+    """
+    直接调 DeepSeek Chat Completions API
+    返回 (success, content_or_error)
+    """
+    import httpx as _httpx
+    api_key = getattr(settings, 'DEEPSEEK_API_KEY', '')
+    base_url = getattr(settings, 'DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
+    model = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
+    if not api_key:
+        return False, 'DEEPSEEK_API_KEY 未配置'
+    payload = {
+        'model': model,
+        'messages': messages,
+        'temperature': temperature,
+        'max_tokens': max_tokens,
+    }
+    try:
+        with _httpx.Client(timeout=timeout) as client:
+            resp = client.post(
+                f'{base_url}/chat/completions',
+                json=payload,
+                headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return True, data['choices'][0]['message']['content']
+    except _httpx.TimeoutException:
+        return False, 'DeepSeek 请求超时'
+    except _httpx.HTTPStatusError as e:
+        return False, f'DeepSeek HTTP {e.response.status_code}: {e.response.text[:200]}'
+    except Exception as e:
+        return False, f'DeepSeek 调用异常: {str(e)[:200]}'
+
+
 
 
 def _calc_match_score(item: dict, profile) -> float:
@@ -364,7 +400,7 @@ class AISupplyMatchesView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    async def get(self, request):
+    def get(self, request):
         user_message = request.query_params.get('message', '')
         session_id = request.query_params.get('session_id', '')
         profile_uuid = request.query_params.get('profile_uuid', '')
@@ -417,92 +453,32 @@ class AISupplyMatchesView(APIView):
             messages.extend(history)
         messages.append({"role": "user", "content": current_user_msg})
 
-        # 代理请求到FIPAI
-        fipai_url = 'https://fipai.cn/api/v1/chat/'
-        fipai_payload = {
-            'message': current_user_msg,
-            'messages': messages,
-            'tools': TOOL_SCHEMAS,
-            'channel_hint': 'single_agent',
-        }
+        # 直接调 DeepSeek（替代 fipai.cn，2026-08-24）
+        ok, reply_content = _call_deepseek(messages, temperature=0.7, max_tokens=1500, timeout=60)
+        if not ok:
+            return Response({'code': 5001, 'message': reply_content}, status=502)
+        tool_calls = []
+        channel = 'deepseek'
 
-        try:
-            async with httpx.AsyncClient(timeout=60) as client:
-                resp = await client.post(
-                    fipai_url,
-                    json=fipai_payload,
-                    headers={'Content-Type': 'application/json'}
-                )
-                resp.raise_for_status()
-                data = resp.json()
+        # 更新会话历史
+        messages.append({"role": "assistant", "content": reply_content})
+        _save_session(session_id, messages)
 
-            reply_content = data.get('content', '') or data.get('reply', '')
-            tool_calls = data.get('tool_calls', [])
-            channel = data.get('channel', 'fipai')
+        # 用 DeepSeek 文本直接搜索（原 fipai tool_calls 路径已弃用）
+        mutual_map = self._get_mutual_connections(profile) if profile else {}
+        recommendations = self._direct_search(reply_content, profile, mutual_map)
 
-            # 更新会话历史
-            messages.append({"role": "assistant", "content": reply_content})
-            _save_session(session_id, messages)
-
-            recommendations = []
-            tool_results = []
-
-            # 尝试从FIPAI回复中提取AI理由
-            ai_reason_text = self._extract_reason_from_reply(reply_content)
-
-            # 如果有profile，查询共同连接
-            mutual_map = {}
-            if profile:
-                mutual_map = self._get_mutual_connections(profile)
-
-            # 如果FIPAI返回了tool_calls，执行它们
-            if tool_calls:
-                for tc in tool_calls:
-                    result = execute_tool(tc)
-                    tool_results.append(result)
-                    # 尝试从结果中提取供需推荐
-                    res = result.get('result', {})
-                    if 'items' in res:
-                        for item in res['items']:
-                            item_uuid = item.get('uuid', '')
-                            # 计算匹配度（标签重叠数 + 基础分）
-                            match_score = self._calc_match_score(item, profile)
-                            # 获取共同连接
-                            mutual_conns = mutual_map.get(item_uuid, [])
-                            recommendations.append({
-                                'uuid': item_uuid,
-                                'title': item.get('title', ''),
-                                'supply_type': item.get('supply_type', ''),
-                                'author_name': item.get('author_name', ''),
-                                'city': item.get('city', ''),
-                                'tags': item.get('tags', []),
-                                'ai_reason': ai_reason_text or item.get('ai_reason', ''),
-                                'match_score': int(match_score * 100),
-                                'mutual_connections': mutual_conns,
-                            })
-            else:
-                # Direct LLM fallback：解析文本关键词，直接搜索供需库
-                recommendations = self._direct_search(reply_content, profile, mutual_map)
-
-            return Response({
-                'code': 0,
-                'data': {
-                    'session_id': session_id,
-                    'content': reply_content,
-                    'channel': channel,
-                    'recommendations': recommendations,
-                    'tool_calls': tool_calls,
-                    'tool_results': tool_results,
-                }
-            })
-
-        except httpx.TimeoutException:
-            return Response({'code': 5001, 'message': 'AI服务响应超时，请稍后重试'}, status=504)
-        except httpx.HTTPStatusError as e:
-            return Response({'code': 5002, 'message': f'AI服务错误: {e.response.status_code}'}, status=502)
-        except Exception as e:
-            logger.exception(f"[supply-matches] unexpected error: {e}")
-            return Response({'code': 5000, 'message': f'请求失败: {str(e)}'}, status=500)
+        return Response({
+            'code': 0,
+            'data': {
+                'session_id': session_id,
+                'content': reply_content,
+                'channel': channel,
+                'recommendations': recommendations,
+                'tool_calls': [],
+                'tool_results': [],
+            }
+        })
 
     def _direct_search(self, text: str, profile=None, mutual_map=None) -> list:
         """
@@ -567,7 +543,7 @@ class AIChatProxyV2View(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    async def post(self, request):
+    def post(self, request):
         user_message = request.data.get('message', '')
         if not user_message:
             return Response({'code': 2002, 'message': 'message不能为空'}, status=status.HTTP_400_BAD_REQUEST)
@@ -610,78 +586,25 @@ class AIChatProxyV2View(APIView):
             messages.extend(history)
         messages.append({"role": "user", "content": current_user_msg})
 
-        # 代理请求到FIPAI
-        fipai_url = 'https://fipai.cn/api/v1/chat/'
-        fipai_payload = {
-            'message': current_user_msg,
-            'messages': messages,
-            'tools': TOOL_SCHEMAS,
-            'channel_hint': channel_hint,
+        # 直接调 DeepSeek（替代 fipai.cn，2026-08-24）
+        ok, reply_content = _call_deepseek(messages, temperature=0.7, max_tokens=1500, timeout=60)
+        if not ok:
+            return Response({'code': 5001, 'message': reply_content}, status=502)
+        tool_calls = []
+
+        # 更新会话历史：user消息 + assistant回复
+        messages.append({"role": "assistant", "content": reply_content})
+        _save_session(session_id, messages)
+
+        result_data = {
+            'content': reply_content,
+            'channel': 'deepseek',
+            'metadata': {},
+            'session_id': session_id,
+            'tool_calls': tool_calls,
         }
 
-        try:
-            async with httpx.AsyncClient(timeout=60) as client:
-                resp = await client.post(
-                    fipai_url,
-                    json=fipai_payload,
-                    headers={'Content-Type': 'application/json'}
-                )
-                resp.raise_for_status()
-                data = resp.json()
-
-            # 提取响应内容
-            reply_content = data.get('content', '') or data.get('reply', '')
-            tool_calls = data.get('tool_calls', [])
-
-            # 更新会话历史：user消息 + assistant回复
-            messages.append({"role": "assistant", "content": reply_content})
-            _save_session(session_id, messages)
-
-            result_data = {
-                'content': reply_content,
-                'channel': data.get('channel', 'fipai'),
-                'metadata': data.get('metadata', {}),
-                'session_id': session_id,
-                'tool_calls': tool_calls,
-            }
-
-            # 如果FIPAI返回了tool_calls，在本地执行它们
-            if tool_calls:
-                tool_results = []
-                # 查询共同连接（用于匹配度增强）
-                mutual_map = {}
-                profile_for_score = None
-                if user_profile_uuid:
-                    try:
-                        from profiles.models import Profile
-                        profile_for_score = Profile.objects.get(uuid=user_profile_uuid)
-                        # 用AISupplyMatchesView的逻辑查询共同连接
-                        mutual_map = self._get_mutual_connections(profile_for_score)
-                    except Exception:
-                        pass
-
-                for tc in tool_calls:
-                    result = execute_tool(tc)
-                    tool_results.append(result)
-                    # 补充 match_score + mutual_connections
-                    res = result.get('result', {})
-                    if 'items' in res:
-                        for item in res['items']:
-                            score = self._calc_match_score(item, profile_for_score)
-                            item['match_score'] = int(score * 100)
-                            mutual = mutual_map.get(item.get('uuid', ''), [])
-                            item['mutual_connections'] = mutual
-                result_data['tool_results'] = tool_results
-
-            return Response({'code': 0, 'data': result_data})
-
-        except httpx.TimeoutException:
-            return Response({'code': 5001, 'message': 'AI服务响应超时，请稍后重试'}, status=504)
-        except httpx.HTTPStatusError as e:
-            return Response({'code': 5002, 'message': f'AI服务错误: {e.response.status_code}'}, status=502)
-        except Exception as e:
-            logger.exception(f"[chat-v2] unexpected error: {e}")
-            return Response({'code': 5000, 'message': f'请求失败: {str(e)}'}, status=500)
+        return Response({'code': 0, 'data': result_data})
 
 
 # ===== AI引导发布API =====
@@ -725,7 +648,7 @@ class AIActivityRecommendView(APIView):
         from activities.models import Activity
         recent_activities = Activity.objects.filter(status=1).order_by('-created_at')[:5]
         activity_context = "\n".join([
-            f"- {a.title}（{a.city}）"
+            f"- {a.title}（{a.location}）"
             for a in recent_activities
         ]) if recent_activities else "暂无活动"
 
@@ -736,29 +659,16 @@ class AIActivityRecommendView(APIView):
             f"请只推荐最相关的2-3个活动，说明推荐理由。"
         )
 
-        fipai_url = 'https://fipai.cn/api/v1/chat/'
-        fipai_payload = {
-            'message': prompt,
-            'messages': [{"role": "user", "content": prompt}],
-            'tools': [],
-            'channel_hint': 'single_agent',
-        }
-
-        try:
-            resp = httpx.post(
-                fipai_url,
-                json=fipai_payload,
-                headers={'Content-Type': 'application/json'},
-                timeout=60
-            )
-            resp.raise_for_status()
-            data = resp.json()
-
-            reply_content = data.get('content', '') or data.get('reply', '')
+        # 直接调 DeepSeek（替代 fipai.cn）
+        ok, reply_content = _call_deepseek(
+            [{'role': 'user', 'content': prompt}],
+            temperature=0.7,
+            max_tokens=1000,
+            timeout=60,
+        )
+        if ok:
             return Response({'code': 0, 'data': {'recommendation': reply_content}})
-        except Exception as e:
-            logger.error(f"[activity-recommend] error: {e}")
-            return Response({'code': 1, 'message': str(e)}, status=500)
+        return Response({'code': 5001, 'message': reply_content}, status=502)
 
 
 GUIDE_QUESTIONS = {
@@ -819,7 +729,7 @@ def generate_suggestions(collected, user_profile=None):
     }
 
 
-@login_required
+@csrf_exempt
 def ai_publish_guide(request):
     """POST /api/v1/ai/publish-guide/ - Guided AI publish conversation"""
     from django.http import JsonResponse

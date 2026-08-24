@@ -10,11 +10,7 @@ from profiles.models import Profile
 
 
 class CommunityViewSet(viewsets.GenericViewSet):
-    # 列表/详情公开；加入/发言/审核等需要登录
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        return [IsAuthenticated()]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         return Community.objects.select_related('owner__user').filter(
@@ -77,11 +73,87 @@ class CommunityViewSet(viewsets.GenericViewSet):
         except CommunityMember.DoesNotExist:
             return Response({'code': 2004, 'message': '您不在社群中'}, status=status.HTTP_400_BAD_REQUEST)
 
-        member.status = 2  # 已退出
+        member.status = 0
         member.save(update_fields=['status'])
         community.member_count = max(0, community.member_count - 1)
         community.save(update_fields=['member_count'])
         return Response({'code': 0, 'message': '已退出社群'})
+
+    @action(detail=False, methods=['post'], url_path='post_message')
+    def post_message(self, request):
+        """POST /api/v1/communities/post_message/ — 发布社群消息
+        前端入参: { community_uuid, content }
+        """
+        community_uuid = request.data.get('community_uuid')
+        content = (request.data.get('content') or '').strip()
+
+        if not community_uuid:
+            return Response({'code': 4001, 'message': '缺少 community_uuid'}, status=status.HTTP_400_BAD_REQUEST)
+        if not content:
+            return Response({'code': 4002, 'message': '内容不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            community = Community.objects.get(uuid=community_uuid)
+        except Community.DoesNotExist:
+            return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
+
+        profile, _ = Profile.objects.get_or_create(
+            user=request.user,
+            defaults={'real_name': request.user.nickname or '未命名'}
+        )
+        is_member = CommunityMember.objects.filter(
+            community=community, profile=profile
+        ).exists()
+        if not is_member:
+            return Response({'code': 1002, 'message': '请先加入社群再发帖'}, status=status.HTTP_403_FORBIDDEN)
+
+        message = Message.objects.create(
+            community=community,
+            profile=profile,
+            content=content,
+            audit_status=0,
+        )
+        return Response({
+            'code': 0,
+            'message': '发布成功，待审核',
+            'data': {'id': message.id}
+        })
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        """GET /api/v1/communities/{uuid}/members/ — 社群成员列表"""
+        try:
+            community = Community.objects.get(uuid=pk)
+        except Community.DoesNotExist:
+            return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
+
+        qs = CommunityMember.objects.filter(community=community).select_related(
+            'profile__user'
+        )
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            return self.get_paginated_response([
+                {
+                    'uuid': str(m.profile.uuid) if m.profile else '',
+                    'real_name': m.profile.real_name if m.profile else '匿名',
+                    'company': m.profile.company if m.profile else '',
+                    'position': m.profile.position if m.profile else '',
+                    'role': m.role,
+                    'joined_at': m.joined_at.isoformat() if m.joined_at else None,
+                }
+                for m in page
+            ])
+        return Response({'code': 0, 'data': [
+            {
+                'uuid': str(m.profile.uuid) if m.profile else '',
+                'real_name': m.profile.real_name if m.profile else '',
+                'company': m.profile.company if m.profile else '',
+                'position': m.profile.position if m.profile else '',
+                'role': m.role,
+                'joined_at': m.joined_at.isoformat() if m.joined_at else None,
+            }
+            for m in qs[:20]
+        ]})
 
     @action(detail=True, methods=['get'])
     def messages(self, request, pk=None):
@@ -144,7 +216,11 @@ class CommunityViewSet(viewsets.GenericViewSet):
     def audit_message(self, request, pk=None, msg_id=None):
         """审核消息"""
         try:
-            msg = Message.objects.get(id=msg_id, community=pk)
+            community = Community.objects.get(uuid=pk)
+        except Community.DoesNotExist:
+            return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            msg = Message.objects.get(id=msg_id, community=community)
         except Message.DoesNotExist:
             return Response({'code': 2002, 'message': '消息不存在'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -175,7 +251,7 @@ class CommunityViewSet(viewsets.GenericViewSet):
         return Response({
             'code': 0,
             'data': {
-                'uuid': str(msg.uuid),
+                'id': msg.id,
                 'message': '发布成功'
             }
         }, status=status.HTTP_201_CREATED)
