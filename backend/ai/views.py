@@ -351,14 +351,26 @@ class AIChatProxyView(APIView):
 
         DEEPSEEK_API_KEY = getattr(settings, 'DEEPSEEK_API_KEY', '')
 
+        # 系统提示语：引导简洁、直接、商务风格的回复
+        SYSTEM_PROMPT = (
+            '你是「燃冰」AI商务助手，服务商务社交、供需对接、人脉连接场景。'
+            '回复要求：'
+            '1. 简洁直接，开门见山，不要客套寒暄；'
+            '2. 商务风格，专业务实，多用短句和要点；'
+            '3. 控制在 300 字以内，重点突出，不展开无关细节；'
+            '4. 如涉及资源/人脉推荐，给出具体可执行的建议或方向即可。'
+        )
+
         if DEEPSEEK_API_KEY:
             try:
-                # max_tokens 3000 保证长回复完整；后端 timeout 放宽到 120 秒配合
                 ok, content = _call_deepseek(
-                    [{'role': 'user', 'content': user_message_with_context}],
-                    temperature=0.7,
-                    max_tokens=3000,
-                    timeout=120,
+                    [
+                        {'role': 'system', 'content': SYSTEM_PROMPT},
+                        {'role': 'user', 'content': user_message_with_context},
+                    ],
+                    temperature=0.5,
+                    max_tokens=600,
+                    timeout=60,
                 )
                 if ok:
                     return Response({'code': 0, 'data': {'content': content, 'channel': 'deepseek', 'metadata': {}}})
