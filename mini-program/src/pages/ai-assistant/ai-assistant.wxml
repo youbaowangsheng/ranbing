@@ -19,7 +19,7 @@
 
     <!-- 消息 -->
     <view class="messages" wx:if="{{messages.length > 0}}">
-      <view class="msg-row {{msg.role}}" wx:for="{{messages}}" wx:key="index">
+      <view class="msg-row {{msg.role}}" wx:for="{{messages}}" wx:key="*this">
         <view class="msg-avatar">{{msg.role === 'user' ? '👤' : '🤖'}}</view>
         <view class="msg-content">
           <view class="msg-tag" wx:if="{{msg.role === 'ai'}}">⚠ AI 生成 · 仅供参考</view>

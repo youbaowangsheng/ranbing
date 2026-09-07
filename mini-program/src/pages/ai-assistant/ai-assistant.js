@@ -58,7 +58,8 @@ Page({
 
   _appendMessage(role, content) {
     const messages = [...this.data.messages, { role, content }]
-    this.setData({ messages, scrollTop: this.data.scrollTop + 1000 })
+    // scrollTop 直接设一个足够大的值滚到底部，避免累加导致视图滚出内容区显示空白
+    this.setData({ messages, scrollTop: 99999 })
   },
 
   quickAsk(e) {
