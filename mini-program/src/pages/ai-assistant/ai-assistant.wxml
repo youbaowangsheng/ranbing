@@ -8,7 +8,7 @@
   </view>
 
   <!-- 消息列表 -->
-  <scroll-view class="message-list" scroll-y="true" scroll-top="{{scrollTop}}">
+  <scroll-view class="message-list" scroll-y="true" scroll-into-view="{{scrollIntoViewId}}">
     <!-- 欢迎语 -->
     <view class="welcome" wx:if="{{messages.length === 0}}">
       <view class="welcome-icon">🤖</view>
@@ -19,11 +19,11 @@
 
     <!-- 消息 -->
     <view class="messages" wx:if="{{messages.length > 0}}">
-      <view class="msg-row {{msg.role}}" wx:for="{{messages}}" wx:key="id">
-        <text class="msg-avatar-text">{{msg.role === 'user' ? '👤' : '🤖'}}</text>
+      <view class="msg-row {{item.role}}" wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}">
+        <text class="msg-avatar-text">{{item.role === 'user' ? '👤' : '🤖'}}</text>
         <view class="msg-content">
-          <view class="msg-tag" wx:if="{{msg.role === 'ai'}}">⚠ AI 生成 · 仅供参考</view>
-          <text class="msg-bubble-text">{{msg.content}}</text>
+          <view class="msg-tag" wx:if="{{item.role === 'ai'}}">⚠ AI 生成 · 仅供参考</view>
+          <text class="msg-bubble-text">{{item.content}}</text>
         </view>
       </view>
     </view>
