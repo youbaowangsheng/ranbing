@@ -612,6 +612,8 @@ class AIChatProxyV2View(APIView):
 class AIActivityRecommendView(APIView):
     """
     GET /api/v1/ai/activity-recommend/ — AI活动推荐
+
+    返回结构化的单个活动对象（带 AI 匹配理由），供前端 AI 精选卡片直接渲染。
     """
     permission_classes = [IsAuthenticated]
 
@@ -643,29 +645,62 @@ class AIActivityRecommendView(APIView):
             user_context = "请推荐最相关的人文创业活动。"
 
         from activities.models import Activity
-        recent_activities = Activity.objects.filter(status=1).order_by('-created_at')[:5]
-        activity_context = "\n".join([
-            f"- {a.title}（{a.location}）"
-            for a in recent_activities
-        ]) if recent_activities else "暂无活动"
+        from activities.serializers import ActivitySerializer
 
+        # 取最近一个报名中的活动作为推荐主体
+        activity = Activity.objects.filter(status=1, audit_status=1).order_by('-created_at').first()
+        if not activity:
+            return Response({'code': 0, 'data': None})
+
+        # 用 DeepSeek 生成匹配理由（简短）
         prompt = (
-            f"根据用户背景，推荐最相关的人文创业活动。\n\n"
-            f"用户信息：\n{user_context}\n\n"
-            f"最近活动：\n{activity_context}\n\n"
-            f"请只推荐最相关的2-3个活动，说明推荐理由。"
+            f"用户背景：{user_context}\n\n"
+            f"活动：{activity.title}（{activity.location}）\n"
+            f"活动介绍：{(activity.description or '')[:100]}\n\n"
+            f"请用一句话（30字以内）说明这个活动为什么适合该用户，并给出0-100的匹配度。"
+            f"只返回JSON：{{\"reason\": \"理由\", \"pct\": 85}}"
         )
 
-        # 直接调 DeepSeek（替代 fipai.cn）
+        match_reason = ''
+        match_pct = 70
         ok, reply_content = _call_deepseek(
             [{'role': 'user', 'content': prompt}],
-            temperature=0.7,
-            max_tokens=1000,
-            timeout=60,
+            temperature=0.5,
+            max_tokens=200,
+            timeout=30,
         )
         if ok:
-            return Response({'code': 0, 'data': {'recommendation': reply_content}})
-        return Response({'code': 5001, 'message': reply_content}, status=502)
+            import re as _re
+            try:
+                m = _re.search(r'\{.*\}', reply_content, _re.DOTALL)
+                if m:
+                    import json as _json
+                    parsed = _json.loads(m.group())
+                    match_reason = str(parsed.get('reason', ''))
+                    match_pct = int(parsed.get('pct', 70))
+            except Exception:
+                pass
+
+        # 组装前端期望的结构化字段
+        item = ActivitySerializer(activity).data
+        item['pct'] = match_pct
+        item['match_reason'] = match_reason or '根据您的行业背景为您推荐'
+        item['attendee_count'] = activity.current_attendees
+        # 补 tags（JSONField 存 tag_id，转成 [{id, name}] 供前端渲染）
+        try:
+            from profiles.models import Tag
+            tag_ids = [int(t) for t in (activity.tags or []) if str(t).isdigit()]
+            tag_map = {t.id: t.name for t in Tag.objects.filter(id__in=tag_ids)}
+            item['tags'] = [{'id': tid, 'name': tag_map.get(tid, '')} for tid in tag_ids if tag_map.get(tid)]
+        except Exception:
+            item['tags'] = []
+        # 补 start_time_fmt（前端用），并保留 start_time 原始值
+        if item.get('start_time'):
+            item['start_time_fmt'] = str(item['start_time']).replace('T', ' ')[:16]
+        else:
+            item['start_time_fmt'] = ''
+
+        return Response({'code': 0, 'data': item})
 
 
 GUIDE_QUESTIONS = {
