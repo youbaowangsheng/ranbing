@@ -7,14 +7,21 @@ function request(path, method = 'GET', data = null, options = {}) {
     const token = wx.getStorageSync('token')
     if (token) header['Authorization'] = `Bearer ${token}`
 
+    const timeout = options.timeout || 15000
+    if (path.indexOf('/ai/') === 0) {
+      console.log('[AI请求开始]', path, 'timeout=', timeout, 'method=', method)
+    }
     wx.request({
       url: API_BASE + path,
       method,
       data,
       header,
       // AI 等慢接口可传 options.timeout 覆盖默认 15 秒
-      timeout: options.timeout || 15000,
+      timeout,
       success: res => {
+        if (path.indexOf('/ai/') === 0) {
+          console.log('[AI请求成功]', path, 'statusCode=', res.statusCode, 'dataSize=', res.data ? JSON.stringify(res.data).length : 0)
+        }
         if ((res.statusCode === 200 || res.statusCode === 201) && res.data) {
           resolve(res.data)
         } else if (res.statusCode === 401) {
@@ -52,6 +59,9 @@ function request(path, method = 'GET', data = null, options = {}) {
       },
       fail: err => {
         // 网络层错误（DNS、超时、断网）给用户一个明确提示
+        if (path.indexOf('/ai/') === 0) {
+          console.error('[AI请求失败]', path, 'errMsg=', err.errMsg)
+        }
         wx.showToast({ title: '网络连接失败', icon: 'none' })
         reject(new Error(err.errMsg || '网络错误'))
       }
