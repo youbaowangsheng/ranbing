@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 
 from .models import Community, CommunityMember, Message
 from .serializers import CommunitySerializer, MessageSerializer
@@ -10,7 +10,13 @@ from profiles.models import Profile
 
 
 class CommunityViewSet(viewsets.GenericViewSet):
-    permission_classes = [AllowAny]
+    # 列表/详情/消息/成员公开；加入/退出/发帖需登录；审核接口需 staff
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'messages', 'members']:
+            return [AllowAny()]
+        if self.action in ['pending', 'approve', 'reject', 'pending_messages', 'audit_message']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         return Community.objects.select_related('owner__user').filter(
@@ -232,26 +238,4 @@ class CommunityViewSet(viewsets.GenericViewSet):
         msg.save(update_fields=['audit_status'])
         return Response({'code': 0, 'message': '审核完成'})
 
-    @action(detail=False, methods=['post'])
-    def post_message(self, request):
-        community_uuid = request.data.get('community_uuid')
-        content = request.data.get('content', '')
-
-        try:
-            community = Community.objects.get(uuid=community_uuid)
-        except Community.DoesNotExist:
-            return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
-
-        profile, _ = Profile.objects.get_or_create(user=request.user)
-        msg = Message.objects.create(
-            community=community, profile=profile, content=content, msg_type=1
-        )
-
-        # TODO: AI信号识别
-        return Response({
-            'code': 0,
-            'data': {
-                'id': msg.id,
-                'message': '发布成功'
-            }
-        }, status=status.HTTP_201_CREATED)
+    # 注意：post_message 已在上方定义（含成员校验 + 审核），此处不再重复定义

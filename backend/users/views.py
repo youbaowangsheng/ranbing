@@ -151,9 +151,13 @@ class AuthViewSet(viewsets.GenericViewSet):
             r = get_redis_client()
             if r:
                 stored_code = r.get(f'code:{phone}:login')
-                if stored_code and stored_code != code:
-                    return Response({'code': 2002, 'message': '验证码错误'}, status=status.HTTP_400_BAD_REQUEST)
+                # 修复：stored_code 为 None（未发送/已过期）也必须拒绝，防止绕过
+                if not stored_code or stored_code != code:
+                    return Response({'code': 2002, 'message': '验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
                 r.delete(f'code:{phone}:login')
+            else:
+                # Redis 不可用时拒绝，而非静默放行
+                return Response({'code': 5001, 'message': '验证码服务不可用，请稍后重试'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
             try:
                 user = User.objects.get(phone=phone)
             except User.DoesNotExist:
@@ -220,8 +224,13 @@ class AuthViewSet(viewsets.GenericViewSet):
         r = get_redis_client()
         if r:
             stored_code = r.get(f'code:{phone}:register')
-            if stored_code and stored_code != code:
-                return Response({'code': 2002, 'message': '验证码错误'}, status=status.HTTP_400_BAD_REQUEST)
+            # 修复：stored_code 为 None（未发送/已过期）也必须拒绝，防止绕过
+            if not stored_code or stored_code != code:
+                return Response({'code': 2002, 'message': '验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
+            r.delete(f'code:{phone}:register')
+        else:
+            # Redis 不可用时拒绝，而非静默放行
+            return Response({'code': 5001, 'message': '验证码服务不可用，请稍后重试'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         # 检查是否已注册
         if User.objects.filter(phone=phone).exists():

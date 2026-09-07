@@ -31,8 +31,11 @@ class SupplyViewSet(viewsets.GenericViewSet):
     # 写入操作通过 get_permissions 强制 IsAuthenticated
 
     def get_permissions(self):
-        # 默认所有 action 公开（小程序首页瀑布流依赖）
-        return [AllowAny()]
+        # 列表/详情/feed 公开（小程序首页瀑布流依赖 list 公开访问）
+        # 其余 action（create/pending/approve/reject/connections/followups/mine）需登录
+        if self.action in ['list', 'retrieve', 'feed']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         return Supply.objects.select_related('profile__user').filter(

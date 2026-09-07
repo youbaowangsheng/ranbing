@@ -8,6 +8,7 @@ class Community(models.Model):
         (1, '行业社群'), (2, '地域社群'), (3, '校友群'), (4, '兴趣社群')
     ]
     STATUS_CHOICES = [(1, '公开'), (2, '私密'), (3, '已解散')]
+    AUDIT_STATUS_CHOICES = [(0, '待审核'), (1, '审核通过'), (2, '审核拒绝')]
 
     id = models.BigAutoField(primary_key=True)
     uuid = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False)
@@ -19,6 +20,8 @@ class Community(models.Model):
     member_count = models.IntegerField(default=0)
     owner = models.ForeignKey('profiles.Profile', on_delete=models.CASCADE, related_name='owned_communities')
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)
+    audit_status = models.SmallIntegerField(choices=AUDIT_STATUS_CHOICES, default=1)
+    audit_time = models.DateTimeField(null=True, blank=True)
     qr_code_url = models.URLField(max_length=512, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

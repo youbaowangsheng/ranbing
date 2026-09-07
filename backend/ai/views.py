@@ -528,7 +528,14 @@ class AISupplyMatchesView(APIView):
         return recommendations
 
     def _extract_reason_from_reply(self, text: str) -> str:
-        return _extract_reason_from_reply(text)
+        # 从 DeepSeek 回复中提取推荐理由；没有则返回空（由调用方兜底）
+        if not text:
+            return ''
+        # 简单提取：取第一段非空文本，截断到 100 字
+        lines = [ln.strip() for ln in text.split('\n') if ln.strip()]
+        if lines:
+            return lines[0][:100]
+        return text[:100]
 
     def _get_mutual_connections(self, profile) -> dict:
         return _get_mutual_connections(profile)
