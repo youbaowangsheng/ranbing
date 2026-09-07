@@ -153,7 +153,8 @@ class ProfileViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Profile.objects.select_related('user').all()
+        # prefetch_related('profile_tags__tag') 消除 get_tags 的 N+1 查询
+        return Profile.objects.select_related('user').prefetch_related('profile_tags__tag').all()
 
     def get_serializer_class(self):
         if self.action == 'list':

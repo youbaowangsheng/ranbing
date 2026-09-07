@@ -16,7 +16,8 @@ class UserViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = User.objects.all()
+        # select_related('profile') 消除 get_profile_data 的 N+1 查询
+        qs = User.objects.select_related('profile').all()
         search = self.request.query_params.get('search', '')
         if search:
             qs = qs.filter(

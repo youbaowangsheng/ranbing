@@ -1,7 +1,11 @@
 """全局异常处理"""
+import logging
+
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status
+
+logger = logging.getLogger(__name__)
 
 
 def custom_exception_handler(exc, context):
@@ -9,10 +13,9 @@ def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
     if response is not None:
-        import sys
         exc_type = exc.__class__.__name__ if exc else 'Unknown'
-        print(f'[Exception] {exc_type}: {exc}', file=sys.stderr)
-        print(f'[Response data] {response.data}', file=sys.stderr)
+        # 用 logging 而非 print；不打印完整 response.data（避免泄漏敏感信息）
+        logger.warning(f'[Exception] {exc_type}: {exc}')
         # DRF标准错误
         if isinstance(response.data, dict):
             code = response.status_code
@@ -42,8 +45,7 @@ def custom_exception_handler(exc, context):
             }
     else:
         # 未捕获的异常
-        import traceback
-        print(f'[Server Error] {traceback.format_exc()}')
+        logger.exception('[Server Error] 未捕获异常')
         response = Response({
             'code': 3001,
             'message': '系统繁忙，请稍后重试',

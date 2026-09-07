@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
+from django.utils import timezone
 
 from .models import Supply, Match, Connection, Followup, FriendRequest, Card
 from .serializers import (
@@ -134,7 +135,8 @@ class SupplyViewSet(viewsets.GenericViewSet):
         except Supply.DoesNotExist:
             return Response({'code': 2001, 'message': '供需不存在'}, status=status.HTTP_404_NOT_FOUND)
         supply.audit_status = 1
-        supply.save(update_fields=['audit_status'])
+        supply.audit_time = timezone.now()
+        supply.save(update_fields=['audit_status', 'audit_time'])
         return Response({'code': 0, 'message': '审核通过'})
 
     @action(detail=True, methods=['post'])
@@ -145,7 +147,8 @@ class SupplyViewSet(viewsets.GenericViewSet):
         except Supply.DoesNotExist:
             return Response({'code': 2001, 'message': '供需不存在'}, status=status.HTTP_404_NOT_FOUND)
         supply.audit_status = 2
-        supply.save(update_fields=['audit_status'])
+        supply.audit_time = timezone.now()
+        supply.save(update_fields=['audit_status', 'audit_time'])
         return Response({'code': 0, 'message': '审核拒绝'})
 
     @action(detail=False, methods=['get'])
@@ -317,8 +320,6 @@ class FriendRequestViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return FriendRequestSerializer
         return FriendRequestSerializer
 
     def get_queryset(self):

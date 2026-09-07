@@ -62,7 +62,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     """认证相关API"""
     permission_classes = [AllowAny]
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def me(self, request):
         """获取当前用户信息"""
         return Response({'code': 0, 'data': UserSerializer(request.user).data})
@@ -135,7 +135,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         user.last_login_at = timezone.now()
         user.save(update_fields=['last_login_at'])
 
-        return Response({'success': True, 'token': get_token_response(user)['token'], 'user': UserSerializer(user).data})
+        return Response({'code': 0, 'data': get_token_response(user)})
 
     @action(detail=False, methods=['post'])
     def login(self, request):
@@ -278,7 +278,7 @@ class AuthViewSet(viewsets.GenericViewSet):
             nickname=nickname
         )
 
-        return Response({'success': True, 'token': get_token_response(user)['token'], 'user': UserSerializer(user).data}, status=status.HTTP_201_CREATED)
+        return Response({'code': 0, 'data': get_token_response(user)}, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'])
     def refresh_token(self, request):

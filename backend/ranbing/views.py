@@ -19,7 +19,9 @@ class StatsView(APIView):
         activities_approved = Activity.objects.filter(audit_status=1).count()
         activities_rejected = Activity.objects.filter(audit_status=2).count()
 
-        communities_approved = Community.objects.filter(status__in=[1, 2]).count()
+        communities_pending = Community.objects.filter(audit_status=0).count()
+        communities_approved = Community.objects.filter(audit_status=1).count()
+        communities_rejected = Community.objects.filter(audit_status=2).count()
 
         supplies_pending = Supply.objects.filter(audit_status=0).count()
         supplies_approved = Supply.objects.filter(audit_status=1).count()
@@ -38,9 +40,9 @@ class StatsView(APIView):
                     'rejected': activities_rejected,
                 },
                 'communities': {
-                    'pending': 0,
+                    'pending': communities_pending,
                     'approved': communities_approved,
-                    'rejected': 0,
+                    'rejected': communities_rejected,
                 },
                 'supplies': {
                     'pending': supplies_pending,

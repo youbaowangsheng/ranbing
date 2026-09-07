@@ -3,7 +3,6 @@ import json
 import uuid
 import redis
 import logging
-import asyncio
 
 import httpx
 from django.conf import settings
@@ -17,7 +16,6 @@ from .services.intent import (
     recognize_intent, extract_tags, generate_match_reason,
     generate_introduction_script, generate_followup_script
 )
-from .tools import TOOL_SCHEMAS, execute_tool
 
 logger = logging.getLogger(__name__)
 
@@ -505,7 +503,7 @@ class AISupplyMatchesView(APIView):
                 author_name = s.profile.real_name if not s.is_anonymous else "匿名用户"
                 item_uuid = str(s.uuid)
                 mutual_conns = mutual_map.get(item_uuid, [])
-                # 简单匹配度：随机60-90
+                # 关键词匹配的基础分（非随机，稳定 0.65）
                 match_score = 0.65
                 recommendations.append({
                     'uuid': item_uuid,

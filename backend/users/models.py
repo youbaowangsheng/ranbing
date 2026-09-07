@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user_with_phone(self, phone, password=None, real_name='', nickname=''):
-        """创建用户（手机已验证）"""
+        """创建用户（手机已验证）—— 保留兼容，暂未被调用"""
         return self.create_user(
             phone=phone,
             password=password,
@@ -29,6 +29,7 @@ class UserManager(BaseUserManager):
         )
 
     def get_by_phone(self, phone):
+        """按手机号查用户 —— 保留兼容，暂未被调用"""
         return self.get(phone=phone)
 
 

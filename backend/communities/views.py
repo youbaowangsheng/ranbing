@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from django.utils import timezone
 
 from .models import Community, CommunityMember, Message
 from .serializers import CommunitySerializer, MessageSerializer
@@ -195,7 +196,8 @@ class CommunityViewSet(viewsets.GenericViewSet):
         except Community.DoesNotExist:
             return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
         community.audit_status = 1
-        community.save(update_fields=['audit_status'])
+        community.audit_time = timezone.now()
+        community.save(update_fields=['audit_status', 'audit_time'])
         return Response({'code': 0, 'message': '审核通过'})
 
     @action(detail=True, methods=['post'])
@@ -206,7 +208,8 @@ class CommunityViewSet(viewsets.GenericViewSet):
         except Community.DoesNotExist:
             return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
         community.audit_status = 2
-        community.save(update_fields=['audit_status'])
+        community.audit_time = timezone.now()
+        community.save(update_fields=['audit_status', 'audit_time'])
         return Response({'code': 0, 'message': '审核拒绝'})
 
     @action(detail=False, methods=['get'])

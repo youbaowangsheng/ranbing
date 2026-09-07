@@ -61,13 +61,6 @@ class SendCodeSerializer(serializers.Serializer):
         return value
 
 
-class TokenResponseSerializer(serializers.Serializer):
-    """登录响应"""
-    token = serializers.CharField()
-    expires_at = serializers.DateTimeField()
-    user = UserSerializer()
-
-
 class UserListSerializer(serializers.ModelSerializer):
     """用户列表序列化器"""
     phone = serializers.SerializerMethodField()

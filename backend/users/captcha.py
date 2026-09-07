@@ -3,7 +3,7 @@
 """
 import random
 import io
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -85,7 +85,8 @@ def captcha_refresh(request):
     text = generate_captcha_text()
     request.session['captcha_code'] = text.lower()
     request.session.set_expiry(300)
-    return JsonResponse({'code': 0, 'captcha_id': text})  # 前端自己刷新图片
+    # 不返回明文验证码（之前 captcha_id 泄漏了答案）
+    return JsonResponse({'code': 0, 'message': '验证码已刷新'})
 
 
 def verify_captcha(request, user_input):
