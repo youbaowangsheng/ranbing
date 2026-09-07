@@ -1,7 +1,7 @@
 // services/api.js - 通用 API 服务
 const API_BASE = 'https://www.asiamlhk.com/api/v1'
 
-function request(path, method = 'GET', data = null) {
+function request(path, method = 'GET', data = null, options = {}) {
   return new Promise((resolve, reject) => {
     const header = { 'Content-Type': 'application/json' }
     const token = wx.getStorageSync('token')
@@ -12,7 +12,8 @@ function request(path, method = 'GET', data = null) {
       method,
       data,
       header,
-      timeout: 15000,
+      // AI 等慢接口可传 options.timeout 覆盖默认 15 秒
+      timeout: options.timeout || 15000,
       success: res => {
         if ((res.statusCode === 200 || res.statusCode === 201) && res.data) {
           resolve(res.data)
@@ -117,9 +118,9 @@ function getMyEnrollmentStatus(uuid) {
   return request(`/activities/${uuid}/enrollment_status/`)
 }
 
-// AI活动推荐
+// AI活动推荐（AI 接口慢，放宽超时到 60 秒）
 function getActivityRecommend() {
-  return request('/ai/activity-recommend/', 'GET')
+  return request('/ai/activity-recommend/', 'GET', null, { timeout: 60000 })
 }
 
 // 获取社群列表
@@ -169,9 +170,9 @@ function getMySupplies(params = {}) {
   return request(`/supplies/mine/${q ? '?' + q : ''}`)
 }
 
-// AI匹配
+// AI匹配（慢接口，放宽超时到 60 秒）
 function aiMatch(data) {
-  return request('/ai/match/', 'POST', data)
+  return request('/ai/match/', 'POST', data, { timeout: 60000 })
 }
 
 // 获取个人Profile（/profiles/me/返回完整profile，含company/position/cert_level）

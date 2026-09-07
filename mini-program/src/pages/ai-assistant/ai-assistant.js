@@ -38,7 +38,8 @@ Page({
     this._appendMessage('user', text)
 
     try {
-      const res = await request('/ai/chat/', 'POST', { message: text })
+      // AI 对话生成慢，放宽超时到 60 秒
+      const res = await request('/ai/chat/', 'POST', { message: text }, { timeout: 60000 })
       this.setData({ aiTyping: false })
       // 兼容：不用可选链 ?.，改用 && 短路，避免低版本基础库编译问题
       const content = res && res.data && res.data.content

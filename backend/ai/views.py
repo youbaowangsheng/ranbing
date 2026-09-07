@@ -350,35 +350,19 @@ class AIChatProxyView(APIView):
             user_message_with_context = user_message
 
         DEEPSEEK_API_KEY = getattr(settings, 'DEEPSEEK_API_KEY', '')
-        DEEPSEEK_BASE_URL = getattr(settings, 'DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
-        DEEPSEEK_MODEL = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
 
         if DEEPSEEK_API_KEY:
             try:
-                headers = {
-                    'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
-                    'Content-Type': 'application/json'
-                }
-                ds_payload = {
-                    'model': DEEPSEEK_MODEL,
-                    'messages': [{'role': 'user', 'content': user_message_with_context}],
-                    'max_tokens': 500,
-                    'temperature': 0.7
-                }
-                resp = httpx.post(
-                    f'{DEEPSEEK_BASE_URL}/chat/completions',
-                    json=ds_payload,
-                    headers=headers,
-                    timeout=30
+                # 统一走 _call_deepseek（超时 50 秒，max_tokens 300 控制生成速度）
+                ok, content = _call_deepseek(
+                    [{'role': 'user', 'content': user_message_with_context}],
+                    temperature=0.7,
+                    max_tokens=300,
+                    timeout=50,
                 )
-                resp.raise_for_status()
-                data = resp.json()
-                content = data.get('choices', [{}])[0].get('message', {}).get('content', '暂无回复')
-                return Response({'code': 0, 'data': {'content': content, 'channel': 'deepseek', 'metadata': {}}})
-            except httpx.TimeoutException:
-                return Response({'code': 5001, 'message': 'AI服务响应超时，请稍后重试'}, status=504)
-            except httpx.HTTPStatusError as e:
-                return Response({'code': 5002, 'message': f'AI服务错误: {e.response.status_code}'}, status=502)
+                if ok:
+                    return Response({'code': 0, 'data': {'content': content, 'channel': 'deepseek', 'metadata': {}}})
+                return Response({'code': 5000, 'message': content}, status=502)
             except Exception as e:
                 return Response({'code': 5000, 'message': f'AI服务暂时不可用: {str(e)}'}, status=500)
         else:
