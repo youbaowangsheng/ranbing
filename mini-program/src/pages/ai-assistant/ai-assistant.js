@@ -40,12 +40,16 @@ Page({
     try {
       const res = await request('/ai/chat/', 'POST', { message: text })
       this.setData({ aiTyping: false })
-      if (res.code === 0 && res.data?.content) {
-        this._appendMessage('ai', res.data.content)
+      // 兼容：不用可选链 ?.，改用 && 短路，避免低版本基础库编译问题
+      const content = res && res.data && res.data.content
+      if (res && res.code === 0 && content) {
+        this._appendMessage('ai', content)
       } else {
-        this._appendMessage('ai', res.message || '抱歉，AI暂时无法回复，请稍后重试')
+        const fallback = (res && res.message) || '抱歉，AI暂时无法回复，请稍后重试'
+        this._appendMessage('ai', fallback)
       }
     } catch (e) {
+      console.error('AI 请求失败', e)
       this.setData({ aiTyping: false })
       this._appendMessage('ai', '网络连接失败，请检查网络后重试')
     }
