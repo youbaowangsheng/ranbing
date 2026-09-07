@@ -5,7 +5,19 @@ Page({
   data: {
     items: [],       // 全部社群，join_status 区分已加入/未加入
     loading: true,
-    keyword: ''
+    keyword: '',
+    statusBarHeight: 20,
+    menuBtnTop: 24,
+    menuBtnHeight: 32,
+  },
+
+  onLoad() {
+    const app = getApp()
+    this.setData({
+      statusBarHeight: app.globalData.statusBarHeight || 20,
+      menuBtnTop: app.globalData.menuBtnTop || 24,
+      menuBtnHeight: app.globalData.menuBtnHeight || 32,
+    })
   },
 
   onPullDownRefresh() {

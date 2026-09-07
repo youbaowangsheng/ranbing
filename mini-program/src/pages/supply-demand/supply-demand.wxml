@@ -1,5 +1,9 @@
 <wxs module="mask" src="../../utils/masktext.wxs" />
 <view class="container">
+  <!-- 标题栏：与胶囊按钮同高度 -->
+  <view class="nav-title-bar" style="padding-top: {{statusBarHeight}}px; height: {{menuBtnHeight}}px;">
+    <text class="nav-title">供需</text>
+  </view>
   <view class="top-bar">
     <view class="search-box" bindtap="toSearch">
       <text class="search-icon">🔍</text>

@@ -17,7 +17,19 @@ Page({
     pageSize: 20,
     hasMore: true,
     loading: false,
-    loadingMore: false
+    loadingMore: false,
+    statusBarHeight: 20,
+    menuBtnTop: 24,
+    menuBtnHeight: 32,
+  },
+
+  onLoad() {
+    const app = getApp()
+    this.setData({
+      statusBarHeight: app.globalData.statusBarHeight || 20,
+      menuBtnTop: app.globalData.menuBtnTop || 24,
+      menuBtnHeight: app.globalData.menuBtnHeight || 32,
+    })
   },
 
   onPullDownRefresh() {

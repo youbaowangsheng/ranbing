@@ -1,6 +1,10 @@
 /* 供需广场 */
 page { background: #f0f2f5; }
-.container { min-height: 100vh; background: #f0f2f5; padding-bottom: 100px; padding-top: calc(var(--status-bar-height) + 10px); }
+.container { min-height: 100vh; background: #f0f2f5; padding-bottom: 100px; }
+
+/* 标题栏：与胶囊按钮同高度 */
+.nav-title-bar { background: #1a3a5c; display: flex; align-items: center; justify-content: center; }
+.nav-title { font-size: 17px; font-weight: 700; color: #fff; }
 
 /* 顶栏：搜索+AI */
 .top-bar { background: #1a3a5c; padding: 10px 16px 10px; display: flex; align-items: center; gap: 10px; }

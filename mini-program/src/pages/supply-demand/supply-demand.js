@@ -2,7 +2,16 @@
 const { getSupplies, extractData } = require('../../services/api.js')
 
 Page({
-  data: { items: [], page: 1, pageSize: 20, hasMore: true, loading: false, loadingMore: false, typeTab: 'all', keyword: '', isLogin: false },
+  data: { items: [], page: 1, pageSize: 20, hasMore: true, loading: false, loadingMore: false, typeTab: 'all', keyword: '', isLogin: false, statusBarHeight: 20, menuBtnTop: 24, menuBtnHeight: 32 },
+
+  onLoad() {
+    const app = getApp()
+    this.setData({
+      statusBarHeight: app.globalData.statusBarHeight || 20,
+      menuBtnTop: app.globalData.menuBtnTop || 24,
+      menuBtnHeight: app.globalData.menuBtnHeight || 32,
+    })
+  },
 
   onPullDownRefresh() {
     this.setData({ page: 1, items: [], hasMore: true })
