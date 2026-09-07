@@ -41,9 +41,11 @@ Page({
     try {
       // AI 对话生成慢，放宽超时到 60 秒
       const res = await request('/ai/chat/', 'POST', { message: text }, { timeout: 60000 })
+      console.log('[sendMessage] await 返回:', res, '| 类型:', typeof res)
       this.setData({ aiTyping: false })
       // 兼容：不用可选链 ?.，改用 && 短路，避免低版本基础库编译问题
       const content = res && res.data && res.data.content
+      console.log('[sendMessage] content:', content ? content.slice(0, 50) : content)
       if (res && res.code === 0 && content) {
         this._appendMessage('ai', content)
       } else {
@@ -51,7 +53,7 @@ Page({
         this._appendMessage('ai', fallback)
       }
     } catch (e) {
-      console.error('AI 请求失败', e)
+      console.error('[sendMessage] 异常', e)
       this.setData({ aiTyping: false })
       this._appendMessage('ai', '网络连接失败，请检查网络后重试')
     }
