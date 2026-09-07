@@ -353,12 +353,12 @@ class AIChatProxyView(APIView):
 
         if DEEPSEEK_API_KEY:
             try:
-                # max_tokens 1000 保证回复完整；前端已放宽超时到 60 秒，生成时间可接受
+                # max_tokens 3000 保证长回复完整；后端 timeout 放宽到 120 秒配合
                 ok, content = _call_deepseek(
                     [{'role': 'user', 'content': user_message_with_context}],
                     temperature=0.7,
-                    max_tokens=1000,
-                    timeout=50,
+                    max_tokens=3000,
+                    timeout=120,
                 )
                 if ok:
                     return Response({'code': 0, 'data': {'content': content, 'channel': 'deepseek', 'metadata': {}}})

@@ -50,8 +50,8 @@ Page({
     this._appendMessage('user', text)
 
     try {
-      // AI 对话生成慢，放宽超时到 60 秒
-      const res = await request('/ai/chat/', 'POST', { message: text }, { timeout: 60000 })
+      // AI 对话生成慢（长回复可达 30-60 秒），放宽超时到 120 秒
+      const res = await request('/ai/chat/', 'POST', { message: text }, { timeout: 120000 })
       this.setData({ aiTyping: false })
       const content = res && res.data && res.data.content
       if (res && res.code === 0 && content) {
