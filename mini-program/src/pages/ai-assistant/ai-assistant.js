@@ -74,8 +74,11 @@ Page({
     // 用 concat 避免展开运算符对 undefined 的兼容问题，并确保 data.messages 是数组
     const current = Array.isArray(this.data.messages) ? this.data.messages : []
     const messages = current.concat([{ id: Date.now() + '_' + Math.random(), role, content }])
-    console.log('[_appendMessage] 当前 messages 长度:', messages.length, '| role:', role)
-    this.setData({ messages, scrollTop: 99999 })
+    console.log('[_appendMessage] 追加后 messages 长度:', messages.length, '| role:', role)
+    this.setData({ messages, scrollTop: 99999 }, () => {
+      // setData 回调里读回，确认是否真的写入了 data
+      console.log('[_appendMessage] setData 后 this.data.messages 长度:', (this.data.messages || []).length)
+    })
   },
 
   quickAsk(e) {
