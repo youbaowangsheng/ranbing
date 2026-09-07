@@ -105,12 +105,30 @@ class MatchSerializer(serializers.ModelSerializer):
 
 
 class ConnectionSerializer(serializers.ModelSerializer):
-    profile = ProfileMiniSerializer(source='user_b.profile', read_only=True)
+    profile = serializers.SerializerMethodField()
 
     class Meta:
         model = Connection
         fields = ['uuid', 'profile', 'conn_type', 'relation_strength',
                   'last_interact_at', 'interact_count', 'is_mutual', 'status']
+
+    def get_profile(self, obj):
+        """动态取"对方"的 profile（Connection 按 id 排序 user_a < user_b）"""
+        request = self.context.get('request')
+        current_user = getattr(request, 'user', None) if request else None
+
+        # 无 context 时默认返回 user_b（向后兼容）
+        if not current_user or not current_user.is_authenticated:
+            target_user = obj.user_b
+        elif obj.user_a_id == current_user.id:
+            target_user = obj.user_b
+        else:
+            target_user = obj.user_a
+
+        profile = getattr(target_user, 'profile', None)
+        if not profile:
+            return None
+        return ProfileMiniSerializer(profile).data
 
 
 class FollowupSerializer(serializers.ModelSerializer):

@@ -1,5 +1,6 @@
 """Profile视图"""
 import concurrent.futures
+from datetime import datetime
 
 from django.http import HttpResponse
 from rest_framework import viewsets, status
@@ -213,7 +214,8 @@ class ProfileViewSet(viewsets.GenericViewSet):
         profile, _ = Profile.objects.get_or_create(user=request.user)
         serializer = CertSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        profile.cert_level = serializer.validated_data['cert_level']
+        # 修复：审核通过前不写入 cert_level，防止用户自封深度认证
+        # 保存申请的目标等级到临时字段（用 cert_status 表示审核中，目标等级待后台审核后由运营写入）
         profile.cert_status = 1  # 审核中
         for field in ['education_year', 'education_school', 'education_major', 'cert_document_url']:
             if field in serializer.validated_data:
@@ -384,7 +386,7 @@ class ProfileViewSet(viewsets.GenericViewSet):
         """发好友请求（兼容旧名）"""
         return self.send_friend_request(request)
 
-    @action(detail=True, methods=['get'], permission_classes=[])
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def card(self, request, pk=None):
         """生成分享名片PNG图片（CPU密集型，使用线程池避免阻塞主线程）"""
         profile = self.get_object()
@@ -498,7 +500,7 @@ class ProfileViewSet(viewsets.GenericViewSet):
             })
 
         conversations.sort(
-            key=lambda x: x['last_message'].created_at if x['last_message'] else timezone.make_aware(timezone.datetime.min),
+            key=lambda x: x['last_message'].created_at if x['last_message'] else datetime.min,
             reverse=True
         )
         from .serializers import ConversationSerializer

@@ -39,9 +39,13 @@ class DeepSeekClient:
             return self._mock_chat(messages)
 
     def embedding(self, text):
-        """调用DeepSeek Embedding API"""
+        """
+        调用 embedding 服务。
+        注意：DeepSeek 不提供 embedding 接口，当前此能力不可用。
+        失败/不可用时返回 None（而非随机假向量），由调用方降级到标签匹配。
+        """
         if not self.api_key:
-            return self._mock_embedding()
+            return None
 
         payload = {
             'model': 'text-embedding-3-small',
@@ -59,7 +63,7 @@ class DeepSeekClient:
                 return data['data'][0]['embedding']
         except Exception as e:
             print(f'[DeepSeek Embedding Error] {e}')
-            return self._mock_embedding()
+            return None
 
     def _mock_chat(self, messages):
         """Mock响应"""
@@ -69,6 +73,5 @@ class DeepSeekClient:
         return '好的，我已经理解了您的需求，正在为您处理。'
 
     def _mock_embedding(self):
-        """Mock向量（1536维）"""
-        import random
-        return [random.uniform(-1, 1) for _ in range(1536)]
+        """不可用：返回 None，调用方降级标签匹配"""
+        return None

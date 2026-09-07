@@ -171,15 +171,16 @@ class SupplyViewSet(viewsets.GenericViewSet):
         user_text = ' '.join(user_tag_names) if user_tag_names else '创业 投资 企业服务'
         if not user_emb:
             user_emb = client.embedding(user_text)
-            # 缓存到profile
-            try:
-                from profiles.models import ProfileEmbedding
-                ProfileEmbedding.objects.update_or_create(
-                    profile=profile,
-                    defaults={'embedding': user_emb, 'model_name': 'text-embedding-3-small'}
-                )
-            except Exception:
-                pass
+            # 缓存到 profile（仅当 embedding 真正可用时，避免缓存 None）
+            if user_emb and len(user_emb) >= 10:
+                try:
+                    from profiles.models import ProfileEmbedding
+                    ProfileEmbedding.objects.update_or_create(
+                        profile=profile,
+                        defaults={'embedding': user_emb, 'model_name': 'text-embedding-3-small'}
+                    )
+                except Exception:
+                    pass
 
         if not user_emb or len(user_emb) < 10:
             # fallback: 纯标签匹配
@@ -262,7 +263,7 @@ class SupplyViewSet(viewsets.GenericViewSet):
                 Q(user_a=request.user) | Q(user_b=request.user),
                 status=1
             ).select_related('user_b__profile', 'user_a__profile')
-            serializer = ConnectionSerializer(qs, many=True)
+            serializer = ConnectionSerializer(qs, many=True, context={'request': request})
             return Response({'code': 0, 'data': serializer.data})
         # POST: 建立连接
         target_uuid = request.data.get('target_profile_uuid')
@@ -456,9 +457,9 @@ class ConnectionViewSet(viewsets.GenericViewSet):
         qs = self.get_queryset().order_by('-relation_strength', '-created_at')
         page = self.paginate_queryset(qs)
         if page is not None:
-            serializer = ConnectionSerializer(page, many=True)
+            serializer = ConnectionSerializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
-        serializer = ConnectionSerializer(qs, many=True)
+        serializer = ConnectionSerializer(qs, many=True, context={'request': request})
         return Response({'code': 0, 'data': serializer.data})
 
     def retrieve(self, request, pk=None):
@@ -467,7 +468,7 @@ class ConnectionViewSet(viewsets.GenericViewSet):
             conn = Connection.objects.get(uuid=pk, status=1)
         except Connection.DoesNotExist:
             return Response({'code': 2001, 'message': '关系链不存在'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = ConnectionSerializer(conn)
+        serializer = ConnectionSerializer(conn, context={'request': request})
         return Response({'code': 0, 'data': serializer.data})
 
     @action(detail=False, methods=['post'])

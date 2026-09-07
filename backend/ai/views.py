@@ -326,7 +326,8 @@ class AIGenerateScriptView(APIView):
 
 class AIChatProxyView(APIView):
     """POST /api/v1/ai/chat/ — AI对话代理"""
-    permission_classes = [AllowAny]
+    # 需登录，防止匿名无限调用 DeepSeek 烧 API 额度
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         user_message = request.data.get('message', '')
@@ -403,21 +404,17 @@ class AISupplyMatchesView(APIView):
     def get(self, request):
         user_message = request.query_params.get('message', '')
         session_id = request.query_params.get('session_id', '')
-        profile_uuid = request.query_params.get('profile_uuid', '')
 
         # 生成或验证session_id
         if not session_id:
             session_id = str(uuid.uuid4())
 
-        # 加载用户profile（优先用profile_uuid，否则用request.user）
+        # 加载用户profile（仅当前用户，防止 IDOR 枚举他人 PII）
         user_context = ""
         profile = None
         try:
             from profiles.models import Profile, ProfileTag
-            if profile_uuid:
-                profile = Profile.objects.get(uuid=profile_uuid)
-            else:
-                profile = Profile.objects.get(user=request.user)
+            profile = Profile.objects.get(user=request.user)
 
             my_tags = list(
                 ProfileTag.objects.filter(profile=profile, tag_type=1)
@@ -557,29 +554,27 @@ class AIChatProxyV2View(APIView):
 
         session_id = request.data.get('session_id', '')
         channel_hint = request.data.get('channel_hint', 'auto')
-        user_profile_uuid = request.data.get('user_profile_uuid')
 
         # 生成或验证session_id
         if not session_id:
             session_id = str(uuid.uuid4())
 
-        # 构建用户上下文（可选）
+        # 构建用户上下文（仅当前用户，防止 IDOR 枚举他人 PII）
         user_context = ""
-        if user_profile_uuid:
-            try:
-                from profiles.models import Profile, ProfileTag
-                profile = Profile.objects.get(uuid=user_profile_uuid)
-                my_tags = list(ProfileTag.objects.filter(profile=profile, tag_type=1).select_related('tag')[:5])
-                tag_context = '、'.join(t.tag.name for t in my_tags) if my_tags else '暂无标签'
-                user_context = (
-                    f'\n\n[用户背景] 姓名：{profile.real_name}，'
-                    f'公司：{profile.company}，职位：{profile.position}，'
-                    f'行业：{profile.industry}，城市：{profile.city}，'
-                    f'学校：{profile.education_school}，'
-                    f'标签：{tag_context}。'
-                )
-            except Exception as e:
-                logger.warning(f"[chat-v2] load profile error: {e}")
+        try:
+            from profiles.models import Profile, ProfileTag
+            profile = Profile.objects.get(user=request.user)
+            my_tags = list(ProfileTag.objects.filter(profile=profile, tag_type=1).select_related('tag')[:5])
+            tag_context = '、'.join(t.tag.name for t in my_tags) if my_tags else '暂无标签'
+            user_context = (
+                f'\n\n[用户背景] 姓名：{profile.real_name}，'
+                f'公司：{profile.company}，职位：{profile.position}，'
+                f'行业：{profile.industry}，城市：{profile.city}，'
+                f'学校：{profile.education_school}，'
+                f'标签：{tag_context}。'
+            )
+        except Exception as e:
+            logger.warning(f"[chat-v2] load profile error: {e}")
 
         # 注入用户消息（带上下文）
         current_user_msg = user_message + user_context
@@ -625,15 +620,12 @@ class AIActivityRecommendView(APIView):
     def get(self, request):
         import logging
         logger = logging.getLogger()
-        profile_uuid = request.query_params.get('profile_uuid', '')
 
         user_context = ""
         try:
             from profiles.models import Profile, ProfileTag
-            if profile_uuid:
-                profile = Profile.objects.get(uuid=profile_uuid)
-            else:
-                profile = Profile.objects.get(user=request.user)
+            # 仅当前用户，防止 IDOR 枚举他人 PII
+            profile = Profile.objects.get(user=request.user)
 
             my_tags = list(
                 ProfileTag.objects.filter(profile=profile, tag_type=1)

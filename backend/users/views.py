@@ -8,6 +8,7 @@ import jwt
 import datetime
 import re
 import requests
+import logging
 from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -18,6 +19,7 @@ from django.contrib.auth import login
 from django.utils import timezone
 
 from .models import User
+logger = logging.getLogger(__name__)
 from .serializers import (
     UserSerializer, UserLoginSerializer, UserRegisterSerializer,
     SendCodeSerializer
@@ -82,22 +84,33 @@ class AuthViewSet(viewsets.GenericViewSet):
         phone = serializer.validated_data['phone']
         code_type = serializer.validated_data['type']
 
+        # 频率限制：同一手机号 60 秒内只能发一次
+        r = get_redis_client()
+        if r:
+            rate_key = f'code:rate:{phone}:{code_type}'
+            if r.exists(rate_key):
+                ttl = r.ttl(rate_key)
+                return Response({'code': 2003, 'message': f'发送过于频繁，请 {ttl} 秒后再试'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+            r.setex(rate_key, 60, '1')
+
         # 生成6位验证码
         code = str(random.randint(100000, 999999))
 
         # 存储到Redis（5分钟有效）
-        r = get_redis_client()
         if r:
             r.setex(f'code:{phone}:{code_type}', 300, code)
 
         # 真实发送短信
-        try:
-            from .sms import send_sms
-            template_code = getattr(settings, 'ALIYUN_SMS_TEMPLATE_CODE', '')
-            sign_name = getattr(settings, 'ALIYUN_SMS_SIGN_NAME', '')
-            send_sms(phone, code, template_code or None, sign_name or None)
-        except Exception as e:
-            print(f'[SMS ERROR] {phone}: {e}')
+        from .sms import send_sms
+        template_code = getattr(settings, 'ALIYUN_SMS_TEMPLATE_CODE', '')
+        sign_name = getattr(settings, 'ALIYUN_SMS_SIGN_NAME', '')
+        success, msg = send_sms(phone, code, template_code or None, sign_name or None)
+        if not success:
+            # 发送失败：删除已存的验证码，返回真实错误
+            if r:
+                r.delete(f'code:{phone}:{code_type}')
+            logger.warning(f'[SMS ERROR] {phone}: {msg}')
+            return Response({'code': 5001, 'message': f'短信发送失败：{msg}'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         return Response({'code': 0, 'message': '验证码已发送'})
 
@@ -274,10 +287,19 @@ class AuthViewSet(viewsets.GenericViewSet):
         if not refresh_token_str:
             return Response({'code': 2002, 'message': '缺少refresh_token'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            payload = jwt.decode(refresh_token_str, settings.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(
+                refresh_token_str,
+                settings.JWT_SECRET_KEY,
+                algorithms=[settings.JWT_ALGORITHM]
+            )
+            # 校验 token 类型，防止 access token 被当作 refresh token 使用
+            if payload.get('type') != 'refresh':
+                return Response({'code': 1001, 'message': 'token类型错误'}, status=status.HTTP_401_UNAUTHORIZED)
             user = User.objects.get(id=payload['user_id'])
-        except (jwt.ExpiredSignatureError, User.DoesNotExist):
-            return Response({'code': 1001, 'message': 'refresh_token无效或已过期'}, status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.ExpiredSignatureError:
+            return Response({'code': 1001, 'message': 'refresh_token已过期'}, status=status.HTTP_401_UNAUTHORIZED)
+        except (jwt.InvalidTokenError, User.DoesNotExist):
+            return Response({'code': 1001, 'message': 'refresh_token无效'}, status=status.HTTP_401_UNAUTHORIZED)
 
         return Response({'code': 0, 'data': get_token_response(user)})
 
