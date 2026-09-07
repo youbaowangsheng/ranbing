@@ -1,4 +1,4 @@
-const { getCommunityDetail, getCommunityMembers, getCommunityMessages, postCommunityMessage, joinCommunity, leaveCommunity, getProfile, extractData } = require('../../services/api.js');
+const { getCommunityDetail, getCommunityMembers, getCommunityMessages, postCommunityMessage, joinCommunity, leaveCommunity, getCommunityMyStatus, extractData } = require('../../services/api.js');
 
 Page({
   data: {
@@ -40,14 +40,10 @@ Page({
   },
 
   checkJoinStatus() {
-    getCommunityMembers(this.data.uuid).then(res => {
-      const members = extractData(res) || [];
-      getProfile().then(res => {
-        const me = extractData(res) || {};
-        const myUuid = me.uuid;
-        const found = members.find(m => m.profile && m.profile.uuid === myUuid);
-        this.setData({ isJoined: !!found });
-      }).catch(()=>{});
+    // 用专门的 my_status 接口判断加入状态，避免遍历成员列表
+    getCommunityMyStatus(this.data.uuid).then(res => {
+      const data = extractData(res) || {};
+      this.setData({ isJoined: !!data.joined });
     }).catch(()=>{});
   },
 
@@ -103,6 +99,22 @@ Page({
   toggleJoin() {
     if (!wx.getStorageSync('token')) { wx.navigateTo({ url: '/pages/login/login' }); return }
     const wasJoined = this.data.isJoined;
+    const that = this;
+    // 退出需要二次确认
+    if (wasJoined) {
+      wx.showModal({
+        title: '退出社群',
+        content: '确定要退出该社群吗？',
+        success: (r) => {
+          if (r.confirm) that._doJoinAction(true);
+        }
+      });
+      return;
+    }
+    this._doJoinAction(false);
+  },
+
+  _doJoinAction(wasJoined) {
     const action = wasJoined ? leaveCommunity(this.data.uuid) : joinCommunity(this.data.uuid);
     action.then(res => {
       const d = extractData(res);
@@ -110,10 +122,19 @@ Page({
         this.setData({ isJoined: !wasJoined });
         wx.showToast({ title: wasJoined ? '已退出' : '已加入', icon: 'success' });
         this.loadDetail();
+        this.loadMembers();
       } else {
         wx.showToast({ title: (d && d.message) || '操作失败', icon: 'none' });
       }
     }).catch(() => wx.showToast({ title: '操作失败', icon: 'none' }));
+  },
+
+  onShareAppMessage() {
+    const community = this.data.community || {};
+    return {
+      title: community.name || '燃冰社群',
+      path: `/pages/community-detail/community-detail?uuid=${this.data.uuid}`,
+    };
   },
 
   viewProfile(e) {

@@ -80,7 +80,7 @@ class CommunityViewSet(viewsets.GenericViewSet):
         except CommunityMember.DoesNotExist:
             return Response({'code': 2004, 'message': '您不在社群中'}, status=status.HTTP_400_BAD_REQUEST)
 
-        member.status = 0
+        member.status = 2  # 已退出（STATUS_CHOICES: 2=已退出）
         member.save(update_fields=['status'])
         community.member_count = max(0, community.member_count - 1)
         community.save(update_fields=['member_count'])
@@ -134,33 +134,48 @@ class CommunityViewSet(viewsets.GenericViewSet):
         except Community.DoesNotExist:
             return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
 
-        qs = CommunityMember.objects.filter(community=community).select_related(
+        qs = CommunityMember.objects.filter(community=community, status=1).select_related(
             'profile__user'
         )
         page = self.paginate_queryset(qs)
-        if page is not None:
-            return self.get_paginated_response([
-                {
-                    'uuid': str(m.profile.uuid) if m.profile else '',
-                    'real_name': m.profile.real_name if m.profile else '匿名',
-                    'company': m.profile.company if m.profile else '',
-                    'position': m.profile.position if m.profile else '',
-                    'role': m.role,
-                    'joined_at': m.joined_at.isoformat() if m.joined_at else None,
-                }
-                for m in page
-            ])
-        return Response({'code': 0, 'data': [
-            {
-                'uuid': str(m.profile.uuid) if m.profile else '',
-                'real_name': m.profile.real_name if m.profile else '',
-                'company': m.profile.company if m.profile else '',
-                'position': m.profile.position if m.profile else '',
+
+        def _ser(m):
+            p = m.profile
+            return {
+                'profile': {
+                    'uuid': str(p.uuid) if p else '',
+                    'real_name': p.real_name if p else '匿名',
+                    'company': p.company if p else '',
+                    'position': p.position if p else '',
+                    'avatar_url': getattr(p.user, 'avatar_url', '') if p and p.user else '',
+                },
                 'role': m.role,
                 'joined_at': m.joined_at.isoformat() if m.joined_at else None,
             }
-            for m in qs[:20]
-        ]})
+
+        if page is not None:
+            return self.get_paginated_response([_ser(m) for m in page])
+        return Response({'code': 0, 'data': [_ser(m) for m in qs[:20]]})
+
+    @action(detail=True, methods=['get'], url_path='my_status')
+    def my_status(self, request, pk=None):
+        """当前用户在该社群的状态（是否已加入、角色）"""
+        try:
+            community = Community.objects.get(uuid=pk)
+        except Community.DoesNotExist:
+            return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.is_authenticated:
+            return Response({'code': 0, 'data': {'joined': False, 'role': None}})
+
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        member = CommunityMember.objects.filter(
+            community=community, profile=profile, status=1
+        ).first()
+        return Response({'code': 0, 'data': {
+            'joined': bool(member),
+            'role': member.role if member else None,
+        }})
 
     @action(detail=True, methods=['get'])
     def messages(self, request, pk=None):

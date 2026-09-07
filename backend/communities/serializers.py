@@ -24,11 +24,16 @@ class CommunitySerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()
+    # Message 模型只有 id，没有 uuid，用 SerializerMethodField 暴露 id 为 uuid
+    uuid = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
         fields = ['uuid', 'profile', 'content', 'msg_type', 'is_pinned',
                   'like_count', 'ai_signal_type', 'created_at']
+
+    def get_uuid(self, obj):
+        return str(obj.id)
 
     def get_profile(self, obj):
         return {

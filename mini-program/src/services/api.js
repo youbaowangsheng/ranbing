@@ -102,6 +102,21 @@ function getActivityDetail(uuid) {
   return request(`/activities/${uuid}/`)
 }
 
+// 报名活动
+function enrollActivity(uuid) {
+  return request(`/activities/${uuid}/enroll/`, 'POST')
+}
+
+// 取消报名活动
+function unenrollActivity(uuid) {
+  return request(`/activities/${uuid}/unenroll/`, 'POST')
+}
+
+// 检查当前用户是否已报名某活动
+function getMyEnrollmentStatus(uuid) {
+  return request(`/activities/${uuid}/enrollment_status/`)
+}
+
 // AI活动推荐
 function getActivityRecommend() {
   return request('/ai/activity-recommend/', 'GET')
@@ -121,6 +136,11 @@ function getCommunityDetail(uuid) {
 // 社群成员
 function getCommunityMembers(uuid, page = 1) {
   return request(`/communities/${uuid}/members/?page=${page}`)
+}
+
+// 当前用户在该社群的加入状态
+function getCommunityMyStatus(uuid) {
+  return request(`/communities/${uuid}/my_status/`)
 }
 
 // 加入社群
@@ -306,9 +326,13 @@ module.exports = {
   getMyEnrollments,
   getActivityRecommend,
   getActivityDetail,
+  enrollActivity,
+  unenrollActivity,
+  getMyEnrollmentStatus,
   getCommunities,
   getCommunityDetail,
   getCommunityMembers,
+  getCommunityMyStatus,
   getCommunityMessages,
   postCommunityMessage,
   getMySupplies,

@@ -48,10 +48,10 @@
     <!-- 底部报名按钮 -->
     <view class="bottom-bar">
       <view class="bottom-left">
-        <text class="share-hint">分享给朋友一起参加</text>
+        <button class="share-btn" open-type="share">分享给朋友</button>
       </view>
       <button class="btn-join" bindtap="joinActivity" wx:if="{{!joined}}">立即报名</button>
-      <button class="btn-joined" wx:if="{{joined}}">已报名 ✓</button>
+      <button class="btn-joined" bindtap="cancelActivity" wx:if="{{joined}}">已报名 · 点击取消</button>
     </view>
   </view>
 </view>

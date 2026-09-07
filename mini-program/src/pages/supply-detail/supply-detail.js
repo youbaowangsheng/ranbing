@@ -27,5 +27,12 @@ Page({
     wx.navigateTo({
       url: `/pages/chat/chat?peer_uuid=${profile.uuid}&peer_name=${encodeURIComponent(peer_name)}`
     })
+  },
+  onShareAppMessage() {
+    const item = this.data.item || {}
+    return {
+      title: item.title || '燃冰供需',
+      path: `/pages/supply-detail/supply-detail?uuid=${this.data.uuid}`,
+    }
   }
 })

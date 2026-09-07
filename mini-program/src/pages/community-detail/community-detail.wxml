@@ -72,8 +72,9 @@
 
   <!-- bottom bar -->
   <view class="bottom-bar">
+    <button class="share-btn" open-type="share">分享</button>
     <button class="action-btn {{isJoined?'joined-btn':'join-btn'}}" bindtap="toggleJoin">
-      {{isJoined?'已加入':'加入社群'}}
+      {{isJoined?'退出社群':'加入社群'}}
     </button>
     <button class="msg-btn" bindtap="switchTab" data-tab="post">发动态</button>
   </view>
