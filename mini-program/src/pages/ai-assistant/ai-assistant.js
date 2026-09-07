@@ -19,6 +19,7 @@ Page({
     // 初始欢迎语
     this.setData({
       messages: [{
+        id: 'welcome',
         role: 'ai',
         content: '你好！我是燃冰AI助手。你可以问我任何问题，比如"帮我找消费行业的投资机会"或"有哪些技术合作的供需"。\n\n⚠ 内容由 AI 生成，仅供参考'
       }]
@@ -57,7 +58,8 @@ Page({
   },
 
   _appendMessage(role, content) {
-    const messages = [...this.data.messages, { role, content }]
+    // 每条消息带唯一 id，供 wx:key 使用
+    const messages = [...this.data.messages, { id: Date.now() + '_' + Math.random(), role, content }]
     // scrollTop 直接设一个足够大的值滚到底部，避免累加导致视图滚出内容区显示空白
     this.setData({ messages, scrollTop: 99999 })
   },
