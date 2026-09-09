@@ -12,6 +12,24 @@ page {
   padding: 40px 24px;
 }
 
+/* 顶部返回/关闭按钮 */
+.nav-back {
+  position: absolute;
+  top: 60px;
+  left: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.nav-back-icon {
+  font-size: 26px;
+  color: #fff;
+  font-weight: 300;
+}
+
 /* Logo */
 .logo-section { text-align: center; margin-bottom: 32px; }
 .logo-icon {

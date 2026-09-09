@@ -24,7 +24,7 @@
 
   <!-- AI精选区 -->
   <view class="ai-section" wx:if="{{!aiLoading && aiItem && activeTab==='recommend'}}">
-    <view class="ai-label">✨ AI精选</view>
+    <view class="ai-label">✨ AI精选 <text class="ai-gen-badge">人工智能生成</text></view>
     <view class="ai-card" bindtap="toDetail" data-uuid="{{aiItem.uuid}}">
       <view class="ai-match-row">
         <text class="match-pill">🔥 {{aiItem.pct}}%匹配</text>

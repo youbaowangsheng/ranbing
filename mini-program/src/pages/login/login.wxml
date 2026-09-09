@@ -1,5 +1,10 @@
 <!-- 登录页 - 同步web端设计 -->
 <view class="container">
+  <!-- 顶部返回/关闭按钮（审核要求：登录环节需提供可取消/返回） -->
+  <view class="nav-back" bindtap="goBack">
+    <text class="nav-back-icon">✕</text>
+  </view>
+
   <!-- Logo -->
   <view class="logo-section">
     <image class="logo-icon" src="/assets/logo.png" mode="aspectFit" />

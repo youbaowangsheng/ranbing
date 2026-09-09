@@ -21,6 +21,7 @@ page { background: #f0f2f5; }
 
 .ai-section { padding: 12px 16px; }
 .ai-label { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 8px; display: inline-block; margin-bottom: 8px; }
+.ai-gen-badge { font-size: 10px; color: #ffe58f; margin-left: 4px; }
 .ai-card { background: linear-gradient(135deg,#1a3a5c,#2d5a8a); border-radius: 14px; padding: 14px; }
 .ai-match-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .match-pill { background: rgba(232,106,58,0.2); color: #ff9a7a; font-size: 11px; padding: 2px 8px; border-radius: 8px; }

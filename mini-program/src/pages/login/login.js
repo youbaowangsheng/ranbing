@@ -17,6 +17,16 @@ Page({
     this.setData({ activeTab: e.currentTarget.dataset.tab, errorMsg: '' })
   },
 
+  // 返回/跳过登录：有上一页则返回，否则回首页（满足审核"可取消登录"要求）
+  goBack() {
+    const pages = getCurrentPages()
+    if (pages.length > 1) {
+      wx.navigateBack()
+    } else {
+      wx.switchTab({ url: '/pages/home/home' })
+    }
+  },
+
   toggleAgree() {
     this.setData({ agreeProtocol: !this.data.agreeProtocol })
   },
