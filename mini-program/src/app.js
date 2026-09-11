@@ -1,8 +1,7 @@
 // 燃冰小程序 - 入口文件
 
-// 云开发环境 ID（在微信开发者工具 → 云开发 中查看，形如 'ranbing-xxxxx'）
-// 留空则使用默认环境；建议显式填写，避免多环境时串号
-const CLOUD_ENV_ID = ''
+// 云开发环境 ID
+const CLOUD_ENV_ID = 'cloudbase-d7giibqjyd387689a'
 
 App({
   globalData: {
