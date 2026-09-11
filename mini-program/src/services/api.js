@@ -119,11 +119,6 @@ function getMyEnrollmentStatus(uuid) {
   return request(`/activities/${uuid}/enrollment_status/`)
 }
 
-// AI活动推荐（AI 接口慢，放宽超时到 60 秒）
-function getActivityRecommend() {
-  return request('/ai/activity-recommend/', 'GET', null, { timeout: 60000 })
-}
-
 // 获取社群列表
 function getCommunities(params = {}) {
   const q = buildQuery(params)
@@ -169,11 +164,6 @@ function postCommunityMessage(data) {
 function getMySupplies(params = {}) {
   const q = buildQuery(params)
   return request(`/supplies/mine/${q ? '?' + q : ''}`)
-}
-
-// AI匹配（慢接口，放宽超时到 60 秒）
-function aiMatch(data) {
-  return request('/ai/match/', 'POST', data, { timeout: 60000 })
 }
 
 // 获取个人Profile（/profiles/me/返回完整profile，含company/position/cert_level）
@@ -326,7 +316,6 @@ module.exports = {
   deleteSupply,
   getActivities,
   getMyEnrollments,
-  getActivityRecommend,
   getActivityDetail,
   enrollActivity,
   unenrollActivity,
@@ -340,7 +329,6 @@ module.exports = {
   getMySupplies,
   joinCommunity,
   leaveCommunity,
-  aiMatch,
   getProfile,
   getMe,
   updateProfile,

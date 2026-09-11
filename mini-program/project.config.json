@@ -57,8 +57,8 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "3.3.5",
-  "appid": "wx5c3b0ab31ced45fa",
+  "libVersion": "3.16.1",
+  "appid": "wx38afcc7832ded761",
   "projectname": "ranbing-mini-program",
   "condition": {
     "search": {

@@ -1,5 +1,16 @@
 // pages/ai-assistant/ai-assistant.js - AI对话助手
-const { request } = require('../../services/api.js')
+const { getProfile, extractData } = require('../../services/api.js')
+const { generateText } = require('../../services/ai.js')
+
+// 系统提示语：引导简洁、直接、商务风格的回复
+const SYSTEM_PROMPT = (
+  '你是「燃冰」AI商务助手，服务商务社交、供需对接、人脉连接场景。'
+  + '回复要求：'
+  + '1. 简洁直接，开门见山，不要客套寒暄；'
+  + '2. 商务风格，专业务实，多用短句和要点；'
+  + '3. 控制在 300 字以内，重点突出，不展开无关细节；'
+  + '4. 如涉及资源/人脉推荐，给出具体可执行的建议或方向即可。'
+)
 
 Page({
   data: {
@@ -50,20 +61,37 @@ Page({
     this._appendMessage('user', text)
 
     try {
-      // AI 对话生成慢（长回复可达 30-60 秒），放宽超时到 120 秒
-      const res = await request('/ai/chat/', 'POST', { message: text }, { timeout: 120000 })
+      // 用户背景（姓名/公司/职位/标签）拼进 prompt，让回复更贴合
+      const userContext = await this._buildUserContext()
+      const content = await generateText([
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: text + userContext },
+      ], { maxTokens: 600, temperature: 0.5 })
+
       this.setData({ aiTyping: false })
-      const content = res && res.data && res.data.content
-      if (res && res.code === 0 && content) {
-        this._appendMessage('ai', content)
-      } else {
-        const fallback = (res && res.message) || '抱歉，AI暂时无法回复，请稍后重试'
-        this._appendMessage('ai', fallback)
-      }
+      this._appendMessage('ai', content)
     } catch (e) {
       console.error('AI 请求失败', e)
       this.setData({ aiTyping: false })
-      this._appendMessage('ai', '网络连接失败，请检查网络后重试')
+      this._appendMessage('ai', 'AI 服务暂时不可用，请稍后重试')
+    }
+  },
+
+  // 拉取当前用户资料，拼成 [用户背景] 文本；失败则返回空串
+  async _buildUserContext() {
+    try {
+      const res = await getProfile()
+      const p = extractData(res) || {}
+      const parts = []
+      if (p.real_name) parts.push(`姓名：${p.real_name}`)
+      if (p.company) parts.push(`公司：${p.company}`)
+      if (p.position) parts.push(`职位：${p.position}`)
+      if (p.industry) parts.push(`行业：${p.industry}`)
+      if (p.city) parts.push(`城市：${p.city}`)
+      if (!parts.length) return ''
+      return `\n\n[用户背景] ${parts.join('，')}。`
+    } catch (e) {
+      return ''
     }
   },
 

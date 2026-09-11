@@ -1,4 +1,9 @@
 // 燃冰小程序 - 入口文件
+
+// 云开发环境 ID（在微信开发者工具 → 云开发 中查看，形如 'ranbing-xxxxx'）
+// 留空则使用默认环境；建议显式填写，避免多环境时串号
+const CLOUD_ENV_ID = ''
+
 App({
   globalData: {
     userInfo: null,
@@ -12,6 +17,20 @@ App({
   },
 
   onLaunch() {
+    // 初始化云开发（AI 能力走云开发混元，需基础库 >= 3.15.1）
+    if (!wx.cloud) {
+      console.error('[Cloud] 当前基础库不支持云开发，请升级到 3.15.1 及以上')
+    } else {
+      try {
+        wx.cloud.init({
+          env: CLOUD_ENV_ID || undefined,
+          traceUser: true,
+        })
+      } catch (e) {
+        console.error('[Cloud] 初始化失败', e)
+      }
+    }
+
     // 获取状态栏高度和胶囊按钮位置，供页面自定义导航栏对齐
     try {
       const sysInfo = wx.getSystemInfoSync()

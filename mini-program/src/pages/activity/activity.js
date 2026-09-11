@@ -1,5 +1,6 @@
 // pages/activity/activity.js
-const { getActivities, getActivityRecommend, getMyEnrollments } = require('../../services/api.js')
+const { getActivities, getMyEnrollments, getProfile, extractData } = require('../../services/api.js')
+const { generateJSON } = require('../../services/ai.js')
 
 Page({
   data: {
@@ -45,16 +46,50 @@ Page({
     if (token) this.loadAiRecommend()
   },
 
+  // AI 精选：拉候选活动 → 混元挑最相关的一个并给理由
   async loadAiRecommend() {
     this.setData({ aiLoading: true })
     try {
-      const res = await getActivityRecommend()
-      const ai = res.data
-      if (ai) {
-        ai.start_time_fmt = ai.start_time ? ai.start_time.replace('T', ' ').slice(0, 16) : ''
+      const [actRes, profileRes] = await Promise.all([
+        getActivities({ page: 1, page_size: 10 }),
+        getProfile().catch(() => null),
+      ])
+
+      let acts = actRes.results || actRes.items || (typeof actRes.count === 'number' ? [] : actRes) || []
+      acts = acts.map(item => ({
+        ...item,
+        attendee_count: item.current_attendees || 0,
+        start_time_fmt: item.start_time ? item.start_time.replace('T', ' ').slice(0, 16) : ''
+      }))
+
+      if (!acts.length) {
+        this.setData({ aiItem: null, aiLoading: false })
+        return
       }
-      this.setData({ aiItem: ai, aiLoading: false })
+
+      const p = extractData(profileRes) || {}
+      const profileText = [p.real_name, p.company, p.position, p.industry, p.city]
+        .filter(Boolean).join('，') || '商务人士'
+      const list = acts.map((a, i) => `${i}. ${a.title}（${a.location || ''}）`).join('\n')
+      const prompt = (
+        `用户背景：${profileText}\n\n可选活动：\n${list}\n\n`
+        + '请选出与该用户最相关的一个活动，只返回 JSON：'
+        + '{"index": 序号, "reason": "30字以内的推荐理由", "pct": 匹配度0到100的整数}'
+      )
+
+      const parsed = await generateJSON(
+        [{ role: 'user', content: prompt }],
+        { maxTokens: 200, temperature: 0.5 }
+      )
+
+      const idx = parsed && Number.isInteger(parsed.index) && acts[parsed.index] ? parsed.index : 0
+      const item = { ...acts[idx] }
+      item.match_reason = (parsed && parsed.reason) || '根据您的行业背景为您推荐'
+      item.pct = (parsed && parsed.pct) || 75
+
+      this.setData({ aiItem: item, aiLoading: false })
     } catch (e) {
+      console.error('[AI精选] 失败', e)
       this.setData({ aiItem: null, aiLoading: false })
     }
   },
