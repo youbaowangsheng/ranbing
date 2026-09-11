@@ -26,25 +26,53 @@ function isCloudReady() {
 async function generateText(messages, options = {}) {
   const maxTokens = options.maxTokens || 600
   const temperature = options.temperature !== undefined ? options.temperature : 0.5
+  const retries = options.retries !== undefined ? options.retries : 1
 
   if (!isCloudReady()) {
     throw new Error('云开发未初始化或基础库版本过低（需 >= 3.15.1）')
   }
 
   const model = wx.cloud.extend.AI.createModel(PROVIDER)
-  const res = await model.generateText({
-    model: MODEL,
-    messages,
-    max_tokens: maxTokens,
-    temperature,
-  })
 
-  const choice = res && res.choices && res.choices[0]
-  const content = choice && choice.message ? choice.message.content : ''
-  if (!content) {
-    throw new Error('AI 返回内容为空')
+  let lastErr = null
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await model.generateText({
+        model: MODEL,
+        messages,
+        max_tokens: maxTokens,
+        temperature,
+      })
+
+      const choice = res && res.choices && res.choices[0]
+      const content = choice && choice.message ? choice.message.content : ''
+      if (!content) {
+        throw new Error('AI 返回内容为空')
+      }
+      return content
+    } catch (e) {
+      lastErr = e
+      const msg = (e && (e.message || e.errMsg)) || ''
+      // 429 限流 / 临时故障：退避后重试一次
+      const retriable = /429|Too Many Requests|timeout|超时|网络/i.test(msg)
+      if (attempt < retries && retriable) {
+        console.warn(`[ai] 第 ${attempt + 1} 次失败，1.5s 后重试：`, msg)
+        await new Promise(r => setTimeout(r, 1500))
+        continue
+      }
+      break
+    }
   }
-  return content
+
+  // 统一成用户可读的错误
+  const raw = (lastErr && (lastErr.message || lastErr.errMsg)) || ''
+  if (/429|Too Many Requests/i.test(raw)) {
+    throw new Error('AI 使用人数较多，请稍后重试')
+  }
+  if (/405|404|not found|不存在/i.test(raw)) {
+    throw new Error('AI 服务未开通，请先领取云开发 AI 免费额度')
+  }
+  throw new Error(raw || 'AI 服务暂时不可用')
 }
 
 /**

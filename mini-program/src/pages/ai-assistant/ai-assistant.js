@@ -52,8 +52,10 @@ Page({
     this.setData({ inputText: e.detail.value })
   },
 
-  async sendMessage() {
-    const text = this.data.inputText.trim()
+  // presetText：快捷问题直接传入；不传则取输入框内容
+  async sendMessage(presetText) {
+    const text = (typeof presetText === 'string' ? presetText : this.data.inputText).trim()
+    // aiTyping 作为并发锁，防止连点触发多次请求（云开发有并发限制，易 429）
     if (!text || this.data.aiTyping) return
     if (!this.data.isLogin) { wx.navigateTo({ url: '/pages/login/login' }); return }
 
@@ -73,7 +75,7 @@ Page({
     } catch (e) {
       console.error('AI 请求失败', e)
       this.setData({ aiTyping: false })
-      this._appendMessage('ai', 'AI 服务暂时不可用，请稍后重试')
+      this._appendMessage('ai', (e && e.message) || 'AI 服务暂时不可用，请稍后重试')
     }
   },
 
@@ -106,8 +108,9 @@ Page({
 
   quickAsk(e) {
     const q = e.currentTarget.dataset.q
-    this.setData({ inputText: q })
-    setTimeout(() => this.sendMessage(), 50)
+    // 直接把内容传给 sendMessage，避免 setData 异步 + setTimeout 的时序不可靠
+    // 以及连点导致的并发请求（429 风险）
+    this.sendMessage(q)
   },
 
   goBack() {
