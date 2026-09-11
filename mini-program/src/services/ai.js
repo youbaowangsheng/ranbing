@@ -40,7 +40,15 @@ async function _once(provider, model, messages, opts) {
   })
   const choice = res && res.choices && res.choices[0]
   const content = choice && choice.message ? choice.message.content : ''
-  if (!content) throw new Error('AI 返回内容为空')
+  if (!content) {
+    // 429 等错误时 SDK 可能不抛异常，而是返回空 choices。
+    // 打印完整响应 + 提取错误信息，便于定位根因。
+    let detail = ''
+    try { detail = JSON.stringify(res).slice(0, 300) } catch (e) { detail = String(res) }
+    console.warn(`[ai] ${provider}/${model} 空响应，原始返回：${detail}`)
+    const errMsg = (res && (res.error || res.message || res.errMsg)) || detail || '无错误信息'
+    throw new Error(`空响应: ${errMsg}`)
+  }
   return content
 }
 
