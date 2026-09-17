@@ -18,6 +18,10 @@
     <view class="my-card" wx:for="{{items}}" wx:key="uuid">
       <view class="card-header">
         <view class="supply-type {{item.supply_type===1?'type-supply':'type-demand'}}">{{item.supply_type===1?'供给':'需求'}}</view>
+        <!-- 审核状态：0=待审核 1=已通过 2=已拒绝 -->
+        <view class="audit-badge {{item.audit_status===0?'audit-pending':(item.audit_status===1?'audit-pass':'audit-reject')}}">
+          {{item.audit_status===0?'审核中':(item.audit_status===1?'已通过':'未通过')}}
+        </view>
         <view class="card-actions">
           <text class="action-edit" bindtap="toEdit" data-uuid="{{item.uuid}}">编辑</text>
           <text class="action-delete" bindtap="confirmDelete" data-uuid="{{item.uuid}}">删除</text>

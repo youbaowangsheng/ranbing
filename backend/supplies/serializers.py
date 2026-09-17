@@ -34,7 +34,7 @@ class SupplyListSerializer(serializers.ModelSerializer):
         model = Supply
         fields = ['uuid', 'profile', 'supply_type', 'title', 'content',
                   'tags', 'match_count', 'view_count', 'quality_score',
-                  'status', 'created_at', 'is_mine']
+                  'status', 'audit_status', 'created_at', 'is_mine']
 
     def get_tags(self, obj):
         # obj.tags is JSONField: [{id, name}, ...] or [id, ...]

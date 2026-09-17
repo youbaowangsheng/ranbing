@@ -22,17 +22,13 @@ Page({
   async loadTags() {
     try {
       const res = await getTags()
-      const cats = res.data?.categories || []
-      const allTags = []
-      cats.forEach(cat => {
-        if (cat.l2_groups) {
-          cat.l2_groups.forEach(g => {
-            if (g.l3_items) allTags.push(...g.l3_items)
-          })
-        }
-      })
-      this.setData({ tags: allTags })
-    } catch (e) {}
+      // 后端 /tags/ 返回扁平数组 [{id, name, l1_category, tag_type}, ...]
+      const list = Array.isArray(res) ? res : (res.results || res.data || [])
+      const tags = list.map(t => ({ id: t.id, name: t.name }))
+      this.setData({ tags })
+    } catch (e) {
+      console.error('[publish] 标签加载失败', e)
+    }
   },
 
   selectType(e) {
@@ -41,7 +37,8 @@ Page({
 
   toggleTag(e) {
     const id = e.currentTarget.dataset.id
-    const arr = this.data.selectedTags
+    // 用副本操作，避免原地修改 this.data（小程序反模式，可能导致视图不更新）
+    const arr = (this.data.selectedTags || []).slice()
     const idx = arr.indexOf(id)
     if (idx >= 0) arr.splice(idx, 1)
     else arr.push(id)
@@ -111,18 +108,34 @@ Page({
     if (!content.trim()) { this.setData({ errorMsg: '请填写详细内容' }); return }
     this.setData({ errorMsg: '' })
 
-    wx.showLoading({ title: '发布中...' })
+    wx.showLoading({ title: '发布中...', mask: true })
 
     try {
       // 先上传图片，获取 URLs
       let imageUrls = []
       if (images.length > 0) {
         this.setData({ uploadingImages: true })
-        imageUrls = await Promise.all(images.map(p => this.uploadImage(p).catch(() => null)))
-        imageUrls = imageUrls.filter(Boolean)
+        wx.showLoading({ title: '上传图片中...', mask: true })
+        const results = await Promise.all(
+          images.map(p => this.uploadImage(p).then(url => ({ ok: true, url })).catch(err => ({ ok: false, err })))
+        )
         this.setData({ uploadingImages: false })
+        const failed = results.filter(r => !r.ok)
+        imageUrls = results.filter(r => r.ok).map(r => r.url)
+
+        // 图片全部失败时明确告知，避免"以为发了其实没发"
+        if (failed.length === images.length) {
+          wx.hideLoading()
+          const reason = (failed[0].err && failed[0].err.message) || '未知原因'
+          this.setData({ errorMsg: `图片上传失败（${reason}），可去掉图片后直接发布` })
+          return
+        }
+        if (failed.length > 0) {
+          wx.showToast({ title: `${failed.length} 张图片上传失败，已跳过`, icon: 'none' })
+        }
       }
 
+      wx.showLoading({ title: '发布中...', mask: true })
       const payload = {
         supply_type: supplyType,
         title: title.trim(),
@@ -132,16 +145,19 @@ Page({
       }
       const res = await createSupply(payload)
       wx.hideLoading()
-      // createSupply returns res.data (unwrapped by api.js), so check res directly
+
       if (res && res.uuid) {
-        wx.showToast({ title: '发布成功', icon: 'success' })
-        setTimeout(() => wx.switchTab({ url: '/pages/supply-demand/supply-demand' }), 1500)
+        // 跳「我的发布」而非首页：首页只显示已审核通过的内容，
+        // 新发布的是待审核状态，跳首页会让用户以为发布失败
+        wx.showToast({ title: '发布成功，待审核', icon: 'success' })
+        setTimeout(() => wx.navigateTo({ url: '/pages/my-posts/my-posts' }), 1500)
       } else {
-        this.setData({ errorMsg: res && res.message || '发布失败' })
+        // 后端返回但无 uuid：透传后端 message
+        this.setData({ errorMsg: (res && res.message) || '发布失败，请稍后重试' })
       }
     } catch (e) {
       wx.hideLoading()
-      this.setData({ uploadingImages: false, errorMsg: e.message || '网络错误，请稍后重试' })
+      this.setData({ uploadingImages: false, errorMsg: (e && e.message) || '网络异常，请稍后重试' })
     }
   }
 })

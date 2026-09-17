@@ -11,10 +11,16 @@
 .btn-publish { background: #1a3a5c; color: #fff; border: none; border-radius: 20px; padding: 10px 24px; font-size: 14px; margin-top: 20px; }
 .my-list { padding: 12px 16px; }
 .my-card { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.card-header { display: flex; align-items: center; margin-bottom: 8px; }
+.card-header .card-actions { margin-left: auto; }
 .supply-type { font-size: 11px; padding: 2px 8px; border-radius: 6px; }
 .type-supply { background: #e8fdf5; color: #059669; }
 .type-demand { background: #fff3e8; color: #c2410c; }
+/* 审核状态徽标 */
+.audit-badge { font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-left: 8px; }
+.audit-pending { background: #fff7e6; color: #d48806; }
+.audit-pass { background: #e8fdf5; color: #059669; }
+.audit-reject { background: #fff1f0; color: #cf1322; }
 .card-actions { display: flex; gap: 12px; }
 .action-edit, .action-delete { font-size: 13px; }
 .action-edit { color: #1a3a5c; }

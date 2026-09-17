@@ -49,5 +49,7 @@ Page({
     this.loadData(true)
   },
 
+  toPublish() { wx.navigateTo({ url: '/pages/publish/publish' }) },
+
   goBack() { wx.navigateBack({ fail: () => wx.switchTab({ url: '/pages/profile/profile' }) }) }
 })
