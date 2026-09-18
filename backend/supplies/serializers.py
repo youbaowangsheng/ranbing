@@ -82,6 +82,24 @@ class SupplyCreateSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=256)
     content = serializers.CharField(required=False, default='')
     tags = serializers.ListField(child=serializers.IntegerField(), required=False, default=list)
+    images = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+
+    def to_internal_value(self, data):
+        # 容错：前端可能传 [null] 或 ['26']，这里统一过滤成有效的 int 列表，
+        # 避免因个别脏值导致整个发布请求 400
+        mutable = data.copy() if hasattr(data, 'copy') else dict(data)
+        raw_tags = mutable.get('tags')
+        if isinstance(raw_tags, list):
+            cleaned = []
+            for t in raw_tags:
+                try:
+                    v = int(t)
+                    if v > 0:
+                        cleaned.append(v)
+                except (TypeError, ValueError):
+                    continue
+            mutable['tags'] = cleaned
+        return super().to_internal_value(mutable)
 
 
 class SupplyFeedSerializer(serializers.ModelSerializer):
@@ -155,22 +173,31 @@ class CardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Card
-        fields = ['uuid', 'owner', 'title', 'bio', 'show_company', 'show_position',
+        fields = ['uuid', 'owner',
+                  # 名片内容（小程序编辑页用）
+                  'name', 'company', 'position', 'phone', 'wechat', 'email',
+                  'tags', 'is_default', 'visibility',
+                  # 展示配置
+                  'title', 'bio', 'show_company', 'show_position',
                   'show_education', 'show_tags', 'show_contact', 'style_config',
                   'view_count', 'status', 'created_at', 'updated_at']
         read_only_fields = ['view_count', 'created_at', 'updated_at']
 
 
 class CardDetailSerializer(serializers.ModelSerializer):
-    """名片详情（含关联的profile信息）"""
+    """名片详情（含关联的 profile 信息）"""
     profile = serializers.SerializerMethodField()
 
     class Meta:
         model = Card
-        fields = ['uuid', 'profile', 'title', 'bio', 'show_company', 'show_position',
+        fields = ['uuid', 'profile',
+                  # 名片内容（小程序展示/编辑页用）
+                  'name', 'company', 'position', 'phone', 'wechat', 'email',
+                  'tags', 'is_default', 'visibility',
+                  # 展示配置
+                  'title', 'bio', 'show_company', 'show_position',
                   'show_education', 'show_tags', 'show_contact', 'style_config',
                   'view_count', 'status', 'created_at', 'updated_at']
 
     def get_profile(self, obj):
-        from .serializers import ProfileMiniSerializer
         return ProfileMiniSerializer(obj.owner).data

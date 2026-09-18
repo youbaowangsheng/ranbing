@@ -39,9 +39,12 @@
   <view class="section">
     <view class="section-title">选择标签（可多选）</view>
     <view class="tag-list">
-      <text class="tag-chip {{selectedTags.includes(tag.id)?'selected':''}}" wx:for="{{tags}}" wx:key="id" bindtap="toggleTag" data-id="{{tag.id}}">
+      <!-- 注意：WXML 不支持 selectedTags.includes(...) 这类方法调用，
+           改用 tag.selected 字段（在 JS 里维护） -->
+      <text class="tag-chip {{tag.selected?'selected':''}}" wx:for="{{tags}}" wx:key="id" bindtap="toggleTag" data-idx="{{index}}">
         {{tag.name}}
       </text>
+      <view class="tag-empty" wx:if="{{tags.length === 0}}">标签加载中...</view>
     </view>
   </view>
 

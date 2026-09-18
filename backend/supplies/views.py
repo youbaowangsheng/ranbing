@@ -94,9 +94,14 @@ class SupplyViewSet(viewsets.GenericViewSet):
         profile, _ = Profile.objects.get_or_create(user=request.user)
         from datetime import timedelta
         from django.utils import timezone
+
+        # 只取 model 上真实存在的字段（images 等仅用于前端传参，不入库）
+        valid_fields = {f.name for f in Supply._meta.fields}
+        data = {k: v for k, v in serializer.validated_data.items() if k in valid_fields}
+
         supply = Supply.objects.create(
             profile=profile,
-            **serializer.validated_data,
+            **data,
             expires_at=timezone.now() + timedelta(days=30)
         )
         # 生成embedding + AI质量评分（同步，简单实现）
@@ -313,6 +318,78 @@ class SupplyViewSet(viewsets.GenericViewSet):
         qs = Supply.objects.filter(profile=profile).order_by('-created_at')
         serializer = SupplyListSerializer(qs, many=True)
         return Response({'code': 0, 'data': serializer.data})
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        """
+        全局搜索 GET /supplies/search/?q=关键词
+        返回 {profiles, supplies, activities, communities}
+        """
+        from activities.models import Activity
+        from communities.models import Community
+        from profiles.models import Profile as ProfileModel
+
+        q = (request.query_params.get('q') or '').strip()
+        if not q:
+            return Response({'code': 0, 'data': {
+                'profiles': [], 'supplies': [], 'activities': [], 'communities': [],
+            }})
+
+        supplies = Supply.objects.filter(
+            Q(title__icontains=q) | Q(content__icontains=q),
+            audit_status=1, status=1,
+        ).select_related('profile__user').order_by('-created_at')[:10]
+
+        activities = Activity.objects.filter(
+            Q(title__icontains=q) | Q(description__icontains=q),
+            audit_status=1, status__in=[1, 2],
+        ).select_related('organizer__user').order_by('-created_at')[:10]
+
+        communities = Community.objects.filter(
+            Q(name__icontains=q) | Q(description__icontains=q),
+            status__in=[1, 2],
+        ).select_related('owner__user').order_by('-member_count')[:10]
+
+        profiles = ProfileModel.objects.select_related('user').filter(
+            Q(real_name__icontains=q) | Q(company__icontains=q) | Q(position__icontains=q)
+        ).order_by('-conn_count')[:10]
+
+        return Response({'code': 0, 'data': {
+            'supplies': SupplyListSerializer(supplies, many=True).data,
+            'activities': _activity_search_data(activities),
+            'communities': _community_search_data(communities),
+            'profiles': _profile_search_data(profiles),
+        }})
+
+
+def _activity_search_data(qs):
+    """搜索页用的精简活动数据"""
+    return [{
+        'uuid': str(a.uuid),
+        'title': a.title,
+        'start_time': a.start_time.isoformat() if a.start_time else None,
+        'location': a.location,
+    } for a in qs]
+
+
+def _community_search_data(qs):
+    """搜索页用的精简社群数据"""
+    return [{
+        'uuid': str(c.uuid),
+        'name': c.name,
+        'description': c.description,
+        'member_count': c.member_count,
+    } for c in qs]
+
+
+def _profile_search_data(qs):
+    """搜索页用的精简用户数据"""
+    return [{
+        'uuid': str(p.uuid),
+        'real_name': p.real_name,
+        'company': p.company,
+        'position': p.position,
+    } for p in qs]
 
 
 class FriendRequestViewSet(viewsets.GenericViewSet):

@@ -24,7 +24,11 @@ Page({
       const res = await getTags()
       // 后端 /tags/ 返回扁平数组 [{id, name, l1_category, tag_type}, ...]
       const list = Array.isArray(res) ? res : (res.results || res.data || [])
-      const tags = list.map(t => ({ id: t.id, name: t.name }))
+      // 每个标签自带 selected 状态：WXML 不支持数组方法调用（如 includes），
+      // 必须在 JS 里算好。
+      const tags = list
+        .filter(t => t && t.id != null)
+        .map(t => ({ id: t.id, name: t.name, selected: false }))
       this.setData({ tags })
     } catch (e) {
       console.error('[publish] 标签加载失败', e)
@@ -36,13 +40,15 @@ Page({
   },
 
   toggleTag(e) {
-    const id = e.currentTarget.dataset.id
-    // 用副本操作，避免原地修改 this.data（小程序反模式，可能导致视图不更新）
-    const arr = (this.data.selectedTags || []).slice()
-    const idx = arr.indexOf(id)
-    if (idx >= 0) arr.splice(idx, 1)
-    else arr.push(id)
-    this.setData({ selectedTags: arr })
+    // 用索引定位（比 data-id 更可靠，避免取不到值）
+    const idx = Number(e.currentTarget.dataset.idx)
+    const tags = (this.data.tags || []).slice()
+    if (!tags[idx]) return
+    tags[idx] = { ...tags[idx], selected: !tags[idx].selected }
+    this.setData({
+      tags,
+      selectedTags: tags.filter(t => t.selected).map(t => t.id),
+    })
   },
 
   onTitleInput(e) { this.setData({ title: e.detail.value }) },
@@ -136,11 +142,17 @@ Page({
       }
 
       wx.showLoading({ title: '发布中...', mask: true })
+      // tags 兜底过滤：剔除 null/undefined/非数字，避免后端返回
+      // "该字段不能为 null" 的 400
+      const safeTags = (selectedTags || [])
+        .map(t => Number(t))
+        .filter(t => Number.isInteger(t) && t > 0)
+
       const payload = {
         supply_type: supplyType,
         title: title.trim(),
         content: content.trim(),
-        tags: selectedTags,
+        tags: safeTags,
         images: imageUrls  // 提交上传后的 URL 数组
       }
       const res = await createSupply(payload)

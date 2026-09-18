@@ -16,6 +16,7 @@ class Supply(models.Model):
     title = models.CharField(max_length=256)
     content = models.TextField(blank=True, default='')
     tags = models.JSONField(default=list)  # [tag_id, ...]
+    images = models.JSONField(default=list)  # 图片 URL 列表
     match_count = models.IntegerField(default=0)
     is_anonymous = models.BooleanField(default=False)
     view_count = models.IntegerField(default=0)
@@ -174,12 +175,33 @@ class FriendRequest(models.Model):
 
 
 class Card(models.Model):
-    """电子名片表"""
+    """
+    电子名片表
+
+    字段分两组：
+    - 名片内容（name/company/position/phone/wechat/email/tags/is_default）
+      小程序「编辑名片」页填写和展示的就是这组
+    - 展示配置（title/bio/show_*/style_config）
+      名片渲染时的开关与样式
+    """
     STATUS_CHOICES = [(1, '有效'), (2, '已禁用')]
 
     id = models.BigAutoField(primary_key=True)
     uuid = models.UUIDField(default=uuid_lib.uuid4, unique=True, editable=False)
     owner = models.OneToOneField('profiles.Profile', on_delete=models.CASCADE, related_name='card')
+
+    # ── 名片内容（小程序使用）──
+    name = models.CharField(max_length=64, blank=True, default='')
+    company = models.CharField(max_length=128, blank=True, default='')
+    position = models.CharField(max_length=128, blank=True, default='')
+    phone = models.CharField(max_length=32, blank=True, default='')
+    wechat = models.CharField(max_length=64, blank=True, default='')
+    email = models.CharField(max_length=128, blank=True, default='')
+    tags = models.JSONField(default=list)
+    is_default = models.BooleanField(default=False)
+    visibility = models.SmallIntegerField(default=1)
+
+    # ── 展示配置 ──
     title = models.CharField(max_length=128, blank=True, default='')
     bio = models.TextField(blank=True, default='')
     show_company = models.BooleanField(default=True)
@@ -187,7 +209,8 @@ class Card(models.Model):
     show_education = models.BooleanField(default=True)
     show_tags = models.BooleanField(default=True)
     show_contact = models.BooleanField(default=True)
-    style_config = models.JSONField(default=dict)  # 自定义样式配置
+    style_config = models.JSONField(default=dict)
+
     view_count = models.IntegerField(default=0)
     status = models.SmallIntegerField(choices=STATUS_CHOICES, default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -195,6 +218,7 @@ class Card(models.Model):
 
     class Meta:
         db_table = 'cards'
+        ordering = ['-is_default', '-created_at']
 
     def __str__(self):
         return f'Card:{self.owner_id}'
