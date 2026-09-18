@@ -22,7 +22,10 @@
 
   <!-- 图片选择 -->
   <view class="section">
-    <view class="section-title">添加图片（可选，最多9张）</view>
+    <view class="section-title">
+      添加图片
+      <text class="optional-mark">选填</text>
+    </view>
     <view class="image-grid">
       <view class="img-item" wx:for="{{images}}" wx:key="index">
         <image class="img-thumb" src="{{item}}" mode="aspectFill" />
@@ -38,7 +41,10 @@
   <!-- 标签选择 -->
   <!-- 注意：wx:for 默认循环变量是 item，这里必须用 item.xxx（曾误用 tag.xxx 导致空灰块） -->
   <view class="section">
-    <view class="section-title">选择标签（可多选）</view>
+    <view class="section-title">
+      选择标签
+      <text class="optional-mark">选填，可多选</text>
+    </view>
     <view class="tag-list">
       <view
         class="tag-chip {{item.selected?'selected':''}}"
@@ -55,15 +61,41 @@
 
   <!-- 内容填写 -->
   <view class="section">
-    <view class="section-title">填写内容</view>
-    <view class="input-group">
-      <view class="input-row">
-        <input class="title-input" placeholder="标题（一句话概括）" value="{{title}}" maxlength="50" bindinput="onTitleInput" />
+    <view class="section-title">
+      <text class="required-mark">*</text>填写内容
+    </view>
+
+    <!-- 标题（必填） -->
+    <view class="field">
+      <view class="field-label">
+        <text class="required-mark">*</text>
+        <text>标题</text>
+        <text class="field-hint">必填，一句话概括</text>
       </view>
-      <view class="textarea-row">
-        <textarea class="content-input" placeholder="详细说明：描述你的需求或供给、期望的合作方式、你能提供的价值等" value="{{content}}" maxlength="500" bindinput="onContentInput" />
-        <text class="word-count">{{content.length}}/500</text>
+      <input
+        class="field-input {{!title ? 'field-error' : ''}}"
+        placeholder="例如：寻找企业服务方向的融资渠道"
+        value="{{title}}"
+        maxlength="50"
+        bindinput="onTitleInput"
+      />
+    </view>
+
+    <!-- 详细内容（必填） -->
+    <view class="field">
+      <view class="field-label">
+        <text class="required-mark">*</text>
+        <text>详细说明</text>
+        <text class="field-hint">必填</text>
       </view>
+      <textarea
+        class="field-textarea {{!content ? 'field-error' : ''}}"
+        placeholder="描述你的需求或供给、期望的合作方式、你能提供的价值等"
+        value="{{content}}"
+        maxlength="500"
+        bindinput="onContentInput"
+      />
+      <text class="word-count">{{content.length}}/500</text>
     </view>
   </view>
 
