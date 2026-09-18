@@ -34,7 +34,7 @@
 .img-add-text { font-size: 11px; color: #bbb; margin-top: 4px; }
 
 .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
-.tag-chip { background: #f0f2f5; color: #666; font-size: 13px; padding: 5px 12px; border-radius: 14px; }
+.tag-chip { background: #f0f2f5; color: #666; font-size: 13px; padding: 5px 12px; border-radius: 14px; line-height: 1.4; }
 .tag-chip.selected { background: #1a3a5c; color: #fff; }
 .tag-empty { font-size: 13px; color: #999; padding: 4px 0; }
 

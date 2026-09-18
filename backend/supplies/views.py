@@ -16,6 +16,37 @@ from .serializers import (
 from profiles.models import Profile
 
 
+def _generate_embedding_async(supply_id):
+    """
+    后台线程生成供需 embedding（不阻塞发布响应）。
+
+    注意：DeepSeek 未提供 embedding 接口，调用会失败/超时；
+    这里失败是预期内的，静默跳过即可，不能影响发布。
+    """
+    import threading
+
+    def worker():
+        try:
+            from .models import Supply, SupplyEmbedding
+            from ai.services.deepseek import DeepSeekClient
+
+            supply = Supply.objects.get(id=supply_id)
+            client = DeepSeekClient()
+            emb = client.embedding(f'{supply.title} {supply.content}')
+            if emb and len(emb) > 10:
+                SupplyEmbedding.objects.update_or_create(
+                    supply=supply,
+                    defaults={'embedding': emb, 'model_name': 'text-embedding-3-small'},
+                )
+                supply.quality_score = min(len(emb) / 1536 * 0.3 + 0.5, 0.99)
+                supply.save(update_fields=['quality_score'])
+        except Exception as e:
+            # embedding 不可用不影响业务
+            print(f'[Feed Embedding] 跳过: {e}')
+
+    threading.Thread(target=worker, daemon=True).start()
+
+
 def _cosine_similarity(vec_a, vec_b):
     """计算两个向量的余弦相似度"""
     dot = sum(a * b for a, b in zip(vec_a, vec_b))
@@ -104,22 +135,12 @@ class SupplyViewSet(viewsets.GenericViewSet):
             **data,
             expires_at=timezone.now() + timedelta(days=30)
         )
-        # 生成embedding + AI质量评分（同步，简单实现）
-        try:
-            from ai.services.deepseek import DeepSeekClient
-            client = DeepSeekClient()
-            combined_text = f"{supply.title} {supply.content}"
-            emb = client.embedding(combined_text)
-            if emb and len(emb) > 10:
-                from supplies.models import SupplyEmbedding
-                SupplyEmbedding.objects.update_or_create(
-                    supply=supply,
-                    defaults={'embedding': emb, 'model_name': 'text-embedding-3-small'}
-                )
-                supply.quality_score = min(len(emb) / 1536 * 0.3 + 0.5, 0.99)
-                supply.save(update_fields=['quality_score'])
-        except Exception as e:
-            print(f'[Feed Embedding Error] {e}')
+
+        # embedding 生成放后台线程，不阻塞发布响应。
+        # 之前是同步调用（DeepSeek embedding 每次要等 HTTP 超时 30s），
+        # 而前端请求超时只有 15s，导致「发布失败: timeout」。
+        _generate_embedding_async(supply.id)
+
         return Response({'code': 0, 'data': {'uuid': str(supply.uuid), 'quality_score': supply.quality_score}},
                        status=status.HTTP_201_CREATED)
 

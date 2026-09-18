@@ -21,7 +21,9 @@ Page({
 
   async loadTags() {
     try {
+      console.log('[publish] 开始加载标签...')
       const res = await getTags()
+      console.log('[publish] 标签接口返回:', res)
       // 后端 /tags/ 返回扁平数组 [{id, name, l1_category, tag_type}, ...]
       const list = Array.isArray(res) ? res : (res.results || res.data || [])
       // 每个标签自带 selected 状态：WXML 不支持数组方法调用（如 includes），
@@ -29,9 +31,11 @@ Page({
       const tags = list
         .filter(t => t && t.id != null)
         .map(t => ({ id: t.id, name: t.name, selected: false }))
+      console.log('[publish] 解析后标签数:', tags.length)
       this.setData({ tags })
     } catch (e) {
       console.error('[publish] 标签加载失败', e)
+      this.setData({ errorMsg: '标签加载失败：' + ((e && e.message) || '未知错误') })
     }
   },
 
@@ -86,24 +90,31 @@ Page({
   uploadImage(tempFilePath) {
     return new Promise((resolve, reject) => {
       const token = wx.getStorageSync('token')
+      console.log('[publish] 上传图片:', tempFilePath)
       wx.uploadFile({
         url: 'https://www.asiamlhk.com/api/v1/upload/image/',
         filePath: tempFilePath,
         name: 'file',
         header: { 'Authorization': token ? `Bearer ${token}` : '' },
+        timeout: 60000,  // 显式设置，默认超时太短会导致上传失败
         success: res => {
+          console.log('[publish] 上传返回:', res.statusCode, String(res.data).slice(0, 120))
           try {
             const data = JSON.parse(res.data)
-            if (data.url || data.data?.url) {
-              resolve(data.url || data.data.url)
+            const url = data.url || (data.data && data.data.url)
+            if (url) {
+              resolve(url)
             } else {
-              reject(new Error(data.message || '上传失败'))
+              reject(new Error(data.message || `上传失败(${res.statusCode})`))
             }
           } catch (e) {
-            reject(new Error('上传响应解析失败'))
+            reject(new Error(`上传响应解析失败(${res.statusCode})`))
           }
         },
-        fail: err => reject(new Error(err.errMsg || '上传失败'))
+        fail: err => {
+          console.error('[publish] 上传失败:', err)
+          reject(new Error(err.errMsg || '上传失败'))
+        }
       })
     })
   },
