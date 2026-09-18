@@ -16,6 +16,7 @@ Page({
   data: {
     messages: [],
     inputText: '',
+    canSend: false,   // 发送按钮可用态（WXML 不能调 .trim()）
     matchResults: [],
     quickQuestions: ['找投资', '找客户', '找渠道资源', '找技术合伙人', '找专家人脉', '消费行业机会'],
     aiTyping: false,
@@ -49,17 +50,19 @@ Page({
   },
 
   onInput(e) {
-    this.setData({ inputText: e.detail.value })
+    const v = e.detail.value || ''
+    // canSend 用于控制发送按钮禁用态（WXML 不支持 .trim() 方法调用）
+    this.setData({ inputText: v, canSend: v.trim().length > 0 })
   },
 
-  // presetText：快捷问题直接传入；不传则取输入框内容
+  // presetText：快捷问题传字符串；按钮/回车触发时是事件对象，此时取输入框内容
   async sendMessage(presetText) {
-    const text = (typeof presetText === 'string' ? presetText : this.data.inputText).trim()
+    const text = (typeof presetText === 'string' ? presetText : this.data.inputText || '').trim()
     // aiTyping 作为并发锁，防止连点触发多次请求（云开发有并发限制，易 429）
     if (!text || this.data.aiTyping) return
     if (!this.data.isLogin) { wx.navigateTo({ url: '/pages/login/login' }); return }
 
-    this.setData({ inputText: '', aiTyping: true, matchResults: [] })
+    this.setData({ inputText: '', canSend: false, aiTyping: true, matchResults: [] })
     this._appendMessage('user', text)
 
     try {

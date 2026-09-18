@@ -84,16 +84,24 @@ Page({
     if (!content) return wx.showToast({ title: '内容不能为空', icon: 'none' });
     this.setData({ posting: true });
     postCommunityMessage({ community_uuid: this.data.uuid, content }).then(res => {
-      const d = extractData(res);
-      this.setData({ posting: false, postContent: '' });
-      if (d && (d.code === 0 || d.uuid)) {
-        wx.showToast({ title: '发布成功', icon: 'success' });
-        this.setData({ activeTab: 'messages' });
-        this.loadMessages();
+      // 后端返回 {code:0, message:'发布成功，待审核', data:{id:40}}
+      // extractData 会剥掉外层，返回内层 {id:40}，所以成功判断要看
+      // 原始 res.code 或内层 data.id（不是 uuid）
+      const raw = res || {}
+      const inner = extractData(res) || {}
+      const ok = raw.code === 0 || inner.id || inner.uuid
+      this.setData({ posting: false, postContent: '' })
+      if (ok) {
+        wx.showToast({ title: '发布成功，待审核', icon: 'success' })
+        this.setData({ activeTab: 'messages' })
+        this.loadMessages()
       } else {
-        wx.showToast({ title: (d && d.message) || '发布失败', icon: 'none' });
+        wx.showToast({ title: raw.message || inner.message || '发布失败', icon: 'none' })
       }
-    }).catch(() => this.setData({ posting: false }));
+    }).catch((e) => {
+      this.setData({ posting: false })
+      wx.showToast({ title: (e && e.message) || '发布失败', icon: 'none' })
+    });
   },
 
   toggleJoin() {
@@ -117,16 +125,18 @@ Page({
   _doJoinAction(wasJoined) {
     const action = wasJoined ? leaveCommunity(this.data.uuid) : joinCommunity(this.data.uuid);
     action.then(res => {
-      const d = extractData(res);
-      if (d && (d.code === 0 || !d.code)) {
+      // 后端返回 {code:0, message:'加入成功'}，extractData 会剥掉外层；
+      // 这里直接看原始 res.code 更明确
+      const raw = res || {}
+      if (raw.code === 0) {
         this.setData({ isJoined: !wasJoined });
         wx.showToast({ title: wasJoined ? '已退出' : '已加入', icon: 'success' });
         this.loadDetail();
         this.loadMembers();
       } else {
-        wx.showToast({ title: (d && d.message) || '操作失败', icon: 'none' });
+        wx.showToast({ title: raw.message || '操作失败', icon: 'none' });
       }
-    }).catch(() => wx.showToast({ title: '操作失败', icon: 'none' }));
+    }).catch((e) => wx.showToast({ title: (e && e.message) || '操作失败', icon: 'none' }));
   },
 
   onShareAppMessage() {

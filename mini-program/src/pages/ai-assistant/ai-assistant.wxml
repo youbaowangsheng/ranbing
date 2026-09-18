@@ -65,8 +65,10 @@
   </view>
 
   <!-- 输入框 -->
+  <!-- 注意：WXML 不支持 inputText.trim() 这类方法调用，
+       用 canSend（在 JS 里维护）控制按钮禁用态 -->
   <view class="input-bar">
     <input class="chat-input" placeholder="问我任何问题..." value="{{inputText}}" bindinput="onInput" bindconfirm="sendMessage" confirm-type="send" />
-    <button class="btn-send" bindtap="sendMessage" disabled="{{!inputText.trim() || aiTyping}}">发送</button>
+    <button class="btn-send" bindtap="sendMessage" disabled="{{!canSend || aiTyping}}">发送</button>
   </view>
 </view>
