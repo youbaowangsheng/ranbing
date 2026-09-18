@@ -25,7 +25,8 @@
   <view class="form-section">
     <view class="section-title">🏷️ 供给标签</view>
     <view class="tag-selector">
-      <view class="tag-option {{tag.selected ? 'selected' : ''}}" wx:for="{{allTags}}" wx:key="id" data-id="{{item.id}}" bindtap="toggleTag">{{item.name}}</view>
+      <!-- 注意：wx:for 默认循环变量是 item，这里必须用 item.selected -->
+      <view class="tag-option {{item.selected ? 'selected' : ''}}" wx:for="{{allTags}}" wx:key="id" data-id="{{item.id}}" bindtap="toggleTag">{{item.name}}</view>
     </view>
     <view class="tag-hint">选择你能提供的资源或能力标签（最多10个）</view>
   </view>

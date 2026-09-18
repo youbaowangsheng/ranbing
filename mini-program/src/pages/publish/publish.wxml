@@ -36,11 +36,18 @@
   </view>
 
   <!-- 标签选择 -->
+  <!-- 注意：wx:for 默认循环变量是 item，这里必须用 item.xxx（曾误用 tag.xxx 导致空灰块） -->
   <view class="section">
-    <view class="section-title">选择标签（可多选）<text class="wxml-ver">v3</text></view>
+    <view class="section-title">选择标签（可多选）</view>
     <view class="tag-list">
-      <view class="tag-chip {{tag.selected?'selected':''}}" wx:for="{{tags}}" wx:key="id" bindtap="toggleTag" data-idx="{{index}}">
-        {{tag.name}}
+      <view
+        class="tag-chip {{item.selected?'selected':''}}"
+        wx:for="{{tags}}"
+        wx:key="id"
+        bindtap="toggleTag"
+        data-idx="{{index}}"
+      >
+        {{item.name}}
       </view>
       <view class="tag-empty" wx:if="{{tags.length === 0}}">标签加载中...</view>
     </view>
