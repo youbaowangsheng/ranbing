@@ -51,5 +51,13 @@ Page({
 
   toPublish() { wx.navigateTo({ url: '/pages/publish/publish' }) },
 
-  goBack() { wx.navigateBack({ fail: () => wx.switchTab({ url: '/pages/profile/profile' }) }) }
+  goBack() {
+    const pages = getCurrentPages()
+    if (pages.length > 1) {
+      wx.navigateBack()
+    } else {
+      // 没有上一页（如发布后 redirectTo 进来并清了栈）→ 回供需首页
+      wx.switchTab({ url: '/pages/supply-demand/supply-demand' })
+    }
+  }
 })

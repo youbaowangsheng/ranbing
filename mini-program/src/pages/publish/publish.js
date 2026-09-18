@@ -174,7 +174,9 @@ Page({
       const uuid = res && ((res.data && res.data.uuid) || res.uuid)
       if (res && res.code === 0 && uuid) {
         wx.showToast({ title: '发布成功，待审核', icon: 'success' })
-        setTimeout(() => wx.navigateTo({ url: '/pages/my-posts/my-posts' }), 1500)
+        // 用 redirectTo 替换当前发布页：从「我的发布」返回时直接回到
+        // 之前那个页面（供需首页），而不是已经提交过的发布页
+        setTimeout(() => wx.redirectTo({ url: '/pages/my-posts/my-posts' }), 1500)
       } else {
         this.setData({ errorMsg: (res && res.message) || '发布失败，请稍后重试' })
       }
