@@ -81,16 +81,22 @@ Page({
       // res = {code: 0, data: {token, user, refresh_token}} from api.js request()
       if (res && res.code === 0 && res.data && res.data.token) {
         const tokenData = res.data
-        // 立即设置密码（注册时可能没设）
-        if (password) {
-          try {
-            const { request } = require('../../services/api.js')
-            await request('/profiles/me/', 'PUT', { password })
-          } catch (e2) { console.warn('setPassword failed', e2) }
-        }
+
+        // 必须先存 token 再调其它接口：request() 从 storage 读 token，
+        // 顺序反了会因缺少 Authorization 头而 403
         wx.setStorageSync('token', tokenData.token)
         if (tokenData.refresh_token) wx.setStorageSync('refresh_token', tokenData.refresh_token)
         if (tokenData.user) wx.setStorageSync('userInfo', tokenData.user)
+
+        // 补充设置密码（注册接口本身不接收密码）
+        if (password) {
+          try {
+            const { updateProfile } = require('../../services/api.js')
+            await updateProfile({ password })
+          } catch (e2) {
+            console.warn('setPassword failed', e2)
+          }
+        }
         wx.switchTab({ url: '/pages/home/home' })
       } else {
         this.setData({ errorMsg: res && res.message || res && res.data && res.data.message || '注册失败' })

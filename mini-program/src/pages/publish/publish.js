@@ -169,13 +169,13 @@ Page({
       const res = await createSupply(payload)
       wx.hideLoading()
 
-      if (res && res.uuid) {
-        // 跳「我的发布」而非首页：首页只显示已审核通过的内容，
-        // 新发布的是待审核状态，跳首页会让用户以为发布失败
+      // 后端返回 {code:0, data:{uuid, quality_score}}，
+      // request() 已 resolve 整个响应体，所以 uuid 在 res.data.uuid
+      const uuid = res && ((res.data && res.data.uuid) || res.uuid)
+      if (res && res.code === 0 && uuid) {
         wx.showToast({ title: '发布成功，待审核', icon: 'success' })
         setTimeout(() => wx.navigateTo({ url: '/pages/my-posts/my-posts' }), 1500)
       } else {
-        // 后端返回但无 uuid：透传后端 message
         this.setData({ errorMsg: (res && res.message) || '发布失败，请稍后重试' })
       }
     } catch (e) {
