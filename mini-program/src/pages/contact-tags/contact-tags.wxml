@@ -5,21 +5,27 @@
   </view>
 
   <view class="content">
-    <view class="section-title">系统标签</view>
-    <view class="tag-list">
-      <view wx:for="{{systemTags}}" wx:key="id" class="tag-chip {{item.selected?'selected':''}}" bindtap="toggleTag" data-id="{{item.id}}">
-        {{item.name}}
-      </view>
-    </view>
+    <view class="section-title">我的标签（长按可删除）</view>
 
-    <view class="section-title">自定义标签</view>
     <view class="tag-list">
-      <view wx:for="{{customTags}}" wx:key="id" class="tag-chip {{item.selected?'selected':''}}" bindtap="toggleTag" data-id="{{item.id}}">
+      <view
+        wx:for="{{tags}}"
+        wx:key="id"
+        class="tag-chip"
+        data-id="{{item.id}}"
+        data-name="{{item.name}}"
+        bindlongpress="deleteTag"
+      >
         {{item.name}}
       </view>
       <view class="tag-chip add-tag" bindtap="addTag">+ 新建标签</view>
     </view>
 
-    <view class="save-btn" bindtap="saveTags">保存</view>
+    <view class="tip" wx:if="{{!loading && tags.length === 0}}">
+      还没有标签，点「+ 新建标签」创建，比如「投资人」「潜在客户」
+    </view>
+    <view class="tip" wx:if="{{tags.length > 0}}">
+      在联系人详情页可以给对方打上这些标签，方便分类管理
+    </view>
   </view>
 </view>

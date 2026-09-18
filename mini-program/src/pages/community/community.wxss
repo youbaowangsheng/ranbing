@@ -72,3 +72,18 @@ page { background: #f0f2f5; }
 .empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
 .empty-text { font-size: 14px; color: #999; }
 .bottom-spacer { height: 20px; }
+/* 全部 / 我加入的 切换 */
+.tab-bar { display: flex; background: #fff; border-bottom: 1px solid #eee; }
+.tab { flex: 1; text-align: center; line-height: 44px; font-size: 15px; color: #888; position: relative; }
+.tab-on { color: #1a3a5c; font-weight: 600; }
+.tab-on::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: #1a3a5c;
+  border-radius: 2px;
+}

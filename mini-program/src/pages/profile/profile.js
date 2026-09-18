@@ -45,7 +45,11 @@ Page({
   toCardTags() { wx.navigateTo({ url: '/pages/contact-tags/contact-tags' }) },
   toMyCards() { wx.navigateTo({ url: '/pages/cards/cards' }) },
   toEditProfile() { wx.navigateTo({ url: '/pages/profile-edit/profile-edit' }) },
-  toMyCommunities() { wx.switchTab({ url: '/pages/community/community' }) },
+  // 我的社群：切到社群 tab 并定位到「我加入的」
+  toMyCommunities() {
+    wx.setStorageSync('community_tab', 'joined')
+    wx.switchTab({ url: '/pages/community/community' })
+  },
   toActivities() { wx.showToast({ title: '功能开发中', icon: 'none' }) },
   toCert() { wx.showToast({ title: '功能开发中', icon: 'none' }) },
   toSettings() { wx.showToast({ title: '功能开发中', icon: 'none' }) },

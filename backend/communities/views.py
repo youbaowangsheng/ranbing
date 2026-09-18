@@ -28,23 +28,46 @@ class CommunityViewSet(viewsets.GenericViewSet):
         qs = self.get_queryset()
         comm_type = request.query_params.get('type')
         school = request.query_params.get('school', '')
+        joined = request.query_params.get('joined')  # ?joined=1 只看我加入的
 
         if comm_type:
             qs = qs.filter(community_type=int(comm_type))
         if school:
             qs = qs.filter(school__icontains=school)
 
+        # 只看我加入的社群
+        if joined in ('1', 'true', 'True') and request.user.is_authenticated:
+            profile, _ = Profile.objects.get_or_create(user=request.user)
+            my_ids = CommunityMember.objects.filter(
+                profile=profile, status=1
+            ).values_list('community_id', flat=True)
+            qs = qs.filter(id__in=list(my_ids))
+
+        # 附带当前用户的加入状态，供前端显示「已加入」/「加入」
+        ctx = self._join_context(request)
+
         page = self.paginate_queryset(qs)
         if page is not None:
-            return self.get_paginated_response(CommunitySerializer(page, many=True).data)
-        return Response({'code': 0, 'data': CommunitySerializer(qs, many=True).data})
+            return self.get_paginated_response(
+                CommunitySerializer(page, many=True, context=ctx).data)
+        return Response({'code': 0, 'data': CommunitySerializer(qs, many=True, context=ctx).data})
+
+    def _join_context(self, request):
+        """构造 {joined_map: {community_id: {status, role}}} 供 serializer 使用"""
+        joined_map = {}
+        if request.user.is_authenticated:
+            profile, _ = Profile.objects.get_or_create(user=request.user)
+            for m in CommunityMember.objects.filter(profile=profile, status=1):
+                joined_map[m.community_id] = {'status': 1, 'role': m.role}
+        return {'request': request, 'joined_map': joined_map}
 
     def retrieve(self, request, pk=None):
         try:
             community = self.get_queryset().get(uuid=pk)
         except Community.DoesNotExist:
             return Response({'code': 2001, 'message': '社群不存在'}, status=status.HTTP_404_NOT_FOUND)
-        return Response({'code': 0, 'data': CommunitySerializer(community).data})
+        return Response({'code': 0, 'data': CommunitySerializer(
+            community, context=self._join_context(request)).data})
 
     @action(detail=True, methods=['post'])
     def join(self, request, pk=None):

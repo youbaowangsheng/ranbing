@@ -3,21 +3,29 @@ const { getCommunities, joinCommunity } = require('../../services/api.js')
 
 Page({
   data: {
-    items: [],       // 全部社群，join_status 区分已加入/未加入
+    items: [],       // 社群列表，join_status 区分已加入/未加入
     loading: true,
     keyword: '',
+    activeTab: 'all', // all=全部 / joined=我加入的
     statusBarHeight: 20,
     menuBtnTop: 24,
     menuBtnHeight: 32,
   },
 
-  onLoad() {
+  onLoad(options) {
     const app = getApp()
     this.setData({
       statusBarHeight: app.globalData.statusBarHeight || 20,
       menuBtnTop: app.globalData.menuBtnTop || 24,
       menuBtnHeight: app.globalData.menuBtnHeight || 32,
     })
+    // 从「我的-我的社群」进入：profile 页用 storage 传 tab=joined
+    // （switchTab 不支持带参数，只能用 storage 中转）
+    const wanted = (options && options.tab) || wx.getStorageSync('community_tab')
+    if (wanted === 'joined') {
+      this.setData({ activeTab: 'joined' })
+      wx.removeStorageSync('community_tab')  // 用完即清
+    }
   },
 
   onPullDownRefresh() {
@@ -26,6 +34,13 @@ Page({
   },
 
   onShow() {
+    this.loadData()
+  },
+
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab
+    if (tab === this.data.activeTab) return
+    this.setData({ activeTab: tab, items: [], loading: true })
     this.loadData()
   },
 
@@ -42,6 +57,7 @@ Page({
     try {
       const params = {}
       if (this.data.keyword) params.search = this.data.keyword
+      if (this.data.activeTab === 'joined') params.joined = 1
       const res = await getCommunities(params)
       const items = res.results || res.items || []
       this.setData({ items, loading: false })

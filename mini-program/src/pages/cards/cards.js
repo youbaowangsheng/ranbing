@@ -1,64 +1,53 @@
-const { getCards, deleteCard } = require('../../services/api.js');
+const { getProfile, extractData } = require('../../services/api.js');
 
 Page({
   data: {
-    loading: false,
-    cards: [],
+    loading: true,
+    profile: null,      // 我的资料
+    card: null,         // 名片数据（可能为空）
+    avatarChar: '',
+    tags: [],
   },
 
   onLoad() {
     const token = wx.getStorageSync('token')
     if (!token) { wx.redirectTo({ url: '/pages/landing/landing' }); return }
-    this.loadCards();
+    this.loadAll();
   },
 
-  loadCards() {
+  onShow() {
+    // 从资料编辑页返回时刷新
+    if (this.data.profile) this.loadAll();
+  },
+
+  async loadAll() {
     this.setData({ loading: true });
-    getCards().then(res => {
-      // /cards/me/ 返回单张名片 {code:0, data:{uuid,...}}
-      // 如果 data 是对象而非数组，则包装成数组
-      let cards = [];
-      if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) {
-        if (res.data.uuid) {
-          cards = [res.data];
-        }
-      } else if (Array.isArray(res.data)) {
-        cards = res.data;
-      } else if (Array.isArray(res)) {
-        cards = res;
-      }
-      this.setData({ cards, loading: false });
-    }).catch(() => this.setData({ loading: false }));
+    try {
+      const res = await getProfile();
+      const data = extractData(res) || {};
+      // /profiles/me/ 返回 {code:0, data:{uuid, real_name, company, ...}}
+      const profile = data.profile || data;
+      const name = profile.real_name || '';
+      const tags = (profile.tags || []).map(t => t.name || t).filter(Boolean);
+
+      this.setData({
+        profile,
+        avatarChar: name ? name.charAt(0) : '?',
+        tags,
+        loading: false,
+      });
+    } catch (e) {
+      console.error('[cards] 加载资料失败', e);
+      this.setData({ loading: false });
+    }
   },
 
-  createCard() {
-    wx.navigateTo({ url: '/pages/card-edit/card-edit' });
-  },
-
-  editCard(e) {
-    const card = e.currentTarget.dataset.card;
-    // 名片数据可能较大（图片 URL 等），URL 长度受限，改用 storage 传 uuid
-    wx.setStorageSync('card_edit_target', card)
-    wx.navigateTo({ url: '/pages/card-edit/card-edit?uuid=' + (card.uuid || '') });
-  },
-
-  deleteCard(e) {
-    const uuid = e.currentTarget.dataset.uuid;
-    wx.showModal({
-      title: '确认删除',
-      content: '确定要删除这张名片吗？',
-      success: res => {
-        if (res.confirm) {
-          deleteCard(uuid).then(() => {
-            wx.showToast({ title: '已删除', icon: 'success' });
-            this.loadCards();
-          }).catch(() => wx.showToast({ title: '删除失败', icon: 'none' }));
-        }
-      },
-    });
+  // 编辑 → 跳转资料编辑页（名片内容就是个人资料）
+  editCard() {
+    wx.navigateTo({ url: '/pages/profile-edit/profile-edit' });
   },
 
   goBack() {
-    wx.navigateBack();
+    wx.navigateBack({ fail: () => wx.switchTab({ url: '/pages/profile/profile' }) });
   },
 });

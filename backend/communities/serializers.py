@@ -5,11 +5,25 @@ from .models import Community, CommunityMember, Message
 
 class CommunitySerializer(serializers.ModelSerializer):
     owner = serializers.SerializerMethodField()
+    join_status = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = Community
         fields = ['uuid', 'name', 'description', 'community_type', 'school',
-                  'cover_url', 'member_count', 'owner', 'qr_code_url', 'created_at']
+                  'cover_url', 'member_count', 'owner', 'qr_code_url', 'created_at',
+                  'join_status', 'role']
+
+    def get_join_status(self, obj):
+        """当前用户是否已加入：1=已加入，0=未加入（前端据此显示按钮）"""
+        joined_map = self.context.get('joined_map') or {}
+        return 1 if obj.id in joined_map else 0
+
+    def get_role(self, obj):
+        """当前用户在社群中的角色：1=成员 2=管理员 3=群主"""
+        joined_map = self.context.get('joined_map') or {}
+        info = joined_map.get(obj.id)
+        return info.get('role') if info else None
 
     def get_owner(self, obj):
         if hasattr(obj, 'owner') and obj.owner:

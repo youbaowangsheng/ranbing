@@ -28,8 +28,17 @@ class ProfileListSerializer(serializers.ModelSerializer):
                   'city', 'cert_level', 'conn_count', 'tags']
 
     def get_tags(self, obj):
-        return list(obj.profile_tags.select_related('tag').values(
-            'tag_id', tag_name='tag__name', tag_type='tag_type', weight='weight'))
+        # 注意：values() 不接受 x=y 别名写法（那是 annotate 的语法），
+        # 之前写成 values('tag_id', tag_name='tag__name', ...) 会抛
+        # TypeError: QuerySet.annotate() received non-expression(s)
+        pts = obj.profile_tags.select_related('tag').all()
+        return [{
+            'id': pt.tag_id,
+            'tag_id': pt.tag_id,
+            'name': pt.tag.name if pt.tag else '',
+            'tag_type': pt.tag_type,
+            'weight': float(pt.weight),
+        } for pt in pts]
 
 
 class ProfileDetailSerializer(serializers.ModelSerializer):

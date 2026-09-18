@@ -28,13 +28,19 @@ Page({
     this.setData({ loading: true });
     getConnections().then(res => {
       const list = extractData(res) || [];
-      const items = list.map(c => ({
-        uuid: c.other_profile && c.other_profile.uuid ? c.other_profile.uuid : c.uuid || '',
-        real_name: c.other_profile && c.other_profile.real_name ? c.other_profile.real_name : (c.real_name || '未知'),
-        company: c.other_profile && c.other_profile.company ? c.other_profile.company : (c.company || ''),
-        position: c.other_profile && c.other_profile.position ? c.other_profile.position : (c.position || ''),
-        initials: this.initials((c.other_profile && c.other_profile.real_name) || c.real_name || '未知'),
-      }));
+      // 后端 ConnectionSerializer 返回 {uuid, profile:{uuid,real_name,company,position,...}}
+      // profile 字段由后端动态取「对方」（已按当前用户视角处理）
+      const items = list.map(c => {
+        const p = c.profile || {};
+        const name = p.real_name || '未知';
+        return {
+          uuid: p.uuid || '',
+          real_name: name,
+          company: p.company || '',
+          position: p.position || '',
+          initials: this.initials(name),
+        };
+      }).filter(i => i.uuid);  // 过滤掉缺少对方信息的脏数据
       this.setData({ items, loading: false });
     }).catch(() => this.setData({ loading: false }));
   },

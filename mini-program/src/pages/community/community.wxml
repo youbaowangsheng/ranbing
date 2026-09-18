@@ -12,6 +12,12 @@
     <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
   </view>
 
+  <!-- 全部 / 我加入的 -->
+  <view class="tab-bar">
+    <view class="tab {{activeTab==='all'?'tab-on':''}}" data-tab="all" bindtap="switchTab">全部社群</view>
+    <view class="tab {{activeTab==='joined'?'tab-on':''}}" data-tab="joined" bindtap="switchTab">我加入的</view>
+  </view>
+
   <view class="loading" wx:if="{{loading && !items.length}}"><text>加载中...</text></view>
 
   <!-- AI社群助手入口 -->
