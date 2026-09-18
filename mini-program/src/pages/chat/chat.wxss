@@ -2,7 +2,7 @@
 page { background: #f0f2f5; }
 .container { min-height: 100vh; background: #f0f2f5; display: flex; flex-direction: column; }
 
-.top-bar { background: #1a3a5c; padding: calc(var(--status-bar-height, 20px) + 10px) 16px 10px; display: flex; align-items: center; justify-content: space-between;
+.top-bar { background: #1a3a5c; padding: calc(var(--status-bar-height, 20px) + 70px) 16px 14px; display: flex; align-items: center; justify-content: space-between;
 }
 .back-btn { font-size: 24px; color: #fff; padding: 8px 0; min-width: 32px; }
 .top-bar-title { font-size: 17px; color: #fff; font-weight: 600; flex: 1; text-align: center; }

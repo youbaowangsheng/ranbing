@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   z-index: 100;
-  padding-top: var(--status-bar-height, 20px);
+  padding-top: calc(var(--status-bar-height, 20px) + 70px);
 }
 .back-btn {
   color: #fff;
@@ -28,7 +28,7 @@
   padding-right: 36px;
 }
 .form {
-  padding: calc(var(--status-bar-height, 20px) + 60px) 16px 30px;
+  padding: calc(var(--status-bar-height, 20px) + 130px) 16px 30px;
 }
 .field {
   background: #fff;

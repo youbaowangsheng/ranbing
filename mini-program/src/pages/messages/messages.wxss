@@ -2,8 +2,8 @@
 page { background: #f0f2f5; }
 .container { min-height: 100vh; background: #f0f2f5; padding-bottom: 100px; }
 
-/* 留出状态栏高度，避免被刘海/状态栏遮挡（custom 导航栏必须） */
-.top-bar { background: #1a3a5c; padding: calc(var(--status-bar-height, 20px) + 10px) 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+/* 顶部留白：与「我的发布」一致，使标题位于胶囊按钮下方 */
+.top-bar { background: #1a3a5c; padding: calc(var(--status-bar-height, 20px) + 70px) 16px 14px; display: flex; align-items: center; justify-content: space-between; }
 .back-btn { font-size: 24px; color: #fff; padding: 8px 0; min-width: 32px; }
 .top-bar-title { font-size: 17px; color: #fff; font-weight: 600; flex: 1; text-align: center; }
 .top-bar-right { min-width: 32px; }
