@@ -37,4 +37,23 @@ page { background: #f0f2f5; }
 .load-more, .no-more { text-align: center; padding: 16px; font-size: 13px; color: #999; }
 .load-more:active { color: #1a3a5c; }
 .empty { text-align: center; padding: 60px 0; }
-.publish-fab { position: fixed; right: 20px; bottom: calc(70px + env(safe-area-inset-bottom)); background: #e86a3a; color: #fff; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(232,106,58,0.4); }
+/* 悬浮发布按钮：圆形 + 号，避免文字撑出按钮 */
+.publish-fab {
+  position: fixed;
+  right: 20px;
+  bottom: calc(70px + env(safe-area-inset-bottom));
+  background: #e86a3a;
+  color: #fff;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 300;
+  box-shadow: 0 4px 12px rgba(232,106,58,0.4);
+  z-index: 50;
+}
+.publish-fab:active { opacity: 0.85; }

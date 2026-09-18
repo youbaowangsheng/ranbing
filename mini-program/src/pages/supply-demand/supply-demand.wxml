@@ -51,5 +51,5 @@
       <text style="color:#999;font-size:14px;display:block;margin-top:12px;">暂无数据</text>
     </view>
   </view>
-  <view class="publish-fab" bindtap="toPublish">+ 发布</view>
+  <view class="publish-fab" bindtap="toPublish">+</view>
 </view>

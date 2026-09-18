@@ -7,7 +7,10 @@
   top: 0;
   left: 0;
   right: 0;
+  /* 留出状态栏高度，避免被刘海/状态栏遮挡（custom 导航栏必须） */
+  padding-top: var(--status-bar-height, 20px);
   height: 44px;
+  box-sizing: content-box;
   background: #1a3a5c;
   display: flex;
   align-items: center;
@@ -30,7 +33,7 @@
   padding: 0 16px;
 }
 .card-list {
-  padding: 60px 16px 20px;
+  padding: calc(var(--status-bar-height, 20px) + 60px) 16px 20px;
 }
 .loading, .empty {
   text-align: center;

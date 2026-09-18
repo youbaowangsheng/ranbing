@@ -3,7 +3,8 @@ page { background: #f0f2f5; height: 100%; }
 .container { min-height: 100vh; background: #f0f2f5; display: flex; flex-direction: column; box-sizing: border-box; }
 
 /* 顶栏 */
-.top-bar { background: #1a3a5c; padding: 70px 16px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.top-bar { background: #1a3a5c; padding: calc(var(--status-bar-height, 20px) + 70px) 16px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
 .back-btn { font-size: 28px; color: #fff; width: 32px; }
 .top-bar-title { font-size: 17px; font-weight: 600; color: #fff; }
 .top-bar-right { width: 32px; }
