@@ -6,10 +6,10 @@
   </view>
   <view class="top-bar">
     <view class="search-box" bindtap="toSearch">
-      <text class="search-icon">🔍</text>
+      <image class="icon-search" src="/assets/icons/search-white.png" mode="aspectFit" />
       <input class="search-input" placeholder="搜索机会" bindinput="onKeywordInput" />
     </view>
-    <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
+    <view class="ai-btn" bindtap="toAiAssistant"><image class="icon-ai" src="/assets/icons/ai.png" mode="aspectFit" /><text>AI</text></view>
   </view>
 
   <!-- 供给/需求切换 -->
@@ -41,13 +41,13 @@
       </view>
       <view class="supply-footer">
         <text class="supply-time">{{item.created_at_fmt}}</text>
-        <text class="supply-stat">👁 {{item.view_count||0}} · 🤝 {{item.match_count||0}}</text>
+        <view class="supply-stat"><image class="icon-stat" src="/assets/icons/eye.png" mode="aspectFit" /><text>{{item.view_count||0}}</text><image class="icon-stat" src="/assets/icons/handshake.png" mode="aspectFit" /><text>{{item.match_count||0}}</text></view>
       </view>
     </view>
     <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMore"><text>{{loadingMore?'加载中...':'加载更多'}}</text></view>
     <view class="no-more" wx:if="{{!hasMore && items.length>0}}"><text>— 没有更多了 —</text></view>
     <view class="empty" wx:if="{{!loading && items.length===0}}">
-      <text style="font-size:48px;">📭</text>
+      <image class="icon-empty" src="/assets/icons/inbox.png" mode="aspectFit" />
       <text style="color:#999;font-size:14px;display:block;margin-top:12px;">暂无数据</text>
     </view>
   </view>

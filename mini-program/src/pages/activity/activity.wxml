@@ -6,10 +6,10 @@
   </view>
   <view class="top-bar">
     <view class="search-box">
-      <text class="search-icon">🔍</text>
+      <image class="icon-search" src="/assets/icons/search-white.png" mode="aspectFit" />
       <input class="search-input" placeholder="搜索活动" value="{{keyword}}" bindinput="onKeywordInput" />
     </view>
-    <view class="ai-btn" bindtap="toAiAssistant">✨AI</view>
+    <view class="ai-btn" bindtap="toAiAssistant"><image class="icon-ai" src="/assets/icons/ai.png" mode="aspectFit" /><text>AI</text></view>
   </view>
 
   <!-- Tab -->
@@ -24,14 +24,14 @@
 
   <!-- AI精选区 -->
   <view class="ai-section" wx:if="{{!aiLoading && aiItem && activeTab==='recommend'}}">
-    <view class="ai-label">✨ AI精选 <text class="ai-gen-badge">人工智能生成</text></view>
+    <view class="ai-label"><image class="icon-sparkle" src="/assets/icons/sparkle.png" mode="aspectFit" /><text>AI精选</text><text class="ai-gen-badge">人工智能生成</text></view>
     <view class="ai-card" bindtap="toDetail" data-uuid="{{aiItem.uuid}}">
       <view class="ai-match-row">
-        <text class="match-pill">🔥 {{aiItem.pct}}%匹配</text>
+        <view class="match-pill"><image class="icon-fire" src="/assets/icons/fire.png" mode="aspectFit" /><text>{{aiItem.pct}}%匹配</text></view>
         <text class="match-reason">{{aiItem.match_reason}}</text>
       </view>
       <view class="ai-card-title">{{aiItem.title}}</view>
-      <view class="ai-card-meta">📅 {{aiItem.start_time_fmt}} · 📍 {{aiItem.location}}</view>
+      <view class="ai-card-meta"><image class="icon-meta" src="/assets/icons/calendar.png" mode="aspectFit" /><text>{{aiItem.start_time_fmt}}</text><image class="icon-meta" src="/assets/icons/location.png" mode="aspectFit" /><text>{{aiItem.location}}</text></view>
       <view class="ai-card-footer">
         <text class="ai-card-attend">{{aiItem.attendee_count || 0}}人已报名</text>
         <text class="ai-card-tag" wx:for="{{aiItem.tags}}" wx:key="id" wx:for-item="t">#{{t.name}}</text>
@@ -49,13 +49,13 @@
   <view class="event-list" wx:if="{{!loading}}">
     <view class="event-card" wx:for="{{items}}" wx:key="uuid" bindtap="toDetail" data-uuid="{{item.uuid}}">
       <view class="event-thumb" style="background: {{item.cover_color || '#1a3a5c'}}">
-        <text style="font-size:28px;">🎯</text>
+        <image class="icon-event-cover" src="/assets/icons/target-white.png" mode="aspectFit" />
         <view class="event-label" wx:if="{{item.status===2}}">回顾</view>
       </view>
       <view class="event-info">
         <view class="event-title">{{item.title}}</view>
-        <view class="event-meta">📅 {{item.start_time_fmt}} · 📍 {{item.location}}</view>
-        <view class="event-meta">👥 {{item.attendee_count}}人报名</view>
+        <view class="event-meta"><image class="icon-meta" src="/assets/icons/calendar.png" mode="aspectFit" /><text>{{item.start_time_fmt}}</text><image class="icon-meta" src="/assets/icons/location.png" mode="aspectFit" /><text>{{item.location}}</text></view>
+        <view class="event-meta"><image class="icon-meta" src="/assets/icons/users.png" mode="aspectFit" /><text>{{item.attendee_count}}人报名</text></view>
         <view class="event-tags">
           <text wx:for="{{item.tags}}" wx:key="id" wx:for-item="t" class="e-tag">#{{t.name}}</text>
         </view>
@@ -63,6 +63,6 @@
     </view>
     <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMore"><text>{{loadingMore?'加载中...':'加载更多'}}</text></view>
     <view class="no-more" wx:if="{{!hasMore && items.length>0}}"><text>— 没有更多了 —</text></view>
-    <view class="empty" wx:if="{{!loading && items.length===0}}"><text style="font-size:48px;">🎪</text><text style="display:block;margin-top:12px;color:#999;font-size:14px;">暂无活动</text></view>
+    <view class="empty" wx:if="{{!loading && items.length===0}}"><image class="icon-empty" src="/assets/icons/event.png" mode="aspectFit" /><text style="display:block;margin-top:12px;color:#999;font-size:14px;">暂无活动</text></view>
   </view>
 </view>

@@ -9,10 +9,11 @@ page { background: #f0f2f5; }
 /* 顶栏：搜索+AI */
 .top-bar { background: #1a3a5c; padding: 10px 16px 10px; display: flex; align-items: center; gap: 10px; }
 .search-box { flex: 1; background: rgba(255,255,255,0.15); border-radius: 18px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
-.search-icon { font-size: 14px; opacity: 0.7; }
+.icon-search { width: 16px; height: 16px; opacity: 0.85; flex-shrink: 0; }
 .search-input { background: none; border: none; font-size: 14px; flex: 1; color: #fff; outline: none; }
 .search-input::placeholder { color: rgba(255,255,255,0.5); }
-.ai-btn { background: rgba(124,58,237,0.8); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 14px; flex-shrink: 0; font-weight: 600; }
+.ai-btn { background: rgba(124,58,237,0.8); color: #fff; font-size: 13px; padding: 8px 14px; border-radius: 14px; flex-shrink: 0; font-weight: 600; display: flex; align-items: center; gap: 3px; }
+.icon-ai { width: 14px; height: 14px; }
 
 .loading { text-align: center; padding: 40px; color: #999; }
 .type-tabs { display: flex; background: #fff; border-bottom: 1px solid #eee; }
@@ -33,10 +34,13 @@ page { background: #f0f2f5; }
 .supply-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
 .s-tag { background: #f0f2f5; color: #666; font-size: 11px; padding: 2px 7px; border-radius: 6px; }
 .supply-footer { display: flex; justify-content: space-between; font-size: 12px; color: #999; }
-.supply-stat { }
+.supply-stat { display: flex; align-items: center; gap: 3px; color: #999; font-size: 12px; }
+.icon-stat { width: 13px; height: 13px; opacity: 0.6; margin-left: 6px; }
+.icon-stat:first-child { margin-left: 0; }
 .load-more, .no-more { text-align: center; padding: 16px; font-size: 13px; color: #999; }
 .load-more:active { color: #1a3a5c; }
 .empty { text-align: center; padding: 60px 0; }
+.icon-empty { width: 72px; height: 72px; opacity: 0.5; }
 /* 悬浮发布按钮：圆形 + 号，避免文字撑出按钮 */
 .publish-fab {
   position: fixed;
