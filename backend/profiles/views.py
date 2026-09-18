@@ -543,9 +543,16 @@ class ProfileViewSet(viewsets.GenericViewSet):
         return Response({'code': 0, 'data': serializer.data})
 
 
-class ContactTagViewSet(viewsets.GenericViewSet):
-    """联系人标签API"""
+class ContactTagViewSet(viewsets.ModelViewSet):
+    """
+    联系人标签API
+
+    注意：必须用 ModelViewSet（而非 GenericViewSet），否则 list/create/destroy
+    不会被 DRF 路由注册，/contact-tags/ 会返回 404。
+    """
     permission_classes = [IsAuthenticated]
+    queryset = ContactTag.objects.all()
+    serializer_class = ContactTagSerializer
 
     def _my_profile(self):
         profile, _ = Profile.objects.get_or_create(user=self.request.user)

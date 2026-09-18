@@ -17,7 +17,9 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('profiles', '0006_merge_20260608_0727'),
+        # Card 在 profiles 的历史迁移中被创建(0005)又删除(0007)，
+        # 这里依赖 0007 确保 profiles 侧状态已收敛，再在 supplies 建表。
+        ('profiles', '0007_contacttag_contacttagrelation_and_more'),
         ('supplies', '0005_merge_20260608_0727'),
     ]
 
