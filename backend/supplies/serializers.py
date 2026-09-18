@@ -3,6 +3,38 @@ from rest_framework import serializers
 from .models import Supply, Match, Connection, Followup, FriendRequest, Card
 
 
+def _resolve_tags(raw_tags, context):
+    """
+    把 Supply.tags（存的是 tag_id 列表，如 [3, 18, 34]）解析成
+    [{'id': 3, 'name': '企业服务'}, ...]，供前端直接渲染。
+
+    性能：tag 映射缓存在 serializer 的 context 里，一个批次只查一次 Tag 表。
+    """
+    if not raw_tags:
+        return []
+
+    tag_map = context.get('tag_map')
+    if tag_map is None:
+        from profiles.models import Tag
+        tag_map = dict(Tag.objects.values_list('id', 'name'))
+        context['tag_map'] = tag_map
+
+    result = []
+    for t in raw_tags:
+        if isinstance(t, dict):
+            # 兼容老数据：本身就是 {id, name} 结构
+            tid = t.get('id')
+            name = t.get('name') or tag_map.get(tid, '')
+            result.append({'id': tid, 'name': name})
+        else:
+            try:
+                tid = int(t)
+            except (TypeError, ValueError):
+                continue
+            result.append({'id': tid, 'name': tag_map.get(tid, '')})
+    return result
+
+
 class ProfileMiniSerializer(serializers.Serializer):
     """精简Profile信息"""
     uuid = serializers.UUIDField()
@@ -37,16 +69,7 @@ class SupplyListSerializer(serializers.ModelSerializer):
                   'status', 'audit_status', 'created_at', 'is_mine']
 
     def get_tags(self, obj):
-        # obj.tags is JSONField: [{id, name}, ...] or [id, ...]
-        if not obj.tags:
-            return []
-        result = []
-        for t in obj.tags:
-            if isinstance(t, dict):
-                result.append({'id': t.get('id'), 'name': t.get('name')})
-            elif isinstance(t, int):
-                result.append({'id': t, 'name': None})
-        return result
+        return _resolve_tags(obj.tags, self.context)
 
     def get_is_mine(self, obj):
         request = self.context.get('request')
@@ -66,15 +89,7 @@ class SupplyDetailSerializer(serializers.ModelSerializer):
                   'created_at', 'expires_at']
 
     def get_tags(self, obj):
-        if not obj.tags:
-            return []
-        result = []
-        for t in obj.tags:
-            if isinstance(t, dict):
-                result.append({'id': t.get('id'), 'name': t.get('name')})
-            elif isinstance(t, int):
-                result.append({'id': t, 'name': None})
-        return result
+        return _resolve_tags(obj.tags, self.context)
 
 
 class SupplyCreateSerializer(serializers.Serializer):
