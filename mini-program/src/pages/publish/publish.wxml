@@ -37,11 +37,8 @@
 
   <!-- 标签选择 -->
   <view class="section">
-    <view class="section-title">选择标签（可多选）</view>
+    <view class="section-title">选择标签（可多选）<text class="wxml-ver">v3</text></view>
     <view class="tag-list">
-      <!-- 注意：WXML 不支持 selectedTags.includes(...) 这类方法调用，
-           改用 tag.selected 字段（在 JS 里维护）。
-           用 view 而非 text：text 是行内元素，在 flex 换行布局里表现不稳定 -->
       <view class="tag-chip {{tag.selected?'selected':''}}" wx:for="{{tags}}" wx:key="id" bindtap="toggleTag" data-idx="{{index}}">
         {{tag.name}}
       </view>

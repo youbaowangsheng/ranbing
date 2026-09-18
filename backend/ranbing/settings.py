@@ -2,20 +2,23 @@
 燃冰 · Django Settings
 """
 import os
+import pymysql
+pymysql.install_as_MySQLdb()
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY=os.environ.get('DJANGO_SECRET_KEY')
-if not SECRET_KEY:
-    raise ValueError("DJANGO_SECRET_KEY environment variable must be set")
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key-change-in-production')
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
 AUTH_USER_MODEL = 'users.User'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['*']
+SECURE_PROXY_SSL_HEADER = ("X-Forwarded-Proto", "https")
 
 # ─── Apps ────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -27,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     # Local apps
     'users',
@@ -75,14 +79,13 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 days
 SESSION_COOKIE_NAME = 'ranbing_sessionid'
 
 # ─── Login ─────────────────────────────────────────────────
-LOGIN_URL = '/pages/login/'
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/pages/home/'
 LOGOUT_REDIRECT_URL = '/pages/login/'
 
 # ─── Auth Backends (allow phone+code login) ─────────────────
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'users.authentication.PhoneBackend',
 ]
 
 # ─── CORS ──────────────────────────────────────────────────
@@ -90,12 +93,12 @@ AUTHENTICATION_BACKENDS = [
 # ─── Database ─────────────────────────────────────────────
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', ''),
-        'PORT': os.environ.get('DB_PORT', ''),
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "qy_mobile",
+        "USER": "qy_mobile",
+        "PASSWORD": "qy_nacos12@30obilexkacosU",
+        "HOST": "qiyumysqllianjie.mysql.rds.aliyuncs.com",
+        "PORT": "1106",
     }
 }
 
@@ -121,20 +124,19 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ─── CORS ──────────────────────────────────────────────────
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:5175',
     'http://localhost:5177',
-    'https://www.asiamlhk.com',
     'https://console.asiamlhk.com',
-    'https://admin.asiamlhk.com',
 ]
-CORS_ALLOW_ALL_ORIGINS = False  # never enable in production
 
 # ─── REST Framework ────────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'users.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -145,7 +147,7 @@ REST_FRAMEWORK = {
 }
 
 # ─── JWT Settings ───────────────────────────────────────────
-JWT_SECRET_KEY=os.environ.get('JWT_SECRET_KEY') or SECRET_KEY
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
 JWT_ALGORITHM = 'HS256'
 JWT_ACCESS_TOKEN_LIFETIME = timedelta(days=7)
 JWT_REFRESH_TOKEN_LIFETIME = timedelta(days=30)
@@ -160,16 +162,18 @@ EMBEDDING_MODEL = 'text-embedding-3-small'
 SMS_PROVIDER = os.environ.get('SMS_PROVIDER', 'mock')  # 'aliyun' | 'tencent' | 'mock'
 SMS_APP_ID = os.environ.get('SMS_APP_ID', '')
 SMS_APP_KEY = os.environ.get('SMS_APP_KEY', '')
-ALIYUN_SMS_TEMPLATE_CODE = os.environ.get('ALIYUN_SMS_TEMPLATE_CODE', '')
-ALIYUN_SMS_SIGN_NAME = os.environ.get('ALIYUN_SMS_SIGN_NAME', '')
 
 # ─── Celery (async tasks) ──────────────────────────────────
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 
-# ─── Redis (shared config) ─────────────────────────────────
-REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
-
 # ─── WeChat Mini-Program ──────────────────────────────────
 WX_APPID = os.environ.get('WX_APPID', '')
 WX_APPSECRET = os.environ.get('WX_APPSECRET', '')
+
+# ─── Redis (shared config) ─────────────────────────────────
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+
+# ─── Aliyun SMS ────────────────────────────────────────────
+ALIYUN_SMS_TEMPLATE_CODE = os.environ.get('ALIYUN_SMS_TEMPLATE_CODE', '')
+ALIYUN_SMS_SIGN_NAME = os.environ.get('ALIYUN_SMS_SIGN_NAME', '')

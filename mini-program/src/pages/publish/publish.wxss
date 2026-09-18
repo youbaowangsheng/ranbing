@@ -64,3 +64,5 @@
 .error-msg { text-align: center; color: #e85a3a; font-size: 13px; margin-top: 12px; }
 .show { display: block; }
 .hidden { display: none; }
+
+.wxml-ver { font-size: 10px; color: #e86a3a; margin-left: 6px; }
