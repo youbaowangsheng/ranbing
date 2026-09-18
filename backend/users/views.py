@@ -32,13 +32,30 @@ WX_APPSECRET = getattr(settings, 'WX_APPSECRET', '')
 
 
 def get_redis_client():
-    try:
-        redis_url = getattr(settings, 'REDIS_URL', 'redis://localhost:6379/0')
-        client = redis.from_url(redis_url, decode_responses=True)
-        client.ping()
-        return client
-    except Exception:
-        return None
+    """
+    获取 Redis 客户端。
+
+    依次尝试多个地址：环境变量 REDIS_URL / CELERY_BROKER_URL，
+    以及常见端口（生产用 4563，本地默认 6379）。
+    """
+    candidates = []
+    for key in ('REDIS_URL', 'CELERY_BROKER_URL'):
+        v = getattr(settings, key, '') or os.environ.get(key, '')
+        if v and v not in candidates:
+            candidates.append(v)
+    # 兜底：生产实际使用的端口
+    for fallback in ('redis://localhost:4563/0', 'redis://127.0.0.1:6379/0'):
+        if fallback not in candidates:
+            candidates.append(fallback)
+
+    for url in candidates:
+        try:
+            client = redis.from_url(url, decode_responses=True, socket_connect_timeout=2)
+            client.ping()
+            return client
+        except Exception:
+            continue
+    return None
 
 
 def get_token_response(user):
@@ -162,15 +179,15 @@ class AuthViewSet(viewsets.GenericViewSet):
         # 短信登录
         elif code:
             r = get_redis_client()
-            if r:
-                stored_code = r.get(f'code:{phone}:login')
-                # 修复：stored_code 为 None（未发送/已过期）也必须拒绝，防止绕过
-                if not stored_code or stored_code != code:
-                    return Response({'code': 2002, 'message': '验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
-                r.delete(f'code:{phone}:login')
-            else:
-                # Redis 不可用时拒绝，而非静默放行
-                return Response({'code': 5001, 'message': '验证码服务不可用，请稍后重试'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            if not r:
+                # Redis 不可用时拒绝（不能放行，否则任意验证码可登录任意账号）
+                logger.error('[login] Redis 不可用，拒绝短信登录')
+                return Response({'code': 5001, 'message': '验证码服务暂时不可用，请用密码登录'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            stored_code = r.get(f'code:{phone}:login')
+            # stored_code 为 None（未发送/已过期）也必须拒绝，防止绕过
+            if not stored_code or stored_code != code:
+                return Response({'code': 2002, 'message': '验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
+            r.delete(f'code:{phone}:login')
             try:
                 user = User.objects.get(phone=phone)
             except User.DoesNotExist:
@@ -235,15 +252,15 @@ class AuthViewSet(viewsets.GenericViewSet):
 
         # 验证验证码
         r = get_redis_client()
-        if r:
-            stored_code = r.get(f'code:{phone}:register')
-            # 修复：stored_code 为 None（未发送/已过期）也必须拒绝，防止绕过
-            if not stored_code or stored_code != code:
-                return Response({'code': 2002, 'message': '验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
-            r.delete(f'code:{phone}:register')
-        else:
-            # Redis 不可用时拒绝，而非静默放行
-            return Response({'code': 5001, 'message': '验证码服务不可用，请稍后重试'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        if not r:
+            # Redis 不可用时拒绝（不能放行，否则任意验证码可注册）
+            logger.error('[register] Redis 不可用，拒绝注册')
+            return Response({'code': 5001, 'message': '验证码服务暂时不可用，请稍后重试'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        stored_code = r.get(f'code:{phone}:register')
+        # stored_code 为 None（未发送/已过期）也必须拒绝，防止绕过
+        if not stored_code or stored_code != code:
+            return Response({'code': 2002, 'message': '验证码错误或已过期'}, status=status.HTTP_400_BAD_REQUEST)
+        r.delete(f'code:{phone}:register')
 
         # 检查是否已注册
         if User.objects.filter(phone=phone).exists():
